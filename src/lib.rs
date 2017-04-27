@@ -6,3 +6,5 @@ extern crate serde_json;
 extern crate serde_derive;
 
 mod json;
+mod photo;
+mod coordinate;

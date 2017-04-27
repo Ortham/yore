@@ -4,7 +4,13 @@ version = "0.1.0"
 authors = ["Oliver Hamlet <oliver.hamlet@gmail.com>"]
 
 [dependencies]
+rexif = "0.3.3"
 serde = "1.0"
 serde_derive = "1.0"
 serde_json = "1.0"
 #serde-xml-rs = "0.1.2" # Requires Serde v0.9
+
+[dev-dependencies]
+hyper = "0.10"
+hyper-native-tls = "0.2.2"
+tempdir = "0.3"

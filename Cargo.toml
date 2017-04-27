@@ -7,3 +7,4 @@ authors = ["Oliver Hamlet <oliver.hamlet@gmail.com>"]
 serde = "1.0"
 serde_derive = "1.0"
 serde_json = "1.0"
+#serde-xml-rs = "0.1.2" # Requires Serde v0.9

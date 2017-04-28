@@ -25,18 +25,45 @@ struct TimestampedActivity {
 
 #[derive(Deserialize, PartialEq, Debug)]
 struct Activity {
-    #[serde(rename = "type")]
-    activity_type: String,
+    #[serde(rename = "type", deserialize_with = "activity_type_string::deserialize")]
+    activity_type: ActivityType,
     confidence: u16,
 }
 
 #[derive(Deserialize, PartialEq, Debug)]
 struct Extra {
-    #[serde(rename = "type")]
-    extra_type: String,
-    name: String,
+    #[serde(rename = "type", deserialize_with = "extra_type_string::deserialize")]
+    extra_type: ExtraType,
+    #[serde(deserialize_with = "extra_name_string::deserialize")]
+    name: ExtraName,
     #[serde(rename = "intVal")]
     int_val: u8,
+}
+
+#[derive(PartialEq, Debug)]
+pub enum ActivityType {
+    ExitingVehicle,
+    InVehicle,
+    OnBicycle,
+    OnFoot,
+    Running,
+    Still,
+    Tilting,
+    Unknown,
+    Walking,
+    Other(String),
+}
+
+#[derive(PartialEq, Debug)]
+pub enum ExtraType {
+    Value,
+    Other(String),
+}
+
+#[derive(PartialEq, Debug)]
+pub enum ExtraName {
+    VehiclePersonalConfidence,
+    Other(String),
 }
 
 mod i64_string {
@@ -45,6 +72,53 @@ mod i64_string {
     pub fn deserialize<'de, D>(deserializer: D) -> Result<i64, D::Error>
         where D: Deserializer<'de> {
         String::deserialize(deserializer)?.parse::<i64>().map_err(de::Error::custom)
+    }
+}
+
+mod activity_type_string {
+    use super::ActivityType;
+    use serde::{Deserialize, Deserializer};
+
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<ActivityType, D::Error>
+        where D: Deserializer<'de> {
+        Ok(match String::deserialize(deserializer)?.as_ref() {
+            "exitingVehicle" => ActivityType::ExitingVehicle,
+            "inVehicle" => ActivityType::InVehicle,
+            "onBicycle" => ActivityType::OnBicycle,
+            "onFoot" => ActivityType::OnFoot,
+            "running" => ActivityType::Running,
+            "still" => ActivityType::Still,
+            "tilting" => ActivityType::Tilting,
+            "unknown" => ActivityType::Unknown,
+            "walking" => ActivityType::Walking,
+            x => ActivityType::Other(x.to_string()),
+        })
+    }
+}
+
+mod extra_type_string {
+    use super::ExtraType;
+    use serde::{Deserialize, Deserializer};
+
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<ExtraType, D::Error>
+        where D: Deserializer<'de> {
+        Ok(match String::deserialize(deserializer)?.as_ref() {
+            "value" => ExtraType::Value,
+            x => ExtraType::Other(x.to_string()),
+        })
+    }
+}
+
+mod extra_name_string {
+    use super::ExtraName;
+    use serde::{Deserialize, Deserializer};
+
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<ExtraName, D::Error>
+        where D: Deserializer<'de> {
+        Ok(match String::deserialize(deserializer)?.as_ref() {
+            "vehicle_personal_confidence" => ExtraName::VehiclePersonalConfidence,
+            x => ExtraName::Other(x.to_string()),
+        })
     }
 }
 
@@ -106,12 +180,12 @@ mod tests {
                 activitys: Some(vec![TimestampedActivity {
                     timestamp_ms: 1498358433377,
                     activities: vec![Activity {
-                        activity_type: "still".to_string(),
+                        activity_type: ActivityType::Still,
                         confidence: 100,
                     }],
                     extras: Some(vec![Extra {
-                        extra_type: "value".to_string(),
-                        name: "vehicle_personal_confidence".to_string(),
+                        extra_type: ExtraType::Value,
+                        name: ExtraName::VehiclePersonalConfidence,
                         int_val: 100,
                     }]),
                 }]),
@@ -123,7 +197,7 @@ mod tests {
                 activitys: Some(vec![TimestampedActivity {
                     timestamp_ms: 1498358433377,
                     activities: vec![Activity {
-                        activity_type: "still".to_string(),
+                        activity_type: ActivityType::Still,
                         confidence: 100,
                     }],
                     extras: None,

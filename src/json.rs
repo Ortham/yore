@@ -1,11 +1,14 @@
+use std::collections::BTreeMap;
+
 #[derive(Deserialize, PartialEq, Debug)]
 struct GoogleLocationHistory {
-    locations: Vec<Location>,
+    #[serde(deserialize_with = "locations_sequence::deserialize")]
+    locations: BTreeMap<i64, Location>,
 }
 
 #[derive(Deserialize, PartialEq, Debug)]
 #[serde(rename_all = "camelCase")]
-struct Location {
+pub struct Location {
     #[serde(deserialize_with = "i64_string::deserialize")]
     timestamp_ms: i64,
     latitude_e7: i64,
@@ -64,6 +67,20 @@ pub enum ExtraType {
 pub enum ExtraName {
     VehiclePersonalConfidence,
     Other(String),
+}
+
+mod locations_sequence {
+    use std::collections::BTreeMap;
+    use std::iter::FromIterator;
+    use serde::{Deserialize, Deserializer};
+    use super::Location;
+
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<BTreeMap<i64, Location>, D::Error>
+        where D: Deserializer<'de> {
+        let locations: Vec<Location> = Vec::deserialize(deserializer)?;
+
+        Ok(BTreeMap::from_iter(locations.into_iter().map(|l| (l.timestamp_ms, l))))
+    }
 }
 
 mod i64_string {
@@ -171,44 +188,47 @@ mod tests {
         "##;
         let glh: GoogleLocationHistory = serde_json::from_str(s).unwrap();
 
-        assert_eq!(glh, GoogleLocationHistory {
-            locations: vec![Location {
+        let mut locations: BTreeMap<i64, Location> = BTreeMap::new();
+        locations.insert(1498358433377, Location {
+            timestamp_ms: 1498358433377,
+            latitude_e7: 5207967334,
+            longitude_e7: 11965831,
+            accuracy: 18,
+            activitys: Some(vec![TimestampedActivity {
                 timestamp_ms: 1498358433377,
-                latitude_e7: 5207967334,
-                longitude_e7: 11965831,
-                accuracy: 18,
-                activitys: Some(vec![TimestampedActivity {
-                    timestamp_ms: 1498358433377,
-                    activities: vec![Activity {
-                        activity_type: ActivityType::Still,
-                        confidence: 100,
-                    }],
-                    extras: Some(vec![Extra {
-                        extra_type: ExtraType::Value,
-                        name: ExtraName::VehiclePersonalConfidence,
-                        int_val: 100,
-                    }]),
+                activities: vec![Activity {
+                    activity_type: ActivityType::Still,
+                    confidence: 100,
+                }],
+                extras: Some(vec![Extra {
+                    extra_type: ExtraType::Value,
+                    name: ExtraName::VehiclePersonalConfidence,
+                    int_val: 100,
                 }]),
-            }, Location {
-                timestamp_ms: 1498358433377,
-                latitude_e7: 5207967334,
-                longitude_e7: 11965831,
-                accuracy: 18,
-                activitys: Some(vec![TimestampedActivity {
-                    timestamp_ms: 1498358433377,
-                    activities: vec![Activity {
-                        activity_type: ActivityType::Still,
-                        confidence: 100,
-                    }],
-                    extras: None,
-                }]),
-            }, Location {
-                timestamp_ms: 1493657963571,
-                latitude_e7: 5205674674,
-                longitude_e7: 11485831,
-                accuracy: 18,
-                activitys: None,
-            }]
+            }]),
         });
+        locations.insert(1498358433377, Location {
+            timestamp_ms: 1498358433377,
+            latitude_e7: 5207967334,
+            longitude_e7: 11965831,
+            accuracy: 18,
+            activitys: Some(vec![TimestampedActivity {
+                timestamp_ms: 1498358433377,
+                activities: vec![Activity {
+                    activity_type: ActivityType::Still,
+                    confidence: 100,
+                }],
+                extras: None,
+            }]),
+        });
+        locations.insert(1493657963571, Location {
+            timestamp_ms: 1493657963571,
+            latitude_e7: 5205674674,
+            longitude_e7: 11485831,
+            accuracy: 18,
+            activitys: None,
+        });
+
+        assert_eq!(glh, GoogleLocationHistory { locations });
     }
 }

@@ -6,6 +6,33 @@ struct GoogleLocationHistory {
     locations: BTreeMap<i64, Location>,
 }
 
+impl GoogleLocationHistory {
+    pub fn get_most_likely_location(&self, mut timestamp: i64) -> Option<&Location> {
+        timestamp *= 1000;
+
+        let exact = self.locations.get(&timestamp);
+        if exact.is_some() {
+            return exact;
+        }
+
+        let before = self.locations.range(..timestamp).last();
+        let after = self.locations.range(timestamp..).next();
+
+        match (before, after) {
+            (None, None) => None,
+            (None, Some(after)) => Some(after.1),
+            (Some(before), None) => Some(before.1),
+            (Some(before), Some(after)) => {
+                if timestamp - before.0 > after.0 - timestamp {
+                    Some(after.1)
+                } else {
+                    Some(before.1)
+                }
+            }
+        }
+    }
+}
+
 #[derive(Deserialize, PartialEq, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Location {
@@ -230,5 +257,79 @@ mod tests {
         });
 
         assert_eq!(glh, GoogleLocationHistory { locations });
+    }
+
+    #[test]
+    fn get_most_likely_location_should_return_none_if_no_locations_exist() {
+        let ghl = GoogleLocationHistory { locations: BTreeMap::new() };
+
+        let location = ghl.get_most_likely_location(0);
+
+        assert_eq!(None, location);
+    }
+
+    #[test]
+    fn get_most_likely_location_should_return_the_location_with_a_matching_timestamp() {
+        let mut locations: BTreeMap<i64, Location> = BTreeMap::new();
+        locations.insert(1000, Location {
+            timestamp_ms: 1000,
+            latitude_e7: 5207967334,
+            longitude_e7: 11965831,
+            accuracy: 18,
+            activitys: None,
+        });
+        let ghl = GoogleLocationHistory { locations };
+
+        let location = ghl.get_most_likely_location(1).unwrap();
+
+        assert_eq!(1000, location.timestamp_ms);
+    }
+
+    #[test]
+    fn get_most_likely_location_should_return_the_location_at_the_closest_timestamp() {
+        let mut locations: BTreeMap<i64, Location> = BTreeMap::new();
+        locations.insert(3000, Location {
+            timestamp_ms: 3000,
+            latitude_e7: 5207967334,
+            longitude_e7: 11965831,
+            accuracy: 18,
+            activitys: None,
+        });
+        locations.insert(6000, Location {
+            timestamp_ms: 6000,
+            latitude_e7: 5205674674,
+            longitude_e7: 11485831,
+            accuracy: 18,
+            activitys: None,
+        });
+        let ghl = GoogleLocationHistory { locations };
+
+        let location = ghl.get_most_likely_location(4).unwrap();
+
+        assert_eq!(3000, location.timestamp_ms);
+    }
+
+    #[test]
+    fn get_most_likely_location_should_return_the_older_location_if_exactly_between_two() {
+        let mut locations: BTreeMap<i64, Location> = BTreeMap::new();
+        locations.insert(1000, Location {
+            timestamp_ms: 1000,
+            latitude_e7: 5207967334,
+            longitude_e7: 11965831,
+            accuracy: 18,
+            activitys: None,
+        });
+        locations.insert(3000, Location {
+            timestamp_ms: 3000,
+            latitude_e7: 5207967334,
+            longitude_e7: 11965831,
+            accuracy: 18,
+            activitys: None,
+        });
+        let ghl = GoogleLocationHistory { locations };
+
+        let location = ghl.get_most_likely_location(2).unwrap();
+
+        assert_eq!(1000, location.timestamp_ms);
     }
 }

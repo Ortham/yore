@@ -7,6 +7,7 @@ use std::path;
 
 use coordinate;
 
+#[derive(Debug)]
 pub struct Photo {
     pub path: path::PathBuf,
     pub timestamp: String,
@@ -81,45 +82,55 @@ impl Photo {
 
 #[cfg(test)]
 mod tests {
-    #[path = "./fixture.rs"]
-    mod fixture;
-
     use super::*;
-
-    use self::fixture::*;
 
     mod new {
         use super::*;
 
         #[test]
-        #[should_panic]
         fn should_error_if_passed_a_path_that_does_not_exist() {
-            Photo::new(path::Path::new("foo")).unwrap();
+            let photo = Photo::new(path::Path::new("foo"));
+
+            assert!(photo.is_err());
         }
 
         #[test]
-        #[should_panic]
         fn should_error_if_passed_a_path_that_is_not_an_image_with_exif_metadata() {
-            let temp_dir = super::setup().unwrap();
+            let photo = Photo::new(path::Path::new("tests/assets/photo_without_exif.jpg"));
 
-            Photo::new(temp_dir.path().join(SUBDIR_2).join(INACCURATE_FILENAME).as_path()).unwrap();
+            assert!(photo.is_err());
         }
 
         #[test]
-        #[should_panic]
-        fn should_error_if_passed_a_path_that_is_not_an_image_with_an_exif_timestamp() {
-            let temp_dir = super::setup().unwrap();
+        fn should_error_if_passed_a_non_photo_path() {
+            let photo = Photo::new(path::Path::new("Cargo.toml"));
 
-            Photo::new(temp_dir.path().join(SUBDIR_1).join(JPEG_FILENAME).as_path()).unwrap();
+            assert!(photo.is_err());
+        }
+
+        #[test]
+        fn should_error_if_passed_an_image_with_no_exif_timestamp() {
+            let photo = Photo::new(path::Path::new("tests/assets/photo_without_timestamp.jpg"));
+
+            assert!(photo.is_err());
         }
 
         #[test]
         fn should_return_a_photo_object_with_the_image_timestamp_from_exif_metadata() {
-            let temp_dir = super::setup().unwrap();
+            let photo = Photo::new(path::Path::new("tests/assets/photo_without_gps.jpg")).unwrap();
 
-            let photo = Photo::new(temp_dir.path().join(SUBDIR_2).join(JPG_FILENAME).as_path()).unwrap();
+            assert_eq!("2016:09:06 10:38:41", photo.timestamp);
+            assert_eq!(0.0, photo.location.latitude);
+            assert_eq!(0.0, photo.location.longitude);
+        }
 
-            assert_eq!("2003:12:14 12:01:44", photo.timestamp);
+        #[test]
+        fn should_return_a_photo_object_with_the_image_timestamp_and_gps_from_exif_metadata() {
+            let photo = Photo::new(path::Path::new("tests/assets/photo.jpg")).unwrap();
+
+            assert_eq!("2016:09:06 10:38:41", photo.timestamp);
+            assert_eq!(38.76544, photo.location.latitude);
+            assert_eq!(-9.094802222222222, photo.location.longitude);
         }
     }
 }

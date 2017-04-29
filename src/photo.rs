@@ -2,15 +2,19 @@
 
 extern crate rexif;
 
+use std::error::Error;
 use std::io;
 use std::path;
+
+use chrono::offset::TimeZone;
+use chrono::offset::utc::UTC;
 
 use coordinate;
 
 #[derive(Debug)]
 pub struct Photo {
     pub path: path::PathBuf,
-    pub timestamp: String,
+    pub timestamp: i64,
     pub location: coordinate::Coordinate,
 }
 
@@ -23,7 +27,7 @@ impl Photo {
         let exif = try!(rexif::parse_file(unicode_path)
             .map_err(|e| io::Error::new(io::ErrorKind::Other, e.extra)));
 
-        let mut date_time: String = String::new();
+        let mut date_time: Option<i64> = None;
         let mut latitude: f64 = 0.0;
         let mut longitude: f64 = 0.0;
         let mut latitude_sign: f64 = 1.0;
@@ -32,7 +36,9 @@ impl Photo {
             match entry.tag {
                 rexif::ExifTag::DateTimeOriginal | rexif::ExifTag::DateTime =>  {
                     if let rexif::TagValue::Ascii(ref x) = entry.value {
-                        date_time = x.clone();
+                        date_time = Some(UTC.datetime_from_str(x, "%Y:%m:%d %T")
+                            .map_err(|e| io::Error::new(io::ErrorKind::Other, e.description()))?
+                            .timestamp());
                     }
                 },
                 rexif::ExifTag::GPSLatitude => {
@@ -64,14 +70,15 @@ impl Photo {
         latitude *= latitude_sign;
         longitude *= longitude_sign;
 
-        if date_time.is_empty() {
-            Err(io::Error::new(io::ErrorKind::Other, "No date taken metadata found"))
-        } else {
-            Ok(Photo {
-                path: path.to_path_buf(),
-                timestamp: date_time,
-                location: coordinate::Coordinate::new(latitude, longitude),
-            })
+        match date_time {
+            None => Err(io::Error::new(io::ErrorKind::Other, "No date taken metadata found")),
+            Some(timestamp) => {
+                Ok(Photo {
+                    path: path.to_path_buf(),
+                    timestamp,
+                    location: coordinate::Coordinate::new(latitude, longitude),
+                })
+            }
         }
     }
 
@@ -119,7 +126,7 @@ mod tests {
         fn should_return_a_photo_object_with_the_image_timestamp_from_exif_metadata() {
             let photo = Photo::new(path::Path::new("tests/assets/photo_without_gps.jpg")).unwrap();
 
-            assert_eq!("2016:09:06 10:38:41", photo.timestamp);
+            assert_eq!(1473158321, photo.timestamp);
             assert_eq!(0.0, photo.location.latitude);
             assert_eq!(0.0, photo.location.longitude);
         }
@@ -128,7 +135,7 @@ mod tests {
         fn should_return_a_photo_object_with_the_image_timestamp_and_gps_from_exif_metadata() {
             let photo = Photo::new(path::Path::new("tests/assets/photo.jpg")).unwrap();
 
-            assert_eq!("2016:09:06 10:38:41", photo.timestamp);
+            assert_eq!(1473158321, photo.timestamp);
             assert_eq!(38.76544, photo.location.latitude);
             assert_eq!(-9.094802222222222, photo.location.longitude);
         }

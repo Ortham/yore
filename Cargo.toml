@@ -4,6 +4,7 @@ version = "0.1.0"
 authors = ["Oliver Hamlet <oliver.hamlet@gmail.com>"]
 
 [dependencies]
+chrono = "0.3"
 rexif = "0.3.3"
 serde = "1.0"
 serde_derive = "1.0"

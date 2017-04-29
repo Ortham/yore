@@ -8,6 +8,7 @@ use std::path;
 
 use chrono::offset::TimeZone;
 use chrono::offset::utc::UTC;
+use chrono::format::ParseError;
 
 use coordinate;
 
@@ -18,14 +19,20 @@ pub struct Photo {
     pub location: coordinate::Coordinate,
 }
 
-impl Photo {
-    pub fn new(path: &path::Path) -> Result<Photo, io::Error> {
-        let unicode_path = try!(path.to_str()
-            .ok_or(io::Error::new(io::ErrorKind::Other,
-                                  "Could not convert the input path to UTF-8")));
+#[derive(Debug)]
+pub enum PhotoError {
+    PathEncodingError,
+    ExifError(rexif::ExifError),
+    TimestampFormatError(ParseError),
+    TimestampMissing,
+}
 
-        let exif = try!(rexif::parse_file(unicode_path)
-            .map_err(|e| io::Error::new(io::ErrorKind::Other, e.extra)));
+impl Photo {
+    pub fn new(path: &path::Path) -> Result<Photo, PhotoError> {
+        let unicode_path = path.to_str().ok_or(PhotoError::PathEncodingError)?;
+
+        let exif = rexif::parse_file(unicode_path)
+            .map_err(PhotoError::ExifError)?;
 
         let mut date_time: Option<i64> = None;
         let mut latitude: f64 = 0.0;
@@ -37,7 +44,7 @@ impl Photo {
                 rexif::ExifTag::DateTimeOriginal | rexif::ExifTag::DateTime =>  {
                     if let rexif::TagValue::Ascii(ref x) = entry.value {
                         date_time = Some(UTC.datetime_from_str(x, "%Y:%m:%d %T")
-                            .map_err(|e| io::Error::new(io::ErrorKind::Other, e.description()))?
+                            .map_err(PhotoError::TimestampFormatError)?
                             .timestamp());
                     }
                 },
@@ -71,7 +78,7 @@ impl Photo {
         longitude *= longitude_sign;
 
         match date_time {
-            None => Err(io::Error::new(io::ErrorKind::Other, "No date taken metadata found")),
+            None => Err(PhotoError::TimestampMissing),
             Some(timestamp) => {
                 Ok(Photo {
                     path: path.to_path_buf(),

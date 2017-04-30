@@ -10,13 +10,13 @@ use chrono::offset::TimeZone;
 use chrono::offset::utc::UTC;
 use chrono::format::ParseError;
 
-use coordinate;
+use coordinates;
 
 #[derive(Debug)]
 pub struct Photo {
     pub path: path::PathBuf,
     pub timestamp: i64,
-    pub location: coordinate::Coordinate,
+    pub location: coordinates::Coordinates,
 }
 
 #[derive(Debug)]
@@ -83,7 +83,7 @@ impl Photo {
                 Ok(Photo {
                     path: path.to_path_buf(),
                     timestamp,
-                    location: coordinate::Coordinate::new(latitude, longitude),
+                    location: coordinates::Coordinates::new(latitude, longitude),
                 })
             }
         }

@@ -39,35 +39,36 @@ impl Photo {
         let mut longitude_sign: f64 = 1.0;
         for entry in &exif.entries {
             match entry.tag {
-                rexif::ExifTag::DateTimeOriginal | rexif::ExifTag::DateTime =>  {
+                rexif::ExifTag::DateTimeOriginal |
+                rexif::ExifTag::DateTime => {
                     if let rexif::TagValue::Ascii(ref x) = entry.value {
                         date_time = Some(UTC.datetime_from_str(x, "%Y:%m:%d %T")
-                            .map_err(PhotoError::TimestampFormatError)?
-                            .timestamp());
+                                             .map_err(PhotoError::TimestampFormatError)?
+                                             .timestamp());
                     }
-                },
+                }
                 rexif::ExifTag::GPSLatitude => {
                     if let rexif::TagValue::URational(ref x) = entry.value {
                         latitude = Some(Photo::to_decimal_coordinate(x));
                     }
-                },
+                }
                 rexif::ExifTag::GPSLatitudeRef => {
                     match entry.value_more_readable.as_str() {
                         "S" => latitude_sign = -1.0,
                         _ => {}
                     }
-                },
+                }
                 rexif::ExifTag::GPSLongitude => {
                     if let rexif::TagValue::URational(ref x) = entry.value {
                         longitude = Some(Photo::to_decimal_coordinate(x));
                     }
-                },
+                }
                 rexif::ExifTag::GPSLongitudeRef => {
                     match entry.value_more_readable.as_str() {
                         "W" => longitude_sign = -1.0,
                         _ => {}
                     }
-                },
+                }
                 _ => {}
             }
         }
@@ -75,8 +76,9 @@ impl Photo {
         let location: Option<coordinates::Coordinates>;
         match (longitude, latitude) {
             (Some(longitude), Some(latitude)) => {
-                location = Some(coordinates::Coordinates::new(latitude * latitude_sign, longitude * longitude_sign));
-            },
+                location = Some(coordinates::Coordinates::new(latitude * latitude_sign,
+                                                              longitude * longitude_sign));
+            }
             _ => location = None,
         }
 
@@ -84,10 +86,10 @@ impl Photo {
             None => Err(PhotoError::TimestampMissing),
             Some(timestamp) => {
                 Ok(Photo {
-                    path: path.to_path_buf(),
-                    timestamp,
-                    location,
-                })
+                       path: path.to_path_buf(),
+                       timestamp,
+                       location,
+                   })
             }
         }
     }

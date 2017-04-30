@@ -37,14 +37,13 @@ pub enum PhotoLocation {
     None,
 }
 
-pub unsafe fn load_location_history(path: &Path) ->
-    Result<json::GoogleLocationHistory, HistoryError> {
+pub unsafe fn load_location_history(path: &Path)
+                                    -> Result<json::GoogleLocationHistory, HistoryError> {
     let mmap_view = Mmap::open_path(path, Protection::Read)
-            .map_err(HistoryError::IOError)?
-            .into_view();
+        .map_err(HistoryError::IOError)?
+        .into_view();
 
-    serde_json::from_slice(mmap_view.as_slice())
-        .map_err(HistoryError::DeserializeError)
+    serde_json::from_slice(mmap_view.as_slice()).map_err(HistoryError::DeserializeError)
 }
 
 pub fn is_jpeg_file(path: &Path) -> bool {
@@ -67,8 +66,9 @@ pub fn find_jpegs(root_directory: &Path) -> Vec<PathBuf> {
         .collect()
 }
 
-pub fn get_location_suggestion(path: &Path, location_history: &json::GoogleLocationHistory)
-    -> Result<PhotoLocation, PhotoError> {
+pub fn get_location_suggestion(path: &Path,
+                               location_history: &json::GoogleLocationHistory)
+                               -> Result<PhotoLocation, PhotoError> {
     let photo = Photo::new(path)?;
 
     if let Some(location) = photo.location {
@@ -85,7 +85,7 @@ pub fn get_location_suggestion(path: &Path, location_history: &json::GoogleLocat
                 time: suggested_location.timestamp() - photo.timestamp,
             };
             Ok(PhotoLocation::Suggested(suggested_location.coordinates(), accuracy))
-        },
+        }
     }
 }
 
@@ -157,10 +157,7 @@ mod tests {
 
         let jpegs = find_jpegs(tmp_dir.path());
 
-        assert_eq!(vec![
-            jpeg_file,
-            jpg_file,
-        ], jpegs);
+        assert_eq!(vec![jpeg_file, jpg_file], jpegs);
     }
 
     #[test]
@@ -205,9 +202,10 @@ mod tests {
         let location = get_location_suggestion(path, &history);
 
         assert_eq!(PhotoLocation::Existing(Coordinates {
-            latitude: 38.76544,
-            longitude: -9.094802222222222,
-        }), location.unwrap());
+                                               latitude: 38.76544,
+                                               longitude: -9.094802222222222,
+                                           }),
+                   location.unwrap());
     }
 
     #[test]
@@ -219,11 +217,13 @@ mod tests {
         let location = get_location_suggestion(path, &history);
 
         assert_eq!(PhotoLocation::Suggested(Coordinates {
-            latitude: 52.0567467,
-            longitude: 1.1485831,
-        }, SuggestionAccuracy {
-            space: 18,
-            time: 20499642,
-        }), location.unwrap());
+                                                latitude: 52.0567467,
+                                                longitude: 1.1485831,
+                                            },
+                                            SuggestionAccuracy {
+                                                space: 18,
+                                                time: 20499642,
+                                            }),
+                   location.unwrap());
     }
 }

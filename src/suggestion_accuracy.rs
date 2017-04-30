@@ -27,12 +27,14 @@ impl SuggestionAccuracy {
             periods.push(print_period(duration.num_hours().wrapping_rem(24), "hour", "hours"));
         }
         if should_print_period(duration.num_minutes(), 60) {
-            periods.push(print_period(
-                duration.num_minutes().wrapping_rem(60), "minute", "minutes"));
+            periods.push(print_period(duration.num_minutes().wrapping_rem(60),
+                                      "minute",
+                                      "minutes"));
         }
         if should_print_period(duration.num_seconds(), 60) {
-            periods.push(print_period(
-                duration.num_seconds().wrapping_rem(60), "second", "seconds"));
+            periods.push(print_period(duration.num_seconds().wrapping_rem(60),
+                                      "second",
+                                      "seconds"));
         }
 
         return periods.join(", ");
@@ -63,10 +65,7 @@ mod tests {
 
     #[test]
     fn suggestion_accuracy_display_should_format_value_correctly() {
-        let accuracy = SuggestionAccuracy {
-            space: 18,
-            time: 0,
-        };
+        let accuracy = SuggestionAccuracy { space: 18, time: 0 };
 
         assert_eq!("18 metres, 0 seconds", format!("{}", accuracy));
 
@@ -89,6 +88,7 @@ mod tests {
             time: 20499642,
         };
 
-        assert_eq!("18 metres, 33 weeks, 6 days, 6 hours, 20 minutes, 42 seconds", format!("{}", accuracy));
+        assert_eq!("18 metres, 33 weeks, 6 days, 6 hours, 20 minutes, 42 seconds",
+                   format!("{}", accuracy));
     }
 }

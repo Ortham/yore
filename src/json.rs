@@ -178,7 +178,7 @@ mod tests {
             {
                 "locations" : [ {
                     "timestampMs" : "1498358433377",
-                    "latitudeE7" : 5207967334,
+                    "latitudeE7" : 520796733,
                     "longitudeE7" : 11965831,
                     "accuracy" : 18,
                     "activitys" : [ {
@@ -195,7 +195,7 @@ mod tests {
                     } ]
                 }, {
                     "timestampMs" : "1498358433377",
-                    "latitudeE7" : 5207967334,
+                    "latitudeE7" : 520796733,
                     "longitudeE7" : 11965831,
                     "accuracy" : 18,
                     "activitys" : [ {
@@ -207,7 +207,7 @@ mod tests {
                     } ]
                 }, {
                     "timestampMs" : "1493657963571",
-                    "latitudeE7" : 5205674674,
+                    "latitudeE7" : 520567467,
                     "longitudeE7" : 11485831,
                     "accuracy" : 18
                 } ]
@@ -218,7 +218,7 @@ mod tests {
         let mut locations: BTreeMap<i64, Location> = BTreeMap::new();
         locations.insert(1498358433377, Location {
             timestamp_ms: 1498358433377,
-            latitude_e7: 5207967334,
+            latitude_e7: 520796733,
             longitude_e7: 11965831,
             accuracy: 18,
             activitys: Some(vec![TimestampedActivity {
@@ -236,7 +236,7 @@ mod tests {
         });
         locations.insert(1498358433377, Location {
             timestamp_ms: 1498358433377,
-            latitude_e7: 5207967334,
+            latitude_e7: 520796733,
             longitude_e7: 11965831,
             accuracy: 18,
             activitys: Some(vec![TimestampedActivity {
@@ -250,7 +250,7 @@ mod tests {
         });
         locations.insert(1493657963571, Location {
             timestamp_ms: 1493657963571,
-            latitude_e7: 5205674674,
+            latitude_e7: 520567467,
             longitude_e7: 11485831,
             accuracy: 18,
             activitys: None,
@@ -273,7 +273,7 @@ mod tests {
         let mut locations: BTreeMap<i64, Location> = BTreeMap::new();
         locations.insert(1000, Location {
             timestamp_ms: 1000,
-            latitude_e7: 5207967334,
+            latitude_e7: 520796733,
             longitude_e7: 11965831,
             accuracy: 18,
             activitys: None,
@@ -290,14 +290,14 @@ mod tests {
         let mut locations: BTreeMap<i64, Location> = BTreeMap::new();
         locations.insert(3000, Location {
             timestamp_ms: 3000,
-            latitude_e7: 5207967334,
+            latitude_e7: 520796733,
             longitude_e7: 11965831,
             accuracy: 18,
             activitys: None,
         });
         locations.insert(6000, Location {
             timestamp_ms: 6000,
-            latitude_e7: 5205674674,
+            latitude_e7: 520567467,
             longitude_e7: 11485831,
             accuracy: 18,
             activitys: None,
@@ -314,14 +314,14 @@ mod tests {
         let mut locations: BTreeMap<i64, Location> = BTreeMap::new();
         locations.insert(1000, Location {
             timestamp_ms: 1000,
-            latitude_e7: 5207967334,
+            latitude_e7: 520796733,
             longitude_e7: 11965831,
             accuracy: 18,
             activitys: None,
         });
         locations.insert(3000, Location {
             timestamp_ms: 3000,
-            latitude_e7: 5207967334,
+            latitude_e7: 520796733,
             longitude_e7: 11965831,
             accuracy: 18,
             activitys: None,

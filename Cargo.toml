@@ -2,6 +2,7 @@
 name = "yore"
 version = "0.1.0"
 authors = ["Oliver Hamlet <oliver.hamlet@gmail.com>"]
+license = "MIT"
 
 [dependencies]
 chrono = "0.3"

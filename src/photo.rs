@@ -16,7 +16,7 @@ use coordinates;
 pub struct Photo {
     pub path: path::PathBuf,
     pub timestamp: i64,
-    pub location: coordinates::Coordinates,
+    pub location: Option<coordinates::Coordinates>,
 }
 
 #[derive(Debug)]
@@ -35,8 +35,8 @@ impl Photo {
             .map_err(PhotoError::ExifError)?;
 
         let mut date_time: Option<i64> = None;
-        let mut latitude: f64 = 0.0;
-        let mut longitude: f64 = 0.0;
+        let mut latitude: Option<f64> = None;
+        let mut longitude: Option<f64> = None;
         let mut latitude_sign: f64 = 1.0;
         let mut longitude_sign: f64 = 1.0;
         for entry in &exif.entries {
@@ -50,7 +50,7 @@ impl Photo {
                 },
                 rexif::ExifTag::GPSLatitude => {
                     if let rexif::TagValue::URational(ref x) = entry.value {
-                        latitude = Photo::to_decimal_coordinate(x);
+                        latitude = Some(Photo::to_decimal_coordinate(x));
                     }
                 },
                 rexif::ExifTag::GPSLatitudeRef => {
@@ -61,7 +61,7 @@ impl Photo {
                 },
                 rexif::ExifTag::GPSLongitude => {
                     if let rexif::TagValue::URational(ref x) = entry.value {
-                        longitude = Photo::to_decimal_coordinate(x);
+                        longitude = Some(Photo::to_decimal_coordinate(x));
                     }
                 },
                 rexif::ExifTag::GPSLongitudeRef => {
@@ -74,8 +74,13 @@ impl Photo {
             }
         }
 
-        latitude *= latitude_sign;
-        longitude *= longitude_sign;
+        let location: Option<coordinates::Coordinates>;
+        match (longitude, latitude) {
+            (Some(longitude), Some(latitude)) => {
+                location = Some(coordinates::Coordinates::new(latitude * latitude_sign, longitude * longitude_sign));
+            },
+            _ => location = None,
+        }
 
         match date_time {
             None => Err(PhotoError::TimestampMissing),
@@ -83,7 +88,7 @@ impl Photo {
                 Ok(Photo {
                     path: path.to_path_buf(),
                     timestamp,
-                    location: coordinates::Coordinates::new(latitude, longitude),
+                    location,
                 })
             }
         }
@@ -134,17 +139,17 @@ mod tests {
             let photo = Photo::new(path::Path::new("tests/assets/photo_without_gps.jpg")).unwrap();
 
             assert_eq!(1473158321, photo.timestamp);
-            assert_eq!(0.0, photo.location.latitude);
-            assert_eq!(0.0, photo.location.longitude);
+            assert_eq!(None, photo.location);
         }
 
         #[test]
         fn should_return_a_photo_object_with_the_image_timestamp_and_gps_from_exif_metadata() {
             let photo = Photo::new(path::Path::new("tests/assets/photo.jpg")).unwrap();
+            let location = photo.location.unwrap();
 
             assert_eq!(1473158321, photo.timestamp);
-            assert_eq!(38.76544, photo.location.latitude);
-            assert_eq!(-9.094802222222222, photo.location.longitude);
+            assert_eq!(38.76544, location.latitude);
+            assert_eq!(-9.094802222222222, location.longitude);
         }
     }
 }

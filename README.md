@@ -1,6 +1,8 @@
 Yore
 ====
 
+[![Build Status](https://www.travis-ci.org/WrinklyNinja/yore.svg?branch=master)](https://www.travis-ci.org/WrinklyNinja/yore)
+
 A utility for geotagging JPEG photos using your Google Location History data.
 
 Yore doesn't currently support writing EXIF tags, so locations will only be

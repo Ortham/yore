@@ -5,8 +5,14 @@ authors = ["Oliver Hamlet <oliver.hamlet@gmail.com>"]
 
 [dependencies]
 chrono = "0.3"
+clap = "2"
+memmap = "0.5.2"
 rexif = "0.3.3"
 serde = "1.0"
 serde_derive = "1.0"
 serde_json = "1.0"
 #serde-xml-rs = "0.1.2" # Requires Serde v0.9
+walkdir = "1"
+
+[dev-dependencies]
+tempdir = "0.3"

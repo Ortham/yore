@@ -1,0 +1,37 @@
+{
+  "locations" : [ {
+    "timestampMs" : "1498358433377",
+    "latitudeE7" : 520796733,
+    "longitudeE7" : 11965831,
+    "accuracy" : 18,
+    "activitys" : [ {
+      "timestampMs" : "1498358433377",
+      "activities" : [ {
+        "type" : "still",
+        "confidence" : 100
+      } ],
+      "extras" : [ {
+        "type" : "value",
+        "name" : "vehicle_personal_confidence",
+        "intVal" : 100
+      } ]
+    } ]
+  }, {
+    "timestampMs" : "1498358433377",
+    "latitudeE7" : 520796733,
+    "longitudeE7" : 11965831,
+    "accuracy" : 18,
+    "activitys" : [ {
+      "timestampMs" : "1498358433377",
+      "activities" : [ {
+        "type" : "still",
+        "confidence" : 100
+      } ]
+    } ]
+  }, {
+    "timestampMs" : "1493657963571",
+    "latitudeE7" : 520567467,
+    "longitudeE7" : 11485831,
+    "accuracy" : 18
+  } ]
+}

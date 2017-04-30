@@ -9,6 +9,12 @@ pub struct GoogleLocationHistory {
 }
 
 impl GoogleLocationHistory {
+    pub fn new() -> GoogleLocationHistory {
+        GoogleLocationHistory {
+            locations: BTreeMap::new(),
+        }
+    }
+
     pub fn get_most_likely_location(&self, mut timestamp: i64) -> Option<&Location> {
         timestamp *= 1000;
 

@@ -2,7 +2,7 @@
 
 use std::fmt;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct Coordinates {
     // Positive latitude values are at the equator or north of it, as per ISO 6709.
     pub latitude: f64,

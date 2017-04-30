@@ -2,8 +2,6 @@
 
 extern crate rexif;
 
-use std::error::Error;
-use std::io;
 use std::path;
 
 use chrono::offset::TimeZone;

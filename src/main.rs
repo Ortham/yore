@@ -60,7 +60,7 @@ fn process_photo(path: &Path, location_history: &GoogleLocationHistory) {
         Ok(PhotoLocation::Suggested(location, accuracy)) => {
             println!("{:?}:", path);
             println!("\tSuggested location: {}", location);
-            println!("\tSuggestion accuracy: {} metres", accuracy);
+            println!("\tSuggestion accuracy: {}", accuracy);
             println!("\tView on map: {}", location.map_url());
         },
         Ok(PhotoLocation::None) => {

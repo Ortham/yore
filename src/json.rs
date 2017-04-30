@@ -56,6 +56,10 @@ impl Location {
     pub fn coordinates(&self) -> coordinates::Coordinates {
         coordinates::Coordinates::new(self.latitude_e7 as f64 / 1e7, self.longitude_e7 as f64 / 1e7)
     }
+
+    pub fn timestamp(&self) -> i64 {
+        self.timestamp_ms / 1000 as i64
+    }
 }
 
 #[derive(Deserialize, PartialEq, Debug)]

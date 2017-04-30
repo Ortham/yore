@@ -11,6 +11,7 @@ extern crate serde_derive;
 pub mod json;
 pub mod photo;
 mod coordinates;
+mod suggestion_accuracy;
 
 use std::path::Path;
 use std::path::PathBuf;
@@ -21,6 +22,7 @@ use walkdir::WalkDir;
 pub use coordinates::Coordinates;
 pub use photo::Photo;
 pub use photo::PhotoError;
+pub use suggestion_accuracy::SuggestionAccuracy;
 
 #[derive(Debug)]
 pub enum HistoryError {
@@ -31,7 +33,7 @@ pub enum HistoryError {
 #[derive(Debug, PartialEq)]
 pub enum PhotoLocation {
     Existing(Coordinates),
-    Suggested(Coordinates, u16),
+    Suggested(Coordinates, SuggestionAccuracy),
     None,
 }
 
@@ -77,7 +79,13 @@ pub fn get_location_suggestion(path: &Path, location_history: &json::GoogleLocat
 
     match suggested_location {
         None => Ok(PhotoLocation::None),
-        Some(suggested_location) => Ok(PhotoLocation::Suggested(suggested_location.coordinates(), suggested_location.accuracy)),
+        Some(suggested_location) => {
+            let accuracy = SuggestionAccuracy {
+                space: suggested_location.accuracy,
+                time: suggested_location.timestamp() - photo.timestamp,
+            };
+            Ok(PhotoLocation::Suggested(suggested_location.coordinates(), accuracy))
+        },
     }
 }
 
@@ -213,6 +221,9 @@ mod tests {
         assert_eq!(PhotoLocation::Suggested(Coordinates {
             latitude: 52.0567467,
             longitude: 1.1485831,
-        }, 18), location.unwrap());
+        }, SuggestionAccuracy {
+            space: 18,
+            time: 20499642,
+        }), location.unwrap());
     }
 }

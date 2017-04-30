@@ -59,6 +59,7 @@ pub fn is_jpeg_file(path: &Path) -> bool {
 
 pub fn find_jpegs(root_directory: &Path) -> Vec<PathBuf> {
     WalkDir::new(root_directory)
+        .sort_by(|a,b| a.cmp(b))
         .into_iter()
         .filter_map(|e| e.ok())
         .map(|e| e.path().to_path_buf())

@@ -1,7 +1,9 @@
 use std::collections::BTreeMap;
 
+use coordinates;
+
 #[derive(Deserialize, PartialEq, Debug)]
-struct GoogleLocationHistory {
+pub struct GoogleLocationHistory {
     #[serde(deserialize_with = "locations_sequence::deserialize")]
     locations: BTreeMap<i64, Location>,
 }
@@ -40,8 +42,14 @@ pub struct Location {
     timestamp_ms: i64,
     latitude_e7: i64,
     longitude_e7: i64,
-    accuracy: u16,
+    pub accuracy: u16,
     activitys: Option<Vec<TimestampedActivity>>,
+}
+
+impl Location {
+    pub fn coordinates(&self) -> coordinates::Coordinates {
+        coordinates::Coordinates::new(self.latitude_e7 as f64 / 1e7, self.longitude_e7 as f64 / 1e7)
+    }
 }
 
 #[derive(Deserialize, PartialEq, Debug)]
@@ -331,5 +339,21 @@ mod tests {
         let location = ghl.get_most_likely_location(2).unwrap();
 
         assert_eq!(1000, location.timestamp_ms);
+    }
+
+    #[test]
+    fn coordinates_should_return_the_location_coordinates() {
+        let location = Location {
+            timestamp_ms: 1000,
+            latitude_e7: 520796733,
+            longitude_e7:  11965831,
+            accuracy: 18,
+            activitys: None,
+        };
+
+        let coordinates = location.coordinates();
+
+        assert_eq!(52.0796733, coordinates.latitude);
+        assert_eq!(1.1965831, coordinates.longitude);
     }
 }

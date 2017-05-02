@@ -1,14 +1,14 @@
 extern crate clap;
 extern crate yore;
 
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use clap::{Arg, App};
 
 use yore::find_jpegs;
 use yore::get_location_suggestion;
-use yore::json::GoogleLocationHistory;
 use yore::load_location_history;
+use yore::PhotoError;
 use yore::PhotoLocation;
 
 fn main() {
@@ -30,23 +30,29 @@ fn main() {
                  .help("The image or a directory of images to suggest a location for"))
         .get_matches();
 
-    let location_history_path = Path::new(matches.value_of("location_history").unwrap());
     let photo_path = Path::new(matches.value_of("INPUT").unwrap());
+    let photo_paths = photo_paths(photo_path);
 
+    let location_history_path = Path::new(matches.value_of("location_history").unwrap());
     let location_history = unsafe { load_location_history(location_history_path).unwrap() };
 
-    if photo_path.is_file() {
-        process_photo(photo_path, &location_history);
-    } else if photo_path.is_dir() {
-        for photo_path in find_jpegs(photo_path) {
-            process_photo(photo_path.as_path(), &location_history);
-        }
+    for photo_path in photo_paths {
+        let location = get_location_suggestion(photo_path.as_path(), &location_history);
+        print_location_suggestion(photo_path.as_path(), location);
     }
 }
 
-fn process_photo(path: &Path, location_history: &GoogleLocationHistory) {
-    let location = get_location_suggestion(path, location_history);
+fn photo_paths(root_path: &Path) -> Vec<PathBuf> {
+    if root_path.is_file() {
+        vec![root_path.to_path_buf()]
+    } else if root_path.is_dir() {
+        find_jpegs(root_path)
+    } else {
+        vec![]
+    }
+}
 
+fn print_location_suggestion(path: &Path, location: Result<PhotoLocation, PhotoError>) {
     match location {
         Err(e) => {
             println!("{:?}:", path);

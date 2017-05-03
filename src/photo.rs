@@ -94,7 +94,7 @@ impl Photo {
         }
     }
 
-    fn to_decimal_coordinate(dms: &Vec<rexif::URational>) -> f64 {
+    fn to_decimal_coordinate(dms: &[rexif::URational]) -> f64 {
         dms[0].value() + dms[1].value() / 60.0 + dms[2].value() / 3600.0
     }
 }

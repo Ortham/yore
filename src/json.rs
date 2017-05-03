@@ -2,17 +2,13 @@ use std::collections::BTreeMap;
 
 use coordinates;
 
-#[derive(Deserialize, PartialEq, Debug)]
+#[derive(Deserialize, PartialEq, Debug, Default)]
 pub struct GoogleLocationHistory {
     #[serde(deserialize_with = "locations_sequence::deserialize")]
     locations: BTreeMap<i64, Location>,
 }
 
 impl GoogleLocationHistory {
-    pub fn new() -> GoogleLocationHistory {
-        GoogleLocationHistory { locations: BTreeMap::new() }
-    }
-
     pub fn get_most_likely_location(&self, mut timestamp: i64) -> Option<&Location> {
         timestamp *= 1000;
 

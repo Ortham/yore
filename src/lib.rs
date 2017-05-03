@@ -163,7 +163,7 @@ mod tests {
 
     #[test]
     fn get_location_suggestion_should_error_if_passed_a_non_jpeg_file() {
-        let history = json::GoogleLocationHistory::new();
+        let history = json::GoogleLocationHistory::default();
         let location = get_location_suggestion(Path::new("Cargo.toml"), &history);
 
         assert!(location.is_err());
@@ -171,7 +171,7 @@ mod tests {
 
     #[test]
     fn get_location_suggestion_should_error_if_passed_a_jpeg_with_no_exif_metadata() {
-        let history = json::GoogleLocationHistory::new();
+        let history = json::GoogleLocationHistory::default();
         let path = Path::new("tests/assets/photo_without_exif.jpg");
         let location = get_location_suggestion(path, &history);
 
@@ -180,7 +180,7 @@ mod tests {
 
     #[test]
     fn get_location_suggestion_should_error_if_passed_a_jpeg_with_no_timestamp_metadata() {
-        let history = json::GoogleLocationHistory::new();
+        let history = json::GoogleLocationHistory::default();
         let path = Path::new("tests/assets/photo_without_timestamp.jpg");
         let location = get_location_suggestion(path, &history);
 
@@ -189,7 +189,7 @@ mod tests {
 
     #[test]
     fn get_location_suggestion_should_return_none_if_the_location_history_is_empty() {
-        let history = json::GoogleLocationHistory::new();
+        let history = json::GoogleLocationHistory::default();
         let path = Path::new("tests/assets/photo_without_gps.jpg");
         let location = get_location_suggestion(path, &history);
 
@@ -198,7 +198,7 @@ mod tests {
 
     #[test]
     fn get_location_suggestion_should_return_existing_if_the_photo_has_gps_metadata() {
-        let history = json::GoogleLocationHistory::new();
+        let history = json::GoogleLocationHistory::default();
         let path = Path::new("tests/assets/photo.jpg");
         let location = get_location_suggestion(path, &history);
 

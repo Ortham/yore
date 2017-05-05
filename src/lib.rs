@@ -8,7 +8,7 @@ extern crate walkdir;
 #[macro_use]
 extern crate serde_derive;
 
-pub mod json;
+pub mod golo;
 pub mod photo;
 mod coordinates;
 mod suggestion_accuracy;
@@ -16,34 +16,19 @@ mod suggestion_accuracy;
 use std::path::Path;
 use std::path::PathBuf;
 
-use memmap::{Mmap, Protection};
 use walkdir::WalkDir;
 
 pub use coordinates::Coordinates;
+use golo::GoogleLocationHistory;
 pub use photo::Photo;
 pub use photo::PhotoError;
 pub use suggestion_accuracy::SuggestionAccuracy;
-
-#[derive(Debug)]
-pub enum HistoryError {
-    DeserializeError(serde_json::Error),
-    IOError(std::io::Error),
-}
 
 #[derive(Debug, PartialEq)]
 pub enum PhotoLocation {
     Existing(Coordinates),
     Suggested(Coordinates, SuggestionAccuracy),
     None,
-}
-
-pub unsafe fn load_location_history(path: &Path)
-                                    -> Result<json::GoogleLocationHistory, HistoryError> {
-    let mmap_view = Mmap::open_path(path, Protection::Read)
-        .map_err(HistoryError::IOError)?
-        .into_view();
-
-    serde_json::from_slice(mmap_view.as_slice()).map_err(HistoryError::DeserializeError)
 }
 
 pub fn is_jpeg_file(path: &Path) -> bool {
@@ -68,7 +53,7 @@ pub fn find_jpegs(root_directory: &Path) -> Vec<PathBuf> {
 }
 
 pub fn get_location_suggestion(path: &Path,
-                               location_history: &json::GoogleLocationHistory)
+                               location_history: &GoogleLocationHistory)
                                -> Result<PhotoLocation, PhotoError> {
     let photo = Photo::new(path)?;
 
@@ -163,7 +148,7 @@ mod tests {
 
     #[test]
     fn get_location_suggestion_should_error_if_passed_a_non_jpeg_file() {
-        let history = json::GoogleLocationHistory::default();
+        let history = GoogleLocationHistory::default();
         let location = get_location_suggestion(Path::new("Cargo.toml"), &history);
 
         assert!(location.is_err());
@@ -171,7 +156,7 @@ mod tests {
 
     #[test]
     fn get_location_suggestion_should_error_if_passed_a_jpeg_with_no_exif_metadata() {
-        let history = json::GoogleLocationHistory::default();
+        let history = GoogleLocationHistory::default();
         let path = Path::new("tests/assets/photo_without_exif.jpg");
         let location = get_location_suggestion(path, &history);
 
@@ -180,7 +165,7 @@ mod tests {
 
     #[test]
     fn get_location_suggestion_should_error_if_passed_a_jpeg_with_no_timestamp_metadata() {
-        let history = json::GoogleLocationHistory::default();
+        let history = GoogleLocationHistory::default();
         let path = Path::new("tests/assets/photo_without_timestamp.jpg");
         let location = get_location_suggestion(path, &history);
 
@@ -189,7 +174,7 @@ mod tests {
 
     #[test]
     fn get_location_suggestion_should_return_none_if_the_location_history_is_empty() {
-        let history = json::GoogleLocationHistory::default();
+        let history = GoogleLocationHistory::default();
         let path = Path::new("tests/assets/photo_without_gps.jpg");
         let location = get_location_suggestion(path, &history);
 
@@ -198,7 +183,7 @@ mod tests {
 
     #[test]
     fn get_location_suggestion_should_return_existing_if_the_photo_has_gps_metadata() {
-        let history = json::GoogleLocationHistory::default();
+        let history = GoogleLocationHistory::default();
         let path = Path::new("tests/assets/photo.jpg");
         let location = get_location_suggestion(path, &history);
 
@@ -212,7 +197,7 @@ mod tests {
     #[test]
     fn get_location_suggestion_should_return_suggested_if_a_suggestion_is_possible() {
         let history = unsafe {
-            load_location_history(Path::new("tests/assets/location_history.json")).unwrap()
+            golo::load_location_history(Path::new("tests/assets/location_history.json")).unwrap()
         };
         let path = Path::new("tests/assets/photo_without_gps.jpg");
         let location = get_location_suggestion(path, &history);

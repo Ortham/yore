@@ -7,7 +7,7 @@ use clap::{Arg, App};
 
 use yore::find_jpegs;
 use yore::get_location_suggestion;
-use yore::load_location_history;
+use yore::golo::load_location_history;
 use yore::PhotoError;
 use yore::PhotoLocation;
 

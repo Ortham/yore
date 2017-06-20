@@ -1,5 +1,6 @@
 
 extern crate chrono;
+extern crate exif;
 extern crate memmap;
 extern crate serde;
 extern crate serde_json;

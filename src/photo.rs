@@ -1,12 +1,15 @@
 //#![deny(warnings)]
 
-extern crate rexif;
-
+use std::fs;
+use std::io;
 use std::path;
 
 use chrono::offset::TimeZone;
 use chrono::offset::utc::UTC;
 use chrono::format::ParseError;
+
+use exif;
+use exif::tag;
 
 use coordinates;
 
@@ -19,17 +22,17 @@ pub struct Photo {
 
 #[derive(Debug)]
 pub enum PhotoError {
-    PathEncodingError,
-    ExifError(rexif::ExifError),
+    ExifError(exif::Error),
+    IOError(io::Error),
     TimestampFormatError(ParseError),
     TimestampMissing,
 }
 
 impl Photo {
     pub fn new(path: &path::Path) -> Result<Photo, PhotoError> {
-        let unicode_path = path.to_str().ok_or(PhotoError::PathEncodingError)?;
+        let file = fs::File::open(path).map_err(PhotoError::IOError)?;
 
-        let exif = rexif::parse_file(unicode_path).map_err(
+        let reader = exif::Reader::new(&mut io::BufReader::new(&file)).map_err(
             PhotoError::ExifError,
         )?;
 
@@ -38,37 +41,39 @@ impl Photo {
         let mut longitude: Option<f64> = None;
         let mut latitude_sign: f64 = 1.0;
         let mut longitude_sign: f64 = 1.0;
-        for entry in &exif.entries {
-            match entry.tag {
-                rexif::ExifTag::DateTimeOriginal |
-                rexif::ExifTag::DateTime => {
-                    if let rexif::TagValue::Ascii(ref x) = entry.value {
+        for field in reader.fields() {
+            match field.tag {
+                tag::DateTimeOriginal | tag::DateTime => {
+                    if let exif::Value::Ascii(_) = field.value {
+                        let string_value = format!("{}", field.value.display_as(field.tag));
                         date_time = Some(
-                            UTC.datetime_from_str(x, "%Y:%m:%d %T")
+                            UTC.datetime_from_str(string_value.as_str(), "%F %T")
                                 .map_err(PhotoError::TimestampFormatError)?
                                 .timestamp(),
                         );
                     }
                 }
-                rexif::ExifTag::GPSLatitude => {
-                    if let rexif::TagValue::URational(ref x) = entry.value {
+                tag::GPSLatitude => {
+                    if let exif::Value::Rational(ref x) = field.value {
                         latitude = Some(Photo::to_decimal_coordinate(x));
                     }
                 }
-                rexif::ExifTag::GPSLatitudeRef => {
-                    match entry.value_more_readable.as_str() {
-                        "S" => latitude_sign = -1.0,
+                tag::GPSLatitudeRef => {
+                    let string_value = format!("{}", field.value.display_as(field.tag));
+                    match string_value.as_str() {
+                        "\"S\"" => latitude_sign = -1.0,
                         _ => {}
                     }
                 }
-                rexif::ExifTag::GPSLongitude => {
-                    if let rexif::TagValue::URational(ref x) = entry.value {
+                tag::GPSLongitude => {
+                    if let exif::Value::Rational(ref x) = field.value {
                         longitude = Some(Photo::to_decimal_coordinate(x));
                     }
                 }
-                rexif::ExifTag::GPSLongitudeRef => {
-                    match entry.value_more_readable.as_str() {
-                        "W" => longitude_sign = -1.0,
+                tag::GPSLongitudeRef => {
+                    let string_value = format!("{}", field.value.display_as(field.tag));
+                    match string_value.as_str() {
+                        "\"W\"" => longitude_sign = -1.0,
                         _ => {}
                     }
                 }
@@ -99,8 +104,8 @@ impl Photo {
         }
     }
 
-    fn to_decimal_coordinate(dms: &[rexif::URational]) -> f64 {
-        dms[0].value() + dms[1].value() / 60.0 + dms[2].value() / 3600.0
+    fn to_decimal_coordinate(dms: &[exif::Rational]) -> f64 {
+        dms[0].to_f64() + dms[1].to_f64() / 60.0 + dms[2].to_f64() / 3600.0
     }
 }
 

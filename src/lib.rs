@@ -52,9 +52,10 @@ pub fn find_jpegs(root_directory: &Path) -> Vec<PathBuf> {
         .collect()
 }
 
-pub fn get_location_suggestion(path: &Path,
-                               location_history: &GoogleLocationHistory)
-                               -> Result<PhotoLocation, PhotoError> {
+pub fn get_location_suggestion(
+    path: &Path,
+    location_history: &GoogleLocationHistory,
+) -> Result<PhotoLocation, PhotoError> {
     let photo = Photo::new(path)?;
 
     if let Some(location) = photo.location {
@@ -70,7 +71,10 @@ pub fn get_location_suggestion(path: &Path,
                 space: suggested_location.accuracy,
                 time: suggested_location.timestamp() - photo.timestamp,
             };
-            Ok(PhotoLocation::Suggested(suggested_location.coordinates(), accuracy))
+            Ok(PhotoLocation::Suggested(
+                suggested_location.coordinates(),
+                accuracy,
+            ))
         }
     }
 }
@@ -187,11 +191,13 @@ mod tests {
         let path = Path::new("tests/assets/photo.jpg");
         let location = get_location_suggestion(path, &history);
 
-        assert_eq!(PhotoLocation::Existing(Coordinates {
-                                               latitude: 38.76544,
-                                               longitude: -9.094802222222222,
-                                           }),
-                   location.unwrap());
+        assert_eq!(
+            PhotoLocation::Existing(Coordinates {
+                latitude: 38.76544,
+                longitude: -9.094802222222222,
+            }),
+            location.unwrap()
+        );
     }
 
     #[test]
@@ -202,14 +208,18 @@ mod tests {
         let path = Path::new("tests/assets/photo_without_gps.jpg");
         let location = get_location_suggestion(path, &history);
 
-        assert_eq!(PhotoLocation::Suggested(Coordinates {
-                                                latitude: 52.0567467,
-                                                longitude: 1.1485831,
-                                            },
-                                            SuggestionAccuracy {
-                                                space: 18,
-                                                time: 20499642,
-                                            }),
-                   location.unwrap());
+        assert_eq!(
+            PhotoLocation::Suggested(
+                Coordinates {
+                    latitude: 52.0567467,
+                    longitude: 1.1485831,
+                },
+                SuggestionAccuracy {
+                    space: 18,
+                    time: 20499642,
+                },
+            ),
+            location.unwrap()
+        );
     }
 }

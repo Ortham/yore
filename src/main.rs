@@ -14,20 +14,23 @@ use yore::PhotoLocation;
 fn main() {
     let matches = App::new("yore")
         .version(env!("CARGO_PKG_VERSION"))
-        .about("Yore uses an exported Google Location History JSON file to suggest locations for
-            images")
+        .about(
+            "Yore uses an exported Google Location History JSON file to suggest locations for
+            images",
+        )
         .author("Oliver Hamlet")
-        .arg(Arg::with_name("location_history")
-                 .long("locations")
-                 .short("l")
-                 .value_name("FILE")
-                 .takes_value(true)
-                 .required(true)
-                 .help("The path to a Google Location History JSON file"))
-        .arg(Arg::with_name("INPUT")
-                 .required(true)
-                 .index(1)
-                 .help("The image or a directory of images to suggest a location for"))
+        .arg(
+            Arg::with_name("location_history")
+                .long("locations")
+                .short("l")
+                .value_name("FILE")
+                .takes_value(true)
+                .required(true)
+                .help("The path to a Google Location History JSON file"),
+        )
+        .arg(Arg::with_name("INPUT").required(true).index(1).help(
+            "The image or a directory of images to suggest a location for",
+        ))
         .get_matches();
 
     let photo_path = Path::new(matches.value_of("INPUT").unwrap());

@@ -48,8 +48,10 @@ pub struct Location {
 
 impl Location {
     pub fn coordinates(&self) -> coordinates::Coordinates {
-        coordinates::Coordinates::new(self.latitude_e7 as f64 / 1e7,
-                                      self.longitude_e7 as f64 / 1e7)
+        coordinates::Coordinates::new(
+            self.latitude_e7 as f64 / 1e7,
+            self.longitude_e7 as f64 / 1e7,
+        )
     }
 
     pub fn timestamp(&self) -> i64 {
@@ -116,11 +118,14 @@ mod locations_sequence {
     use super::Location;
 
     pub fn deserialize<'de, D>(deserializer: D) -> Result<BTreeMap<i64, Location>, D::Error>
-        where D: Deserializer<'de>
+    where
+        D: Deserializer<'de>,
     {
         let locations: Vec<Location> = Vec::deserialize(deserializer)?;
 
-        Ok(BTreeMap::from_iter(locations.into_iter().map(|l| (l.timestamp_ms, l))))
+        Ok(BTreeMap::from_iter(
+            locations.into_iter().map(|l| (l.timestamp_ms, l)),
+        ))
     }
 }
 
@@ -128,11 +133,12 @@ mod i64_string {
     use serde::{de, Deserialize, Deserializer};
 
     pub fn deserialize<'de, D>(deserializer: D) -> Result<i64, D::Error>
-        where D: Deserializer<'de>
+    where
+        D: Deserializer<'de>,
     {
-        String::deserialize(deserializer)?
-            .parse::<i64>()
-            .map_err(de::Error::custom)
+        String::deserialize(deserializer)?.parse::<i64>().map_err(
+            de::Error::custom,
+        )
     }
 }
 
@@ -141,20 +147,21 @@ mod activity_type_string {
     use serde::{Deserialize, Deserializer};
 
     pub fn deserialize<'de, D>(deserializer: D) -> Result<ActivityType, D::Error>
-        where D: Deserializer<'de>
+    where
+        D: Deserializer<'de>,
     {
         Ok(match String::deserialize(deserializer)?.as_ref() {
-               "exitingVehicle" => ActivityType::ExitingVehicle,
-               "inVehicle" => ActivityType::InVehicle,
-               "onBicycle" => ActivityType::OnBicycle,
-               "onFoot" => ActivityType::OnFoot,
-               "running" => ActivityType::Running,
-               "still" => ActivityType::Still,
-               "tilting" => ActivityType::Tilting,
-               "unknown" => ActivityType::Unknown,
-               "walking" => ActivityType::Walking,
-               x => ActivityType::Other(x.to_string()),
-           })
+            "exitingVehicle" => ActivityType::ExitingVehicle,
+            "inVehicle" => ActivityType::InVehicle,
+            "onBicycle" => ActivityType::OnBicycle,
+            "onFoot" => ActivityType::OnFoot,
+            "running" => ActivityType::Running,
+            "still" => ActivityType::Still,
+            "tilting" => ActivityType::Tilting,
+            "unknown" => ActivityType::Unknown,
+            "walking" => ActivityType::Walking,
+            x => ActivityType::Other(x.to_string()),
+        })
     }
 }
 
@@ -163,12 +170,13 @@ mod extra_type_string {
     use serde::{Deserialize, Deserializer};
 
     pub fn deserialize<'de, D>(deserializer: D) -> Result<ExtraType, D::Error>
-        where D: Deserializer<'de>
+    where
+        D: Deserializer<'de>,
     {
         Ok(match String::deserialize(deserializer)?.as_ref() {
-               "value" => ExtraType::Value,
-               x => ExtraType::Other(x.to_string()),
-           })
+            "value" => ExtraType::Value,
+            x => ExtraType::Other(x.to_string()),
+        })
     }
 }
 
@@ -177,12 +185,13 @@ mod extra_name_string {
     use serde::{Deserialize, Deserializer};
 
     pub fn deserialize<'de, D>(deserializer: D) -> Result<ExtraName, D::Error>
-        where D: Deserializer<'de>
+    where
+        D: Deserializer<'de>,
     {
         Ok(match String::deserialize(deserializer)?.as_ref() {
-               "vehicle_personal_confidence" => ExtraName::VehiclePersonalConfidence,
-               x => ExtraName::Other(x.to_string()),
-           })
+            "vehicle_personal_confidence" => ExtraName::VehiclePersonalConfidence,
+            x => ExtraName::Other(x.to_string()),
+        })
     }
 }
 
@@ -236,50 +245,64 @@ mod tests {
         let glh: GoogleLocationHistory = serde_json::from_str(s).unwrap();
 
         let mut locations: BTreeMap<i64, Location> = BTreeMap::new();
-        locations.insert(1498358433377,
-                         Location {
-                             timestamp_ms: 1498358433377,
-                             latitude_e7: 520796733,
-                             longitude_e7: 11965831,
-                             accuracy: 18,
-                             activitys: Some(vec![TimestampedActivity {
-                                                      timestamp_ms: 1498358433377,
-                                                      activities: vec![Activity {
-                                                                           activity_type:
-                                                                               ActivityType::Still,
-                                                                           confidence: 100,
-                                                                       }],
-                                                      extras: Some(vec![Extra {
-                    extra_type: ExtraType::Value,
-                    name: ExtraName::VehiclePersonalConfidence,
-                    int_val: 100,
-                }]),
-                                                  }]),
-                         });
-        locations.insert(1498358433377,
-                         Location {
-                             timestamp_ms: 1498358433377,
-                             latitude_e7: 520796733,
-                             longitude_e7: 11965831,
-                             accuracy: 18,
-                             activitys: Some(vec![TimestampedActivity {
-                                                      timestamp_ms: 1498358433377,
-                                                      activities: vec![Activity {
-                                                                           activity_type:
-                                                                               ActivityType::Still,
-                                                                           confidence: 100,
-                                                                       }],
-                                                      extras: None,
-                                                  }]),
-                         });
-        locations.insert(1493657963571,
-                         Location {
-                             timestamp_ms: 1493657963571,
-                             latitude_e7: 520567467,
-                             longitude_e7: 11485831,
-                             accuracy: 18,
-                             activitys: None,
-                         });
+        locations.insert(
+            1498358433377,
+            Location {
+                timestamp_ms: 1498358433377,
+                latitude_e7: 520796733,
+                longitude_e7: 11965831,
+                accuracy: 18,
+                activitys: Some(vec![
+                    TimestampedActivity {
+                        timestamp_ms: 1498358433377,
+                        activities: vec![
+                            Activity {
+                                activity_type: ActivityType::Still,
+                                confidence: 100,
+                            },
+                        ],
+                        extras: Some(vec![
+                            Extra {
+                                extra_type: ExtraType::Value,
+                                name: ExtraName::VehiclePersonalConfidence,
+                                int_val: 100,
+                            },
+                        ]),
+                    },
+                ]),
+            },
+        );
+        locations.insert(
+            1498358433377,
+            Location {
+                timestamp_ms: 1498358433377,
+                latitude_e7: 520796733,
+                longitude_e7: 11965831,
+                accuracy: 18,
+                activitys: Some(vec![
+                    TimestampedActivity {
+                        timestamp_ms: 1498358433377,
+                        activities: vec![
+                            Activity {
+                                activity_type: ActivityType::Still,
+                                confidence: 100,
+                            },
+                        ],
+                        extras: None,
+                    },
+                ]),
+            },
+        );
+        locations.insert(
+            1493657963571,
+            Location {
+                timestamp_ms: 1493657963571,
+                latitude_e7: 520567467,
+                longitude_e7: 11485831,
+                accuracy: 18,
+                activitys: None,
+            },
+        );
 
         assert_eq!(glh, GoogleLocationHistory { locations });
     }
@@ -296,14 +319,16 @@ mod tests {
     #[test]
     fn get_most_likely_location_should_return_the_location_with_a_matching_timestamp() {
         let mut locations: BTreeMap<i64, Location> = BTreeMap::new();
-        locations.insert(1000,
-                         Location {
-                             timestamp_ms: 1000,
-                             latitude_e7: 520796733,
-                             longitude_e7: 11965831,
-                             accuracy: 18,
-                             activitys: None,
-                         });
+        locations.insert(
+            1000,
+            Location {
+                timestamp_ms: 1000,
+                latitude_e7: 520796733,
+                longitude_e7: 11965831,
+                accuracy: 18,
+                activitys: None,
+            },
+        );
         let ghl = GoogleLocationHistory { locations };
 
         let location = ghl.get_most_likely_location(1).unwrap();
@@ -314,22 +339,26 @@ mod tests {
     #[test]
     fn get_most_likely_location_should_return_the_location_at_the_closest_timestamp() {
         let mut locations: BTreeMap<i64, Location> = BTreeMap::new();
-        locations.insert(3000,
-                         Location {
-                             timestamp_ms: 3000,
-                             latitude_e7: 520796733,
-                             longitude_e7: 11965831,
-                             accuracy: 18,
-                             activitys: None,
-                         });
-        locations.insert(6000,
-                         Location {
-                             timestamp_ms: 6000,
-                             latitude_e7: 520567467,
-                             longitude_e7: 11485831,
-                             accuracy: 18,
-                             activitys: None,
-                         });
+        locations.insert(
+            3000,
+            Location {
+                timestamp_ms: 3000,
+                latitude_e7: 520796733,
+                longitude_e7: 11965831,
+                accuracy: 18,
+                activitys: None,
+            },
+        );
+        locations.insert(
+            6000,
+            Location {
+                timestamp_ms: 6000,
+                latitude_e7: 520567467,
+                longitude_e7: 11485831,
+                accuracy: 18,
+                activitys: None,
+            },
+        );
         let ghl = GoogleLocationHistory { locations };
 
         let location = ghl.get_most_likely_location(4).unwrap();
@@ -340,22 +369,26 @@ mod tests {
     #[test]
     fn get_most_likely_location_should_return_the_older_location_if_exactly_between_two() {
         let mut locations: BTreeMap<i64, Location> = BTreeMap::new();
-        locations.insert(1000,
-                         Location {
-                             timestamp_ms: 1000,
-                             latitude_e7: 520796733,
-                             longitude_e7: 11965831,
-                             accuracy: 18,
-                             activitys: None,
-                         });
-        locations.insert(3000,
-                         Location {
-                             timestamp_ms: 3000,
-                             latitude_e7: 520796733,
-                             longitude_e7: 11965831,
-                             accuracy: 18,
-                             activitys: None,
-                         });
+        locations.insert(
+            1000,
+            Location {
+                timestamp_ms: 1000,
+                latitude_e7: 520796733,
+                longitude_e7: 11965831,
+                accuracy: 18,
+                activitys: None,
+            },
+        );
+        locations.insert(
+            3000,
+            Location {
+                timestamp_ms: 3000,
+                latitude_e7: 520796733,
+                longitude_e7: 11965831,
+                accuracy: 18,
+                activitys: None,
+            },
+        );
         let ghl = GoogleLocationHistory { locations };
 
         let location = ghl.get_most_likely_location(2).unwrap();

@@ -15,8 +15,7 @@ pub enum HistoryError {
     IOError(io::Error),
 }
 
-pub unsafe fn load_location_history(path: &Path)
-                                    -> Result<GoogleLocationHistory, HistoryError> {
+pub unsafe fn load_location_history(path: &Path) -> Result<GoogleLocationHistory, HistoryError> {
     let mmap_view = Mmap::open_path(path, Protection::Read)
         .map_err(HistoryError::IOError)?
         .into_view();

@@ -29,8 +29,9 @@ impl Photo {
     pub fn new(path: &path::Path) -> Result<Photo, PhotoError> {
         let unicode_path = path.to_str().ok_or(PhotoError::PathEncodingError)?;
 
-        let exif = rexif::parse_file(unicode_path)
-            .map_err(PhotoError::ExifError)?;
+        let exif = rexif::parse_file(unicode_path).map_err(
+            PhotoError::ExifError,
+        )?;
 
         let mut date_time: Option<i64> = None;
         let mut latitude: Option<f64> = None;
@@ -42,9 +43,11 @@ impl Photo {
                 rexif::ExifTag::DateTimeOriginal |
                 rexif::ExifTag::DateTime => {
                     if let rexif::TagValue::Ascii(ref x) = entry.value {
-                        date_time = Some(UTC.datetime_from_str(x, "%Y:%m:%d %T")
-                                             .map_err(PhotoError::TimestampFormatError)?
-                                             .timestamp());
+                        date_time = Some(
+                            UTC.datetime_from_str(x, "%Y:%m:%d %T")
+                                .map_err(PhotoError::TimestampFormatError)?
+                                .timestamp(),
+                        );
                     }
                 }
                 rexif::ExifTag::GPSLatitude => {
@@ -76,8 +79,10 @@ impl Photo {
         let location: Option<coordinates::Coordinates>;
         match (longitude, latitude) {
             (Some(longitude), Some(latitude)) => {
-                location = Some(coordinates::Coordinates::new(latitude * latitude_sign,
-                                                              longitude * longitude_sign));
+                location = Some(coordinates::Coordinates::new(
+                    latitude * latitude_sign,
+                    longitude * longitude_sign,
+                ));
             }
             _ => location = None,
         }
@@ -86,10 +91,10 @@ impl Photo {
             None => Err(PhotoError::TimestampMissing),
             Some(timestamp) => {
                 Ok(Photo {
-                       path: path.to_path_buf(),
-                       timestamp,
-                       location,
-                   })
+                    path: path.to_path_buf(),
+                    timestamp,
+                    location,
+                })
             }
         }
     }

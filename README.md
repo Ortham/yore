@@ -2,6 +2,7 @@ Yore
 ====
 
 [![Build Status](https://www.travis-ci.org/WrinklyNinja/yore.svg?branch=master)](https://www.travis-ci.org/WrinklyNinja/yore)
+[![Coveralls branch](https://img.shields.io/coveralls/WrinklyNinja/yore/master.svg)](https://coveralls.io/github/WrinklyNinja/yore)
 
 A utility for geotagging JPEG photos using your Google Location History data.
 

@@ -1,9 +1,9 @@
 extern crate serde_json;
 
 use std::io;
-use std::path::Path;
+use std::fs::File;
 
-use memmap::{Mmap, Protection};
+use memmap::Mmap;
 
 pub mod json;
 
@@ -15,10 +15,8 @@ pub enum HistoryError {
     IOError(io::Error),
 }
 
-pub unsafe fn load_location_history(path: &Path) -> Result<GoogleLocationHistory, HistoryError> {
-    let mmap_view = Mmap::open_path(path, Protection::Read)
-        .map_err(HistoryError::IOError)?
-        .into_view();
+pub unsafe fn load_location_history(file: &File) -> Result<GoogleLocationHistory, HistoryError> {
+    let mmap = Mmap::map(file).map_err(HistoryError::IOError)?;
 
-    serde_json::from_slice(mmap_view.as_slice()).map_err(HistoryError::DeserializeError)
+    serde_json::from_slice(&mmap).map_err(HistoryError::DeserializeError)
 }

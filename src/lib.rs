@@ -45,7 +45,7 @@ pub fn is_jpeg_file(path: &Path) -> bool {
 
 pub fn find_jpegs(root_directory: &Path) -> Vec<PathBuf> {
     WalkDir::new(root_directory)
-        .sort_by(|a, b| a.cmp(b))
+        .sort_by(|a, b| a.file_name().cmp(b.file_name()))
         .into_iter()
         .filter_map(|e| e.ok())
         .map(|e| e.path().to_path_buf())
@@ -86,8 +86,7 @@ mod tests {
 
     use super::*;
 
-    use std::fs::copy;
-    use std::fs::create_dir_all;
+    use std::fs::{copy, create_dir_all, File};
 
     use self::tempdir::TempDir;
 
@@ -204,7 +203,8 @@ mod tests {
     #[test]
     fn get_location_suggestion_should_return_suggested_if_a_suggestion_is_possible() {
         let history = unsafe {
-            golo::load_location_history(Path::new("tests/assets/location_history.json")).unwrap()
+            golo::load_location_history(&File::open("tests/assets/location_history.json").unwrap())
+                .unwrap()
         };
         let path = Path::new("tests/assets/photo_without_gps.jpg");
         let location = get_location_suggestion(path, &history);

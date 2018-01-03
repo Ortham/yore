@@ -5,11 +5,11 @@ use std::io;
 use std::path;
 
 use chrono::offset::TimeZone;
-use chrono::offset::utc::UTC;
+use chrono::offset::Utc;
 use chrono::format::ParseError;
 
 use exif;
-use exif::tag;
+use exif::Tag;
 
 use coordinates;
 
@@ -43,37 +43,37 @@ impl Photo {
         let mut longitude_sign: f64 = 1.0;
         for field in reader.fields() {
             match field.tag {
-                tag::DateTimeOriginal | tag::DateTime => {
+                Tag::DateTimeOriginal | Tag::DateTime => {
                     if let exif::Value::Ascii(_) = field.value {
                         let string_value = format!("{}", field.value.display_as(field.tag));
                         date_time = Some(
-                            UTC.datetime_from_str(string_value.as_str(), "%F %T")
+                            Utc.datetime_from_str(string_value.as_str(), "%F %T")
                                 .map_err(PhotoError::TimestampFormatError)?
                                 .timestamp(),
                         );
                     }
                 }
-                tag::GPSLatitude => {
+                Tag::GPSLatitude => {
                     if let exif::Value::Rational(ref x) = field.value {
                         latitude = Some(Photo::to_decimal_coordinate(x));
                     }
                 }
-                tag::GPSLatitudeRef => {
+                Tag::GPSLatitudeRef => {
                     let string_value = format!("{}", field.value.display_as(field.tag));
                     match string_value.as_str() {
-                        "\"S\"" => latitude_sign = -1.0,
+                        "S" => latitude_sign = -1.0,
                         _ => {}
                     }
                 }
-                tag::GPSLongitude => {
+                Tag::GPSLongitude => {
                     if let exif::Value::Rational(ref x) = field.value {
                         longitude = Some(Photo::to_decimal_coordinate(x));
                     }
                 }
-                tag::GPSLongitudeRef => {
+                Tag::GPSLongitudeRef => {
                     let string_value = format!("{}", field.value.display_as(field.tag));
                     match string_value.as_str() {
-                        "\"W\"" => longitude_sign = -1.0,
+                        "W" => longitude_sign = -1.0,
                         _ => {}
                     }
                 }

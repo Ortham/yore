@@ -1,6 +1,7 @@
 extern crate clap;
 extern crate yore;
 
+use std::fs::File;
 use std::path::{Path, PathBuf};
 
 use clap::{Arg, App};
@@ -36,8 +37,8 @@ fn main() {
     let photo_path = Path::new(matches.value_of("INPUT").unwrap());
     let photo_paths = photo_paths(photo_path);
 
-    let location_history_path = Path::new(matches.value_of("location_history").unwrap());
-    let location_history = unsafe { load_location_history(location_history_path).unwrap() };
+    let location_history_file = File::open(matches.value_of("location_history").unwrap()).unwrap();
+    let location_history = unsafe { load_location_history(&location_history_file).unwrap() };
 
     for photo_path in photo_paths {
         let location = get_location_suggestion(photo_path.as_path(), &location_history);

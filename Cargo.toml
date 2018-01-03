@@ -5,15 +5,15 @@ authors = ["Oliver Hamlet <oliver.hamlet@gmail.com>"]
 license = "MIT"
 
 [dependencies]
-chrono = "0.3"
+chrono = "0.4"
 clap = "2"
-memmap = "0.5.2"
-kamadak-exif = "0.2.2"
+memmap = "0.6"
+kamadak-exif = "0.3"
 serde = "1.0"
 serde_derive = "1.0"
 serde_json = "1.0"
 #serde-xml-rs = "0.2.0" # KML parsing isn't currently used or finished.
-walkdir = "1"
+walkdir = "2"
 
 [dev-dependencies]
 tempdir = "0.3"

@@ -56,6 +56,7 @@ pub fn find_jpegs(root_directory: &Path) -> Vec<PathBuf> {
 pub fn get_location_suggestion(
     path: &Path,
     location_history: &GoogleLocationHistory,
+    interpolate: bool,
 ) -> Result<PhotoLocation, PhotoError> {
     let photo = Photo::new(path)?;
 
@@ -63,7 +64,13 @@ pub fn get_location_suggestion(
         return Ok(PhotoLocation::Existing(location.clone()));
     }
 
-    let suggested_location = location_history.get_most_likely_location(photo.timestamp());
+    let suggested_location = if interpolate {
+        location_history.interpolate_location(photo.timestamp())
+    } else {
+        location_history
+            .get_most_likely_location(photo.timestamp())
+            .cloned()
+    };
 
     match suggested_location {
         None => Ok(PhotoLocation::None),
@@ -153,7 +160,7 @@ mod tests {
     #[test]
     fn get_location_suggestion_should_error_if_passed_a_non_jpeg_file() {
         let history = GoogleLocationHistory::default();
-        let location = get_location_suggestion(Path::new("Cargo.toml"), &history);
+        let location = get_location_suggestion(Path::new("Cargo.toml"), &history, false);
 
         assert!(location.is_err());
     }
@@ -162,7 +169,7 @@ mod tests {
     fn get_location_suggestion_should_error_if_passed_a_jpeg_with_no_exif_metadata() {
         let history = GoogleLocationHistory::default();
         let path = Path::new("tests/assets/photo_without_exif.jpg");
-        let location = get_location_suggestion(path, &history);
+        let location = get_location_suggestion(path, &history, false);
 
         assert!(location.is_err());
     }
@@ -171,7 +178,7 @@ mod tests {
     fn get_location_suggestion_should_error_if_passed_a_jpeg_with_no_timestamp_metadata() {
         let history = GoogleLocationHistory::default();
         let path = Path::new("tests/assets/photo_without_timestamp.jpg");
-        let location = get_location_suggestion(path, &history);
+        let location = get_location_suggestion(path, &history, false);
 
         assert!(location.is_err());
     }
@@ -180,7 +187,7 @@ mod tests {
     fn get_location_suggestion_should_return_none_if_the_location_history_is_empty() {
         let history = GoogleLocationHistory::default();
         let path = Path::new("tests/assets/photo_without_gps.jpg");
-        let location = get_location_suggestion(path, &history);
+        let location = get_location_suggestion(path, &history, false);
 
         assert_eq!(PhotoLocation::None, location.unwrap());
     }
@@ -189,7 +196,7 @@ mod tests {
     fn get_location_suggestion_should_return_existing_if_the_photo_has_gps_metadata() {
         let history = GoogleLocationHistory::default();
         let path = Path::new("tests/assets/photo.jpg");
-        let location = get_location_suggestion(path, &history);
+        let location = get_location_suggestion(path, &history, false);
 
         assert_eq!(
             PhotoLocation::Existing(Coordinates::new(38.76544, -9.094802222222222)),
@@ -204,7 +211,7 @@ mod tests {
                 .unwrap()
         };
         let path = Path::new("tests/assets/photo_without_gps.jpg");
-        let location = get_location_suggestion(path, &history);
+        let location = get_location_suggestion(path, &history, false);
 
         assert_eq!(
             PhotoLocation::Suggested(

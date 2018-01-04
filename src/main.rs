@@ -29,6 +29,9 @@ fn main() {
                 .required(true)
                 .help("The path to a Google Location History JSON file"),
         )
+        .arg(Arg::with_name("interpolate").short("i").help(
+            "Interpolate between locations if an exact match is not found",
+        ))
         .arg(Arg::with_name("INPUT").required(true).index(1).help(
             "The image or a directory of images to suggest a location for",
         ))
@@ -40,8 +43,10 @@ fn main() {
     let location_history_file = File::open(matches.value_of("location_history").unwrap()).unwrap();
     let location_history = unsafe { load_location_history(&location_history_file).unwrap() };
 
+    let interpolate = matches.is_present("interpolate");
     for photo_path in photo_paths {
-        let location = get_location_suggestion(photo_path.as_path(), &location_history);
+        let location =
+            get_location_suggestion(photo_path.as_path(), &location_history, interpolate);
         print_location_suggestion(photo_path.as_path(), location);
     }
 }

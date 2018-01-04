@@ -10,10 +10,7 @@ pub struct SuggestionAccuracy {
 
 impl SuggestionAccuracy {
     pub fn new(meters: u16, seconds: i64) -> SuggestionAccuracy {
-        SuggestionAccuracy {
-            meters,
-            seconds,
-        }
+        SuggestionAccuracy { meters, seconds }
     }
 
     pub fn meters(&self) -> u16 {

@@ -4,10 +4,15 @@ Yore
 [![Build Status](https://www.travis-ci.org/WrinklyNinja/yore.svg?branch=master)](https://www.travis-ci.org/WrinklyNinja/yore)
 [![Coveralls branch](https://img.shields.io/coveralls/WrinklyNinja/yore/master.svg)](https://coveralls.io/github/WrinklyNinja/yore)
 
-A utility for geotagging JPEG photos using your Google Location History data.
+A cross-platform CLI utility to help geotag JPEG photos using your Google
+Location History data.
 
-Yore doesn't currently support writing EXIF tags, so locations will only be
-suggested.
+Given a Google Location History JSON file and a directory, Yore can
+recursively scan the directory for images without GPS metadata and match their
+timestamps to location timestamps, optionally interpolating between data points
+or picking the point closest in time when an exact match doesn't exist. Yore
+then prints out the suggested location, a Google Maps link to view it, and the
+estimated accuracy of the location suggestion.
 
 ## Usage
 
@@ -49,3 +54,22 @@ the suggested location timestamp is older than the photo timestamp.
 Suggestions are not made for photos without date taken timestamps or photos
 which already have location metadata. In the latter case, the existing metadata
 will be displayed instead.
+
+### Interpolation
+
+If interpolation is enabled and a photo's timestamp doesn't exactly match a
+location timestamp but is at a time between two location data points, the
+location will be calculated by assuming movement in a straight line at constant
+radial speed between the two points. The use of radial speed may make results
+less accurate when the two locations are at significantly different latitudes,
+but in such cases the result will be pretty inaccurate anyway.
+
+With interpolation enabled the suggestion accuracy is calculated by linearly
+interpolating between the recorded accuracies of the two location data points
+and half the surface distance between the two locations. The accuracy starts
+at the value of the preceding location's accuracy, scales to the half-distance
+value at the mid-point between the two locations, and scales to the value of the
+following location's accuracy.
+
+If the half-distance is less than either location's accuracy, it is ignored and
+the accuracy is linearly interpolated between the two location accuracies.

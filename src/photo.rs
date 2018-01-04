@@ -105,7 +105,7 @@ impl Photo {
     }
 
     pub fn path(&self) -> &Path {
-       &self.path
+        &self.path
     }
 
     pub fn timestamp(&self) -> i64 {

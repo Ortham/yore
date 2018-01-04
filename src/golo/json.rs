@@ -42,7 +42,7 @@ pub struct Location {
     timestamp_ms: i64,
     latitude_e7: i64,
     longitude_e7: i64,
-    pub accuracy: u16,
+    accuracy: u16,
     activitys: Option<Vec<TimestampedActivity>>,
 }
 
@@ -52,6 +52,10 @@ impl Location {
             self.latitude_e7 as f64 / 1e7,
             self.longitude_e7 as f64 / 1e7,
         )
+    }
+
+    pub fn accuracy(&self) -> u16 {
+        self.accuracy
     }
 
     pub fn timestamp(&self) -> i64 {
@@ -408,7 +412,7 @@ mod tests {
 
         let coordinates = location.coordinates();
 
-        assert_eq!(52.0796733, coordinates.latitude);
-        assert_eq!(1.1965831, coordinates.longitude);
+        assert_eq!(52.0796733, coordinates.latitude());
+        assert_eq!(1.1965831, coordinates.longitude());
     }
 }

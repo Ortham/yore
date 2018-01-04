@@ -4,17 +4,32 @@ use chrono::Duration;
 
 #[derive(Debug, PartialEq)]
 pub struct SuggestionAccuracy {
-    pub space: u16,
-    pub time: i64,
+    meters: u16,
+    seconds: i64,
 }
 
 impl SuggestionAccuracy {
+    pub fn new(meters: u16, seconds: i64) -> SuggestionAccuracy {
+        SuggestionAccuracy {
+            meters,
+            seconds,
+        }
+    }
+
+    pub fn meters(&self) -> u16 {
+        self.meters
+    }
+
+    pub fn seconds(&self) -> i64 {
+        self.seconds
+    }
+
     fn pretty_print_time(&self) -> String {
-        if self.time == 0 {
+        if self.seconds == 0 {
             return "0 seconds".to_string();
         }
 
-        let duration = Duration::seconds(self.time);
+        let duration = Duration::seconds(self.seconds);
 
         let mut periods: Vec<String> = Vec::new();
         if duration.num_weeks() != 0 {
@@ -55,7 +70,7 @@ impl SuggestionAccuracy {
 
 impl fmt::Display for SuggestionAccuracy {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{} metres, {}", self.space, self.pretty_print_time())
+        write!(f, "{} metres, {}", self.meters, self.pretty_print_time())
     }
 }
 
@@ -77,29 +92,16 @@ mod tests {
 
     #[test]
     fn suggestion_accuracy_display_should_format_value_correctly() {
-        let accuracy = SuggestionAccuracy { space: 18, time: 0 };
-
+        let accuracy = SuggestionAccuracy::new(18, 0);
         assert_eq!("18 metres, 0 seconds", format!("{}", accuracy));
 
-        let accuracy = SuggestionAccuracy {
-            space: 18,
-            time: 3600,
-        };
-
+        let accuracy = SuggestionAccuracy::new(18, 3600);
         assert_eq!("18 metres, 1 hour", format!("{}", accuracy));
 
-        let accuracy = SuggestionAccuracy {
-            space: 18,
-            time: 90,
-        };
-
+        let accuracy = SuggestionAccuracy::new(18, 90);
         assert_eq!("18 metres, 1 minute, 30 seconds", format!("{}", accuracy));
 
-        let accuracy = SuggestionAccuracy {
-            space: 18,
-            time: 20499642,
-        };
-
+        let accuracy = SuggestionAccuracy::new(18, 20499642);
         assert_eq!(
             "18 metres, 33 weeks, 6 days, 6 hours, 20 minutes, 42 seconds",
             format!("{}", accuracy)

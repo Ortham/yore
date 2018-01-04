@@ -2,12 +2,12 @@
 
 use std::fmt;
 
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Coordinates {
     // Positive latitude values are at the equator or north of it, as per ISO 6709.
-    pub latitude: f64,
+    latitude: f64,
     // Positive longitude values are at the prime meridian or east of it, as per ISO 6709.
-    pub longitude: f64,
+    longitude: f64,
 }
 
 impl Coordinates {
@@ -16,6 +16,14 @@ impl Coordinates {
             latitude: latitude,
             longitude: longitude,
         }
+    }
+
+    pub fn latitude(&self) -> f64 {
+        self.latitude
+    }
+
+    pub fn longitude(&self) -> f64 {
+        self.longitude
     }
 
     pub fn map_url(&self) -> String {
@@ -43,7 +51,7 @@ mod tests {
     fn new_should_store_given_values() {
         let coordinates = Coordinates::new(consts::E, consts::PI);
 
-        assert_eq!(consts::E, coordinates.latitude);
-        assert_eq!(consts::PI, coordinates.longitude);
+        assert_eq!(consts::E, coordinates.latitude());
+        assert_eq!(consts::PI, coordinates.longitude());
     }
 }

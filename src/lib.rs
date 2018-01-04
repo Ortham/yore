@@ -59,19 +59,19 @@ pub fn get_location_suggestion(
 ) -> Result<PhotoLocation, PhotoError> {
     let photo = Photo::new(path)?;
 
-    if let Some(location) = photo.location {
-        return Ok(PhotoLocation::Existing(location));
+    if let Some(location) = photo.location() {
+        return Ok(PhotoLocation::Existing(location.clone()));
     }
 
-    let suggested_location = location_history.get_most_likely_location(photo.timestamp);
+    let suggested_location = location_history.get_most_likely_location(photo.timestamp());
 
     match suggested_location {
         None => Ok(PhotoLocation::None),
         Some(suggested_location) => {
-            let accuracy = SuggestionAccuracy {
-                space: suggested_location.accuracy,
-                time: suggested_location.timestamp() - photo.timestamp,
-            };
+            let accuracy = SuggestionAccuracy::new(
+                suggested_location.accuracy(),
+                suggested_location.timestamp() - photo.timestamp(),
+            );
             Ok(PhotoLocation::Suggested(
                 suggested_location.coordinates(),
                 accuracy,
@@ -192,10 +192,7 @@ mod tests {
         let location = get_location_suggestion(path, &history);
 
         assert_eq!(
-            PhotoLocation::Existing(Coordinates {
-                latitude: 38.76544,
-                longitude: -9.094802222222222,
-            }),
+            PhotoLocation::Existing(Coordinates::new(38.76544, -9.094802222222222)),
             location.unwrap()
         );
     }
@@ -211,14 +208,8 @@ mod tests {
 
         assert_eq!(
             PhotoLocation::Suggested(
-                Coordinates {
-                    latitude: 52.0567467,
-                    longitude: 1.1485831,
-                },
-                SuggestionAccuracy {
-                    space: 18,
-                    time: 20499642,
-                },
+                Coordinates::new(52.0567467, 1.1485831),
+                SuggestionAccuracy::new(18, 20499642),
             ),
             location.unwrap()
         );

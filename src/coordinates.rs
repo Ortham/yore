@@ -22,8 +22,16 @@ impl Coordinates {
         self.latitude
     }
 
+    pub fn latitude_ref(&self) -> char {
+        if self.latitude >= 0.0 { 'N' } else { 'S' }
+    }
+
     pub fn longitude(&self) -> f64 {
         self.longitude
+    }
+
+    pub fn longitude_ref(&self) -> char {
+        if self.longitude >= 0.0 { 'E' } else { 'W' }
     }
 
     pub fn map_url(&self) -> String {
@@ -80,5 +88,29 @@ mod tests {
         let distance = louvre.distance_in_km(machu_picchu);
 
         assert_eq!(10036.0, distance.round());
+    }
+
+    #[test]
+    fn latitude_ref_should_be_north_for_0_and_greater_and_south_otherwise() {
+        let coordinates = Coordinates::new(0.0, 0.0);
+        assert_eq!('N', coordinates.latitude_ref());
+
+        let coordinates = Coordinates::new(60.0, 0.0);
+        assert_eq!('N', coordinates.latitude_ref());
+
+        let coordinates = Coordinates::new(-0.1, 0.0);
+        assert_eq!('S', coordinates.latitude_ref());
+    }
+
+    #[test]
+    fn longitude_ref_should_be_east_for_0_and_greater_and_west_otherwise() {
+        let coordinates = Coordinates::new(0.0, 0.0);
+        assert_eq!('E', coordinates.longitude_ref());
+
+        let coordinates = Coordinates::new(0.0, 60.0);
+        assert_eq!('E', coordinates.longitude_ref());
+
+        let coordinates = Coordinates::new(0.0, -0.1);
+        assert_eq!('W', coordinates.longitude_ref());
     }
 }

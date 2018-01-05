@@ -28,7 +28,7 @@ impl Coordinates {
 
     pub fn map_url(&self) -> String {
         format!(
-            "<https://www.google.co.uk/maps/place/{},{}>",
+            "<https://www.google.co.uk/maps/place/{}%2C{}>",
             self.latitude,
             self.longitude
         )

@@ -58,7 +58,7 @@ impl GoogleLocationHistory {
                     latitude_e7,
                     longitude_e7,
                     accuracy,
-                    activitys: None,
+                    activities: None,
                 })
             }
             _ => None,
@@ -116,7 +116,8 @@ pub struct Location {
     latitude_e7: i64,
     longitude_e7: i64,
     accuracy: u16,
-    activitys: Option<Vec<TimestampedActivity>>,
+    #[serde(rename = "activitys")]
+    activities: Option<Vec<TimestampedActivity>>,
 }
 
 impl Location {
@@ -329,7 +330,7 @@ mod tests {
                 latitude_e7: 520796733,
                 longitude_e7: 11965831,
                 accuracy: 18,
-                activitys: Some(vec![
+                activities: Some(vec![
                     TimestampedActivity {
                         timestamp_ms: 1498358433377,
                         activities: vec![
@@ -356,7 +357,7 @@ mod tests {
                 latitude_e7: 520796733,
                 longitude_e7: 11965831,
                 accuracy: 18,
-                activitys: Some(vec![
+                activities: Some(vec![
                     TimestampedActivity {
                         timestamp_ms: 1498358433377,
                         activities: vec![
@@ -377,7 +378,7 @@ mod tests {
                 latitude_e7: 520567467,
                 longitude_e7: 11485831,
                 accuracy: 18,
-                activitys: None,
+                activities: None,
             },
         );
 
@@ -403,7 +404,7 @@ mod tests {
                 latitude_e7: 520796733,
                 longitude_e7: 11965831,
                 accuracy: 18,
-                activitys: None,
+                activities: None,
             },
         );
         let ghl = GoogleLocationHistory { locations };
@@ -423,7 +424,7 @@ mod tests {
                 latitude_e7: 520796733,
                 longitude_e7: 11965831,
                 accuracy: 18,
-                activitys: None,
+                activities: None,
             },
         );
         locations.insert(
@@ -433,7 +434,7 @@ mod tests {
                 latitude_e7: 520567467,
                 longitude_e7: 11485831,
                 accuracy: 18,
-                activitys: None,
+                activities: None,
             },
         );
         let ghl = GoogleLocationHistory { locations };
@@ -453,7 +454,7 @@ mod tests {
                 latitude_e7: 520796733,
                 longitude_e7: 11965831,
                 accuracy: 18,
-                activitys: None,
+                activities: None,
             },
         );
         locations.insert(
@@ -463,7 +464,7 @@ mod tests {
                 latitude_e7: 520796733,
                 longitude_e7: 11965831,
                 accuracy: 18,
-                activitys: None,
+                activities: None,
             },
         );
         let ghl = GoogleLocationHistory { locations };
@@ -492,7 +493,7 @@ mod tests {
                 latitude_e7: 520796733,
                 longitude_e7: 11965831,
                 accuracy: 18,
-                activitys: None,
+                activities: None,
             },
         );
         let ghl = GoogleLocationHistory { locations };
@@ -514,7 +515,7 @@ mod tests {
                 latitude_e7: 520796733,
                 longitude_e7: 11965831,
                 accuracy: 18,
-                activitys: None,
+                activities: None,
             },
         );
         let ghl = GoogleLocationHistory { locations };
@@ -534,7 +535,7 @@ mod tests {
                 latitude_e7: 520796733,
                 longitude_e7: 11965831,
                 accuracy: 18,
-                activitys: None,
+                activities: None,
             },
         );
         locations.insert(
@@ -544,7 +545,7 @@ mod tests {
                 latitude_e7: 520567467,
                 longitude_e7: 11485831,
                 accuracy: 20,
-                activitys: None,
+                activities: None,
             },
         );
         let ghl = GoogleLocationHistory { locations };
@@ -555,7 +556,7 @@ mod tests {
         assert_eq!(520720311, location.latitude_e7);
         assert_eq!(11805831, location.longitude_e7);
         assert_eq!(1339, location.accuracy);
-        assert!(location.activitys.is_none());
+        assert!(location.activities.is_none());
     }
 
     #[test]
@@ -567,14 +568,14 @@ mod tests {
                 latitude_e7: 520796733,
                 longitude_e7: 11965831,
                 accuracy: 10,
-                activitys: None,
+                activities: None,
             },
             &Location {
                 timestamp_ms: 7000,
                 latitude_e7: 520796734,
                 longitude_e7: 11965831,
                 accuracy: 20,
-                activitys: None,
+                activities: None,
             },
         );
 
@@ -587,14 +588,14 @@ mod tests {
                 latitude_e7: 520796733,
                 longitude_e7: 11965831,
                 accuracy: 20,
-                activitys: None,
+                activities: None,
             },
             &Location {
                 timestamp_ms: 7000,
                 latitude_e7: 520796734,
                 longitude_e7: 11965831,
                 accuracy: 10,
-                activitys: None,
+                activities: None,
             },
         );
 
@@ -608,14 +609,14 @@ mod tests {
             latitude_e7: 520796733,
             longitude_e7: 11965831,
             accuracy: 10,
-            activitys: None,
+            activities: None,
         };
         let after = Location {
             timestamp_ms: 7000,
             latitude_e7: 520567467,
             longitude_e7: 11485831,
             accuracy: 30,
-            activitys: None,
+            activities: None,
         };
 
         let accuracy = interpolate_accuracy(3500, &before, &after);
@@ -629,7 +630,7 @@ mod tests {
             latitude_e7: 520796733,
             longitude_e7: 11965831,
             accuracy: 4000,
-            activitys: None,
+            activities: None,
         };
 
         let accuracy = interpolate_accuracy(3500, &before, &after);
@@ -643,14 +644,14 @@ mod tests {
             latitude_e7: 520796733,
             longitude_e7: 11965831,
             accuracy: 10,
-            activitys: None,
+            activities: None,
         };
         let after = Location {
             timestamp_ms: 7000,
             latitude_e7: 520567467,
             longitude_e7: 11485831,
             accuracy: 300,
-            activitys: None,
+            activities: None,
         };
 
         let accuracy = interpolate_accuracy(5500, &before, &after);
@@ -661,7 +662,7 @@ mod tests {
             latitude_e7: 520567467,
             longitude_e7: 11485831,
             accuracy: 3000,
-            activitys: None,
+            activities: None,
         };
 
         let accuracy = interpolate_accuracy(5500, &before, &after);
@@ -675,7 +676,7 @@ mod tests {
             latitude_e7: 520796733,
             longitude_e7: 11965831,
             accuracy: 18,
-            activitys: None,
+            activities: None,
         };
 
         let coordinates = location.coordinates();

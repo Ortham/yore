@@ -1,5 +1,6 @@
 //#![deny(warnings)]
-
+use std::error;
+use std::fmt;
 use std::fs;
 use std::io;
 use std::path::{Path, PathBuf};
@@ -23,18 +24,65 @@ pub struct Photo {
 #[derive(Debug)]
 pub enum PhotoError {
     ExifError(exif::Error),
-    IOError(io::Error),
+    IoError(io::Error),
     TimestampFormatError(ParseError),
     TimestampMissing,
 }
 
+impl From<exif::Error> for PhotoError {
+    fn from(error: exif::Error) -> Self {
+        PhotoError::ExifError(error)
+    }
+}
+
+impl From<io::Error> for PhotoError {
+    fn from(error: io::Error) -> Self {
+        PhotoError::IoError(error)
+    }
+}
+
+impl From<ParseError> for PhotoError {
+    fn from(error: ParseError) -> Self {
+        PhotoError::TimestampFormatError(error)
+    }
+}
+
+impl fmt::Display for PhotoError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            PhotoError::ExifError(ref x) => x.fmt(f),
+            PhotoError::IoError(ref x) => x.fmt(f),
+            PhotoError::TimestampFormatError(ref x) => x.fmt(f),
+            PhotoError::TimestampMissing => write!(f, "The image has no timestamp metadata"),
+        }
+    }
+}
+
+impl error::Error for PhotoError {
+    fn description(&self) -> &str {
+        match *self {
+            PhotoError::ExifError(ref x) => x.description(),
+            PhotoError::IoError(ref x) => x.description(),
+            PhotoError::TimestampFormatError(ref x) => x.description(),
+            PhotoError::TimestampMissing => "The image has no timestamp metadata",
+        }
+    }
+
+    fn cause(&self) -> Option<&error::Error> {
+        match *self {
+            PhotoError::ExifError(ref x) => Some(x),
+            PhotoError::IoError(ref x) => Some(x),
+            PhotoError::TimestampFormatError(ref x) => Some(x),
+            _ => None,
+        }
+    }
+}
+
 impl Photo {
     pub fn new(path: &Path) -> Result<Photo, PhotoError> {
-        let file = fs::File::open(path).map_err(PhotoError::IOError)?;
+        let file = fs::File::open(path)?;
 
-        let reader = exif::Reader::new(&mut io::BufReader::new(&file)).map_err(
-            PhotoError::ExifError,
-        )?;
+        let reader = exif::Reader::new(&mut io::BufReader::new(&file))?;
 
         let mut date_time: Option<i64> = None;
         let mut latitude: Option<f64> = None;
@@ -47,8 +95,7 @@ impl Photo {
                     if let exif::Value::Ascii(_) = field.value {
                         let string_value = format!("{}", field.value.display_as(field.tag));
                         date_time = Some(
-                            Utc.datetime_from_str(string_value.as_str(), "%F %T")
-                                .map_err(PhotoError::TimestampFormatError)?
+                            Utc.datetime_from_str(string_value.as_str(), "%F %T")?
                                 .timestamp(),
                         );
                     }

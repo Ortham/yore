@@ -58,7 +58,6 @@ impl GoogleLocationHistory {
                     latitude_e7,
                     longitude_e7,
                     accuracy,
-                    activities: None,
                 })
             }
             _ => None,
@@ -116,8 +115,6 @@ pub struct Location {
     latitude_e7: i64,
     longitude_e7: i64,
     accuracy: u16,
-    #[serde(rename = "activitys")]
-    activities: Option<Vec<TimestampedActivity>>,
 }
 
 impl Location {
@@ -135,58 +132,6 @@ impl Location {
     pub fn timestamp(&self) -> i64 {
         self.timestamp_ms / 1000 as i64
     }
-}
-
-#[derive(Clone, Deserialize, PartialEq, Debug)]
-#[serde(rename_all = "camelCase")]
-struct TimestampedActivity {
-    #[serde(deserialize_with = "i64_string::deserialize")]
-    timestamp_ms: i64,
-    activities: Vec<Activity>,
-    extras: Option<Vec<Extra>>,
-}
-
-#[derive(Clone, Deserialize, PartialEq, Debug)]
-struct Activity {
-    #[serde(rename = "type", deserialize_with = "activity_type_string::deserialize")]
-    activity_type: ActivityType,
-    confidence: u16,
-}
-
-#[derive(Clone, Deserialize, PartialEq, Debug)]
-struct Extra {
-    #[serde(rename = "type", deserialize_with = "extra_type_string::deserialize")]
-    extra_type: ExtraType,
-    #[serde(deserialize_with = "extra_name_string::deserialize")]
-    name: ExtraName,
-    #[serde(rename = "intVal")]
-    int_val: u8,
-}
-
-#[derive(Clone, PartialEq, Debug)]
-pub enum ActivityType {
-    ExitingVehicle,
-    InVehicle,
-    OnBicycle,
-    OnFoot,
-    Running,
-    Still,
-    Tilting,
-    Unknown,
-    Walking,
-    Other(String),
-}
-
-#[derive(Clone, PartialEq, Debug)]
-pub enum ExtraType {
-    Value,
-    Other(String),
-}
-
-#[derive(Clone, PartialEq, Debug)]
-pub enum ExtraName {
-    VehiclePersonalConfidence,
-    Other(String),
 }
 
 mod locations_sequence {
@@ -217,59 +162,6 @@ mod i64_string {
         String::deserialize(deserializer)?.parse::<i64>().map_err(
             de::Error::custom,
         )
-    }
-}
-
-mod activity_type_string {
-    use super::ActivityType;
-    use serde::{Deserialize, Deserializer};
-
-    pub fn deserialize<'de, D>(deserializer: D) -> Result<ActivityType, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        Ok(match String::deserialize(deserializer)?.as_ref() {
-            "exitingVehicle" => ActivityType::ExitingVehicle,
-            "inVehicle" => ActivityType::InVehicle,
-            "onBicycle" => ActivityType::OnBicycle,
-            "onFoot" => ActivityType::OnFoot,
-            "running" => ActivityType::Running,
-            "still" => ActivityType::Still,
-            "tilting" => ActivityType::Tilting,
-            "unknown" => ActivityType::Unknown,
-            "walking" => ActivityType::Walking,
-            x => ActivityType::Other(x.to_string()),
-        })
-    }
-}
-
-mod extra_type_string {
-    use super::ExtraType;
-    use serde::{Deserialize, Deserializer};
-
-    pub fn deserialize<'de, D>(deserializer: D) -> Result<ExtraType, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        Ok(match String::deserialize(deserializer)?.as_ref() {
-            "value" => ExtraType::Value,
-            x => ExtraType::Other(x.to_string()),
-        })
-    }
-}
-
-mod extra_name_string {
-    use super::ExtraName;
-    use serde::{Deserialize, Deserializer};
-
-    pub fn deserialize<'de, D>(deserializer: D) -> Result<ExtraName, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        Ok(match String::deserialize(deserializer)?.as_ref() {
-            "vehicle_personal_confidence" => ExtraName::VehiclePersonalConfidence,
-            x => ExtraName::Other(x.to_string()),
-        })
     }
 }
 
@@ -330,24 +222,6 @@ mod tests {
                 latitude_e7: 520796733,
                 longitude_e7: 11965831,
                 accuracy: 18,
-                activities: Some(vec![
-                    TimestampedActivity {
-                        timestamp_ms: 1498358433377,
-                        activities: vec![
-                            Activity {
-                                activity_type: ActivityType::Still,
-                                confidence: 100,
-                            },
-                        ],
-                        extras: Some(vec![
-                            Extra {
-                                extra_type: ExtraType::Value,
-                                name: ExtraName::VehiclePersonalConfidence,
-                                int_val: 100,
-                            },
-                        ]),
-                    },
-                ]),
             },
         );
         locations.insert(
@@ -357,18 +231,6 @@ mod tests {
                 latitude_e7: 520796733,
                 longitude_e7: 11965831,
                 accuracy: 18,
-                activities: Some(vec![
-                    TimestampedActivity {
-                        timestamp_ms: 1498358433377,
-                        activities: vec![
-                            Activity {
-                                activity_type: ActivityType::Still,
-                                confidence: 100,
-                            },
-                        ],
-                        extras: None,
-                    },
-                ]),
             },
         );
         locations.insert(
@@ -378,7 +240,6 @@ mod tests {
                 latitude_e7: 520567467,
                 longitude_e7: 11485831,
                 accuracy: 18,
-                activities: None,
             },
         );
 
@@ -404,7 +265,6 @@ mod tests {
                 latitude_e7: 520796733,
                 longitude_e7: 11965831,
                 accuracy: 18,
-                activities: None,
             },
         );
         let ghl = GoogleLocationHistory { locations };
@@ -424,7 +284,6 @@ mod tests {
                 latitude_e7: 520796733,
                 longitude_e7: 11965831,
                 accuracy: 18,
-                activities: None,
             },
         );
         locations.insert(
@@ -434,7 +293,6 @@ mod tests {
                 latitude_e7: 520567467,
                 longitude_e7: 11485831,
                 accuracy: 18,
-                activities: None,
             },
         );
         let ghl = GoogleLocationHistory { locations };
@@ -454,7 +312,6 @@ mod tests {
                 latitude_e7: 520796733,
                 longitude_e7: 11965831,
                 accuracy: 18,
-                activities: None,
             },
         );
         locations.insert(
@@ -464,7 +321,6 @@ mod tests {
                 latitude_e7: 520796733,
                 longitude_e7: 11965831,
                 accuracy: 18,
-                activities: None,
             },
         );
         let ghl = GoogleLocationHistory { locations };
@@ -493,7 +349,6 @@ mod tests {
                 latitude_e7: 520796733,
                 longitude_e7: 11965831,
                 accuracy: 18,
-                activities: None,
             },
         );
         let ghl = GoogleLocationHistory { locations };
@@ -515,7 +370,6 @@ mod tests {
                 latitude_e7: 520796733,
                 longitude_e7: 11965831,
                 accuracy: 18,
-                activities: None,
             },
         );
         let ghl = GoogleLocationHistory { locations };
@@ -535,7 +389,6 @@ mod tests {
                 latitude_e7: 520796733,
                 longitude_e7: 11965831,
                 accuracy: 18,
-                activities: None,
             },
         );
         locations.insert(
@@ -545,7 +398,6 @@ mod tests {
                 latitude_e7: 520567467,
                 longitude_e7: 11485831,
                 accuracy: 20,
-                activities: None,
             },
         );
         let ghl = GoogleLocationHistory { locations };
@@ -556,7 +408,6 @@ mod tests {
         assert_eq!(520720311, location.latitude_e7);
         assert_eq!(11805831, location.longitude_e7);
         assert_eq!(1339, location.accuracy);
-        assert!(location.activities.is_none());
     }
 
     #[test]
@@ -568,14 +419,12 @@ mod tests {
                 latitude_e7: 520796733,
                 longitude_e7: 11965831,
                 accuracy: 10,
-                activities: None,
             },
             &Location {
                 timestamp_ms: 7000,
                 latitude_e7: 520796734,
                 longitude_e7: 11965831,
                 accuracy: 20,
-                activities: None,
             },
         );
 
@@ -588,14 +437,12 @@ mod tests {
                 latitude_e7: 520796733,
                 longitude_e7: 11965831,
                 accuracy: 20,
-                activities: None,
             },
             &Location {
                 timestamp_ms: 7000,
                 latitude_e7: 520796734,
                 longitude_e7: 11965831,
                 accuracy: 10,
-                activities: None,
             },
         );
 
@@ -609,14 +456,12 @@ mod tests {
             latitude_e7: 520796733,
             longitude_e7: 11965831,
             accuracy: 10,
-            activities: None,
         };
         let after = Location {
             timestamp_ms: 7000,
             latitude_e7: 520567467,
             longitude_e7: 11485831,
             accuracy: 30,
-            activities: None,
         };
 
         let accuracy = interpolate_accuracy(3500, &before, &after);
@@ -630,7 +475,6 @@ mod tests {
             latitude_e7: 520796733,
             longitude_e7: 11965831,
             accuracy: 4000,
-            activities: None,
         };
 
         let accuracy = interpolate_accuracy(3500, &before, &after);
@@ -644,14 +488,12 @@ mod tests {
             latitude_e7: 520796733,
             longitude_e7: 11965831,
             accuracy: 10,
-            activities: None,
         };
         let after = Location {
             timestamp_ms: 7000,
             latitude_e7: 520567467,
             longitude_e7: 11485831,
             accuracy: 300,
-            activities: None,
         };
 
         let accuracy = interpolate_accuracy(5500, &before, &after);
@@ -662,7 +504,6 @@ mod tests {
             latitude_e7: 520567467,
             longitude_e7: 11485831,
             accuracy: 3000,
-            activities: None,
         };
 
         let accuracy = interpolate_accuracy(5500, &before, &after);
@@ -676,7 +517,6 @@ mod tests {
             latitude_e7: 520796733,
             longitude_e7: 11965831,
             accuracy: 18,
-            activities: None,
         };
 
         let coordinates = location.coordinates();

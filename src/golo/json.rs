@@ -38,10 +38,7 @@ impl GoogleLocationHistory {
     /// is probably meaningless anyway as the points are probably not part of the same journey.
     pub fn interpolate_location(&self, timestamp: i64) -> Option<Location> {
         match self.location_at_time(timestamp) {
-            None => None,
             Some(LocationMatch::Exact(location)) => Some(location.clone()),
-            Some(LocationMatch::First(location)) => Some(location.clone()),
-            Some(LocationMatch::Last(location)) => Some(location.clone()),
             Some(LocationMatch::Between(before, after)) => {
                 let latitude_difference = after.latitude_e7 - before.latitude_e7;
                 let longitude_difference = after.longitude_e7 - before.longitude_e7;
@@ -64,6 +61,7 @@ impl GoogleLocationHistory {
                     activitys: None,
                 })
             }
+            _ => None,
         }
     }
 
@@ -481,6 +479,28 @@ mod tests {
 
         let location = ghl.interpolate_location(0);
 
+        assert_eq!(None, location);
+    }
+
+    #[test]
+    fn interpolate_location_should_return_none_if_the_timestamp_lies_outside_the_data() {
+        let mut locations: BTreeMap<i64, Location> = BTreeMap::new();
+        locations.insert(
+            1000,
+            Location {
+                timestamp_ms: 1000,
+                latitude_e7: 520796733,
+                longitude_e7: 11965831,
+                accuracy: 18,
+                activitys: None,
+            },
+        );
+        let ghl = GoogleLocationHistory { locations };
+
+        let location = ghl.interpolate_location(0);
+        assert_eq!(None, location);
+
+        let location = ghl.interpolate_location(2000);
         assert_eq!(None, location);
     }
 

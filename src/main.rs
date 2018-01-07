@@ -13,6 +13,8 @@ use yore::Coordinates;
 use yore::find_jpegs;
 use yore::get_location_suggestion;
 use yore::golo::load_location_history;
+use yore::golo::HistoryError;
+use yore::golo::GoogleLocationHistory;
 use yore::PhotoError;
 use yore::PhotoLocation;
 
@@ -57,7 +59,7 @@ fn main() {
     let interpolate = matches.is_present("interpolate");
     let read_only = matches.is_present("read-only");
 
-    run_cli(photo_path, location_history_path, interpolate, read_only);
+    run_cli(photo_path, location_history_path, interpolate, read_only).unwrap();
 }
 
 fn photo_paths(root_path: &Path) -> Vec<PathBuf> {
@@ -70,30 +72,66 @@ fn photo_paths(root_path: &Path) -> Vec<PathBuf> {
     }
 }
 
-fn run_cli(root_path: &Path, location_history_path: &Path, interpolate: bool, read_only: bool) {
-    let location_history_file = File::open(location_history_path).unwrap();
-    let location_history = unsafe { load_location_history(&location_history_file).unwrap() };
+#[derive(Debug)]
+enum ApplicationError {
+    HistoryError(HistoryError),
+    IoError(io::Error),
+}
+
+impl From<HistoryError> for ApplicationError {
+    fn from(error: HistoryError) -> Self {
+        ApplicationError::HistoryError(error)
+    }
+}
+
+impl From<io::Error> for ApplicationError {
+    fn from(error: io::Error) -> Self {
+        ApplicationError::IoError(error)
+    }
+}
+
+fn run_cli(
+    root_path: &Path,
+    location_history_path: &Path,
+    interpolate: bool,
+    read_only: bool,
+) -> Result<(), ApplicationError> {
+    let location_history_file = File::open(location_history_path)?;
+    let location_history = unsafe { load_location_history(&location_history_file)? };
 
     for photo_path in photo_paths(root_path) {
-        let result = get_location_suggestion(&photo_path, &location_history, interpolate);
+        process_photo(&photo_path, &location_history, interpolate, read_only)?;
+    }
 
-        print_location_result(&photo_path, &result);
+    Ok(())
+}
 
-        if let Ok(PhotoLocation::Suggested(location, _)) = result {
-            if !read_only && should_write() {
-                let output = exiv2_write_coordinates(&photo_path, &location).unwrap();
+fn process_photo(
+    photo_path: &Path,
+    location_history: &GoogleLocationHistory,
+    interpolate: bool,
+    read_only: bool,
+) -> Result<(), ApplicationError> {
+    let result = get_location_suggestion(&photo_path, &location_history, interpolate);
 
-                if output.status.success() {
-                    println!("Location saved for {}", photo_path.display());
-                } else {
-                    eprintln!(
-                        "Error: Failed to save location for \"{}\"!",
-                        photo_path.display()
-                    );
-                }
+    print_location_result(&photo_path, &result);
+
+    if let Ok(PhotoLocation::Suggested(location, _)) = result {
+        if !read_only && should_write() {
+            let output = exiv2_write_coordinates(&photo_path, &location)?;
+
+            if output.status.success() {
+                println!("Location saved for {}", photo_path.display());
+            } else {
+                eprintln!(
+                    "Error: Failed to save location for \"{}\"!",
+                    photo_path.display()
+                );
             }
         }
     }
+
+    Ok(())
 }
 
 fn print_location_result(path: &Path, location: &Result<PhotoLocation, PhotoError>) {

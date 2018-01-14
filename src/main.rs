@@ -1,7 +1,20 @@
 extern crate clap;
+extern crate exif;
+extern crate futures;
+extern crate hyper;
+extern crate image;
+extern crate jpeg_decoder;
+extern crate rayon;
+extern crate serde;
+extern crate serde_json;
+extern crate url;
 extern crate yore;
 
+#[macro_use]
+extern crate serde_derive;
+
 mod cli;
+mod server;
 
 use std::io;
 use std::path::{Path, PathBuf};
@@ -12,6 +25,8 @@ use yore::{Coordinates, find_jpegs};
 use yore::golo::HistoryError;
 
 use cli::run_cli;
+
+use server::run_server;
 
 fn main() {
     let matches = App::new("yore")
@@ -44,6 +59,17 @@ fn main() {
                 .short("r")
                 .help("Don't offer to save suggested locations"),
         )
+        .arg(Arg::with_name("gui").long("gui").short("g").help(
+            "Start a server for the browser-based GUI",
+        ))
+        .arg(
+            Arg::with_name("port")
+                .long("port")
+                .short("p")
+                .takes_value(true)
+                .default_value("8080")
+                .help("The port that the GUI server should listen on"),
+        )
         .arg(Arg::with_name("INPUT").required(true).index(1).help(
             "The image or a directory of images to suggest a location for",
         ))
@@ -53,8 +79,14 @@ fn main() {
     let location_history_path = Path::new(matches.value_of("location_history").unwrap());
     let interpolate = matches.is_present("interpolate");
     let read_only = matches.is_present("read-only");
+    let use_gui = matches.is_present("gui");
+    let gui_port = matches.value_of("port").unwrap().parse::<u16>().unwrap();
 
-    run_cli(photo_path, location_history_path, interpolate, read_only).unwrap();
+    if use_gui {
+        run_server(gui_port, photo_path, location_history_path, interpolate).unwrap();
+    } else {
+        run_cli(photo_path, location_history_path, interpolate, read_only).unwrap();
+    }
 }
 
 fn photo_paths(root_path: &Path) -> Vec<PathBuf> {
@@ -71,6 +103,7 @@ fn photo_paths(root_path: &Path) -> Vec<PathBuf> {
 pub enum ApplicationError {
     HistoryError(HistoryError),
     IoError(io::Error),
+    ServerError(hyper::Error),
 }
 
 impl From<HistoryError> for ApplicationError {
@@ -82,6 +115,12 @@ impl From<HistoryError> for ApplicationError {
 impl From<io::Error> for ApplicationError {
     fn from(error: io::Error) -> Self {
         ApplicationError::IoError(error)
+    }
+}
+
+impl From<hyper::Error> for ApplicationError {
+    fn from(error: hyper::Error) -> Self {
+        ApplicationError::ServerError(error)
     }
 }
 

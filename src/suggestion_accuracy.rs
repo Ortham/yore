@@ -2,7 +2,7 @@ use std::fmt;
 
 use chrono::Duration;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Serialize)]
 pub struct SuggestionAccuracy {
     meters: u16,
     seconds: i64,

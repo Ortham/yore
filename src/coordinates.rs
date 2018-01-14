@@ -2,7 +2,7 @@
 
 use std::fmt;
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Coordinates {
     // Positive latitude values are at the equator or north of it, as per ISO 6709.
     latitude: f64,

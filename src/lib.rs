@@ -25,7 +25,7 @@ pub use photo::Photo;
 pub use photo::PhotoError;
 pub use suggestion_accuracy::SuggestionAccuracy;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Serialize)]
 pub enum PhotoLocation {
     Existing(Coordinates),
     Suggested(Coordinates, SuggestionAccuracy),

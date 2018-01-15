@@ -8,6 +8,12 @@ use url::Url;
 
 use super::error::ServiceError;
 
+pub fn has_filter_parameter(uri: &Uri) -> bool {
+    url(uri)
+        .map(|url| query_parameter(&url, "filter").is_ok())
+        .unwrap_or(false)
+}
+
 pub fn queried_path(uri: &Uri) -> Result<PathBuf, ServiceError> {
     let url = url(uri)?;
 
@@ -66,6 +72,20 @@ mod tests {
     use super::*;
 
     use std::path::Path;
+
+    #[test]
+    fn has_filter_parameter_should_return_false_if_url_does_not_have_filter_parameter() {
+        let uri = Uri::from_str("http://127.0.0.1/").unwrap();
+
+        assert!(!has_filter_parameter(&uri));
+    }
+
+    #[test]
+    fn has_filter_parameter_should_return_true_if_the_query_parameter_is_present() {
+        let uri = Uri::from_str("http://127.0.0.1/?filter").unwrap();
+
+        assert!(has_filter_parameter(&uri));
+    }
 
     #[test]
     fn queried_path_should_extract_start_and_end_query_parameter_values() {

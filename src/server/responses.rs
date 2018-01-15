@@ -3,7 +3,7 @@ use std::path::{Path, PathBuf};
 use rayon::prelude::*;
 use yore::get_location_suggestion;
 use yore::golo::GoogleLocationHistory;
-use yore::PhotoLocation;
+use yore::{Photo, PhotoLocation};
 
 use super::error::ServiceError;
 use super::service::GuiServiceState;
@@ -34,6 +34,34 @@ impl PhotosResponse {
             .map(|path| ImageDimensions::new(path))
             .collect::<Result<Vec<ImageDimensions>, ServiceError>>()
             .map(|photos| PhotosResponse { photos })
+    }
+}
+
+#[derive(Serialize)]
+pub struct FilteredPhotosResponse {
+    photo_indices: Vec<usize>,
+}
+
+impl FilteredPhotosResponse {
+    pub fn new(state: &GuiServiceState) -> FilteredPhotosResponse {
+        let photo_indices: Vec<usize> = state
+            .photo_paths()
+            .par_iter()
+            .enumerate()
+            .filter_map(|(index, path)| {
+                Photo::new(path).ok().and_then(
+                    |photo| if photo.location().is_some() {
+                        None
+                    } else if state.location_history().contains(photo.timestamp()) {
+                        Some(index)
+                    } else {
+                        None
+                    },
+                )
+            })
+            .collect();
+
+        FilteredPhotosResponse { photo_indices }
     }
 }
 
@@ -104,7 +132,9 @@ impl LocationResponse {
 mod tests {
     use super::*;
 
+    use std::fs::File;
     use serde_json::to_string;
+    use yore::golo::load_location_history;
 
     #[test]
     fn root_path_response_new_should_get_the_root_path() {
@@ -145,6 +175,22 @@ mod tests {
                 }\
             ]}",
             to_string(&response).unwrap().replace("\\\\", "/")
+        );
+    }
+
+    #[test]
+    fn filtered_photos_response_new_should_store_indices_of_photos_with_location_suggestions() {
+        let history = unsafe {
+            load_location_history(&File::open("tests/assets/location_history.json").unwrap())
+                .unwrap()
+        };
+        let state = GuiServiceState::new(Path::new("tests/assets"), history, false);
+        let response = FilteredPhotosResponse::new(&state);
+
+        assert_eq!(1, response.photo_indices.len());
+        assert_eq!(
+            Path::new("tests/assets/photo_without_gps.jpg"),
+            state.photo_paths()[response.photo_indices[0]],
         );
     }
 

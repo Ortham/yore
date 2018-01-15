@@ -19,11 +19,12 @@ use yore::golo::GoogleLocationHistory;
 use super::error::ServiceError;
 use super::image::thumbnail;
 use super::responses::PhotosResponse;
+use super::responses::FilteredPhotosResponse;
 use super::responses::RootPathResponse;
 use super::responses::LocationsResponse;
 use super::super::exiv2_write_coordinates;
 use super::super::photo_paths;
-use super::uri::{queried_dimensions, queried_indices, queried_path};
+use super::uri::{has_filter_parameter, queried_dimensions, queried_indices, queried_path};
 
 pub struct GuiServiceState {
     root_path: PathBuf,
@@ -82,7 +83,7 @@ impl Service for GuiService {
 
         match (method, uri.path()) {
             (Method::Get, "/rootPath") => handle_root_path_request(&self.0),
-            (Method::Get, "/photos") => handle_photos_request(&self.0),
+            (Method::Get, "/photos") => handle_photos_request(self.0.clone(), uri.clone()),
             (Method::Get, "/locations") => handle_locations_request(self.0.clone(), uri.clone()),
             (Method::Get, "/thumbnail") => handle_thumbnail_request(uri.clone()),
             (Method::Get, path) => handle_static_file_request(path),
@@ -102,8 +103,12 @@ fn handle_root_path_request(state: &Arc<GuiServiceState>) -> GuiServiceResponse 
     to_future_response(serialize(RootPathResponse::new(&state)))
 }
 
-fn handle_photos_request(state: &Arc<GuiServiceState>) -> GuiServiceResponse {
-    to_future_response(PhotosResponse::new(&state).and_then(serialize))
+fn handle_photos_request(state: Arc<GuiServiceState>, uri: Uri) -> GuiServiceResponse {
+    handle_in_thread(move || if has_filter_parameter(&uri) {
+        serialize(FilteredPhotosResponse::new(&state))
+    } else {
+        PhotosResponse::new(&state).and_then(serialize)
+    })
 }
 
 fn handle_locations_request(state: Arc<GuiServiceState>, uri: Uri) -> GuiServiceResponse {

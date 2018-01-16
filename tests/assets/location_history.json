@@ -1,11 +1,11 @@
 {
   "locations" : [ {
-    "timestampMs" : "1498358433377",
+    "timestampMs" : "1472688000000",
     "latitudeE7" : 520796733,
     "longitudeE7" : 11965831,
     "accuracy" : 18,
     "activitys" : [ {
-      "timestampMs" : "1498358433377",
+      "timestampMs" : "1472688000000",
       "activities" : [ {
         "type" : "still",
         "confidence" : 100

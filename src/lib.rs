@@ -215,8 +215,8 @@ mod tests {
 
         assert_eq!(
             PhotoLocation::Suggested(
-                Coordinates::new(52.0567467, 1.1485831),
-                SuggestionAccuracy::new(18, 20499642),
+                Coordinates::new(52.0796733, 1.1965831),
+                SuggestionAccuracy::new(18, -470321),
             ),
             location.unwrap()
         );

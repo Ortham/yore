@@ -38,8 +38,6 @@ impl GoogleLocationHistory {
         match self.location_at_time(timestamp) {
             None => None,
             Some(LocationMatch::Exact(location)) => Some(location),
-            Some(LocationMatch::First(location)) => Some(location),
-            Some(LocationMatch::Last(location)) => Some(location),
             Some(LocationMatch::Between(before, after)) => {
                 if timestamp - before.timestamp_ms > after.timestamp_ms - timestamp {
                     Some(after)
@@ -47,6 +45,7 @@ impl GoogleLocationHistory {
                     Some(before)
                 }
             }
+            _ => None,
         }
     }
 
@@ -270,6 +269,27 @@ mod tests {
 
         let location = ghl.get_most_likely_location(0);
 
+        assert_eq!(None, location);
+    }
+
+    #[test]
+    fn get_most_likely_location_should_return_none_if_the_timestamp_lies_outside_the_data() {
+        let mut locations: BTreeMap<i64, Location> = BTreeMap::new();
+        locations.insert(
+            1000,
+            Location {
+                timestamp_ms: 1000,
+                latitude_e7: 520796733,
+                longitude_e7: 11965831,
+                accuracy: 18,
+            },
+        );
+        let ghl = GoogleLocationHistory { locations };
+
+        let location = ghl.get_most_likely_location(0);
+        assert_eq!(None, location);
+
+        let location = ghl.get_most_likely_location(2000);
         assert_eq!(None, location);
     }
 

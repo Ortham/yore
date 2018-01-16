@@ -34,6 +34,22 @@ pub struct GoogleLocationHistory {
 }
 
 impl GoogleLocationHistory {
+    pub fn contains(&self, timestamp: i64) -> bool {
+        let first_timestamp = match self.locations.iter().next() {
+            Some(l) => l.0,
+            None => return false,
+        };
+
+        let last_timestamp = match self.locations.iter().next_back() {
+            Some(l) => l.0,
+            None => return false,
+        };
+
+        let timestamp_ms = timestamp * 1000;
+
+        timestamp_ms >= *first_timestamp && timestamp_ms <= *last_timestamp
+    }
+
     pub fn get_most_likely_location(&self, timestamp: i64) -> Option<&Location> {
         match self.location_at_time(timestamp) {
             None => None,
@@ -261,6 +277,125 @@ mod tests {
         );
 
         assert_eq!(glh, GoogleLocationHistory { locations });
+    }
+
+    #[test]
+    fn contains_should_be_false_if_history_is_empty() {
+        let history = GoogleLocationHistory { locations: BTreeMap::new() };
+
+        assert!(!history.contains(1));
+    }
+
+    #[test]
+    fn contains_should_be_false_if_timestamp_is_before_first_timestamp_in_history() {
+        let mut locations: BTreeMap<i64, Location> = BTreeMap::new();
+        locations.insert(
+            2000,
+            Location {
+                timestamp_ms: 2000,
+                latitude_e7: 520796733,
+                longitude_e7: 11965831,
+                accuracy: 18,
+            },
+        );
+        let history = GoogleLocationHistory { locations };
+
+        assert!(!history.contains(1));
+    }
+
+    #[test]
+    fn contains_should_be_false_if_timestamp_is_after_last_timestamp_in_history() {
+        let mut locations: BTreeMap<i64, Location> = BTreeMap::new();
+        locations.insert(
+            1000,
+            Location {
+                timestamp_ms: 1000,
+                latitude_e7: 520796733,
+                longitude_e7: 11965831,
+                accuracy: 18,
+            },
+        );
+        let history = GoogleLocationHistory { locations };
+
+        assert!(!history.contains(2));
+    }
+
+    #[test]
+    fn contains_should_be_true_if_timestamp_is_equal_to_first_timestamp_in_history() {
+        let mut locations: BTreeMap<i64, Location> = BTreeMap::new();
+        locations.insert(
+            1000,
+            Location {
+                timestamp_ms: 1000,
+                latitude_e7: 520796733,
+                longitude_e7: 11965831,
+                accuracy: 18,
+            },
+        );
+        locations.insert(
+            2000,
+            Location {
+                timestamp_ms: 2000,
+                latitude_e7: 520796733,
+                longitude_e7: 11965831,
+                accuracy: 18,
+            },
+        );
+        let history = GoogleLocationHistory { locations };
+
+        assert!(history.contains(1));
+    }
+
+    #[test]
+    fn contains_should_be_true_if_timestamp_is_equal_to_last_timestamp_in_history() {
+        let mut locations: BTreeMap<i64, Location> = BTreeMap::new();
+        locations.insert(
+            1000,
+            Location {
+                timestamp_ms: 1000,
+                latitude_e7: 520796733,
+                longitude_e7: 11965831,
+                accuracy: 18,
+            },
+        );
+        locations.insert(
+            2000,
+            Location {
+                timestamp_ms: 2000,
+                latitude_e7: 520796733,
+                longitude_e7: 11965831,
+                accuracy: 18,
+            },
+        );
+        let history = GoogleLocationHistory { locations };
+
+        assert!(history.contains(2));
+    }
+
+    #[test]
+    fn contains_should_be_true_if_timestamp_is_between_first_and_last_timestamps_in_history() {
+        let mut locations: BTreeMap<i64, Location> = BTreeMap::new();
+        locations.insert(
+            1000,
+            Location {
+                timestamp_ms: 1000,
+                latitude_e7: 520796733,
+                longitude_e7: 11965831,
+                accuracy: 18,
+            },
+        );
+        locations.insert(
+            3000,
+            Location {
+                timestamp_ms: 3000,
+                latitude_e7: 520796733,
+                longitude_e7: 11965831,
+                accuracy: 18,
+            },
+        );
+        let history = GoogleLocationHistory { locations };
+
+        assert!(history.contains(2));
     }
 
     #[test]

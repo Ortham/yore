@@ -12,7 +12,6 @@ kamadak-exif = "0.3"
 serde = "1.0"
 serde_derive = "1.0"
 serde_json = "1.0"
-#serde-xml-rs = "0.2.0" # KML parsing isn't currently used or finished.
 walkdir = "2"
 
 [dev-dependencies]

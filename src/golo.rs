@@ -1,3 +1,21 @@
+use std::io;
+use std::fs::File;
+
+use memmap::Mmap;
+use serde_json;
+
+#[derive(Debug)]
+pub enum HistoryError {
+    DeserializeError(serde_json::Error),
+    IOError(io::Error),
+}
+
+pub unsafe fn load_location_history(file: &File) -> Result<GoogleLocationHistory, HistoryError> {
+    let mmap = Mmap::map(file).map_err(HistoryError::IOError)?;
+
+    serde_json::from_slice(&mmap).map_err(HistoryError::DeserializeError)
+}
+
 use std::collections::BTreeMap;
 
 use coordinates;

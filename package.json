@@ -1,0 +1,27 @@
+{
+  "name": "yore",
+  "version": "1.0.0",
+  "description": "A utility to help geotag photos from Google Location History data",
+  "main": "src/gui/index.js",
+  "repository": "https://github.com/WrinklyNinja/yore.git",
+  "author": "Oliver Hamlet <oliver.hamlet@gmail.com>",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "react": "^16.2.0",
+    "react-dom": "^16.2.0"
+  },
+  "devDependencies": {
+    "babel-core": "^6.26.0",
+    "babel-loader": "^7.1.2",
+    "babel-preset-env": "^1.6.1",
+    "babel-preset-react": "^6.24.1",
+    "copy-webpack-plugin": "^4.3.1",
+    "html-webpack-plugin": "^2.30.1",
+    "webpack": "^3.10.0"
+  },
+  "scripts": {
+    "build": "webpack",
+    "build-production": "webpack --optimize-minimize --define process.env.NODE_ENV=\"'production'\""
+  }
+}

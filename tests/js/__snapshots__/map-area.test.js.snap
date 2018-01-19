@@ -1,0 +1,49 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`MapArea renders a map centered and with a marker at the photo's location if it has one 1`] = `
+<GoogleMapReact
+  center={
+    Object {
+      "lat": 52,
+      "lng": 36.2,
+    }
+  }
+  zoom={5}
+>
+  <FaMapMarker
+    lat={52}
+    lng={36.2}
+    style={
+      Object {
+        "color": "crimson",
+        "height": "24px",
+        "width": "24px",
+      }
+    }
+  />
+</GoogleMapReact>
+`;
+
+exports[`MapArea renders a map centered at (0,0) if no photo prop is set 1`] = `
+<GoogleMapReact
+  center={
+    Array [
+      0,
+      0,
+    ]
+  }
+  zoom={5}
+/>
+`;
+
+exports[`MapArea renders a map centered at (0,0) if the photo has no location 1`] = `
+<GoogleMapReact
+  center={
+    Array [
+      0,
+      0,
+    ]
+  }
+  zoom={5}
+/>
+`;

@@ -1,0 +1,139 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`MainPanel renders an image, map, location description and disabled buttons if photo location is not suggested 1`] = `
+<main>
+  <section>
+    <img
+      src="path"
+    />
+    <MapArea
+      photo={
+        Object {
+          "location": Object {
+            "Existing": Object {
+              "latitude": 52,
+              "longitude": 36.2,
+            },
+          },
+          "src": "path",
+        }
+      }
+    />
+  </section>
+  <footer>
+    Existing location
+    <br />
+    <button
+      disabled={true}
+      onClick={[Function]}
+    >
+      Apply
+    </button>
+    <button
+      disabled={true}
+      onClick={[Function]}
+    >
+      Discard
+    </button>
+  </footer>
+</main>
+`;
+
+exports[`MainPanel renders an image, map, location description and enabled buttons if photo location is suggested 1`] = `
+<main>
+  <section>
+    <img
+      src="path"
+    />
+    <MapArea
+      photo={
+        Object {
+          "location": Object {
+            "Suggested": Array [
+              Object {
+                "latitude": 52,
+                "longitude": 36.2,
+              },
+              Object {
+                "meters": 5,
+                "seconds": 10,
+              },
+            ],
+          },
+          "src": "path",
+        }
+      }
+    />
+  </section>
+  <footer>
+    Suggested location: accuracy is 5 meters and 10 seconds
+    <br />
+    <button
+      disabled={false}
+      onClick={[Function]}
+    >
+      Apply
+    </button>
+    <button
+      disabled={false}
+      onClick={[Function]}
+    >
+      Discard
+    </button>
+  </footer>
+</main>
+`;
+
+exports[`MainPanel renders an image, map, text and disabled buttons if photo has no location 1`] = `
+<main>
+  <section>
+    <img
+      src="path"
+    />
+    <MapArea
+      photo={
+        Object {
+          "src": "path",
+        }
+      }
+    />
+  </section>
+  <footer>
+    No location
+    <br />
+    <button
+      disabled={true}
+      onClick={[Function]}
+    >
+      Apply
+    </button>
+    <button
+      disabled={true}
+      onClick={[Function]}
+    >
+      Discard
+    </button>
+  </footer>
+</main>
+`;
+
+exports[`MainPanel renders text and disabled buttons if photo is undefined 1`] = `
+<main>
+  <section>
+    No photo selected.
+  </section>
+  <footer>
+    <br />
+    <button
+      disabled={true}
+    >
+      Apply
+    </button>
+    <button
+      disabled={true}
+    >
+      Discard
+    </button>
+  </footer>
+</main>
+`;

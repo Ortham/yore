@@ -13,15 +13,24 @@ addons:
     sources:
       - kalakris-cmake
 
-cache: cargo
+cache:
+  cargo: true
+  yarn: true
+
+before_install:
+  - curl -o- -L https://yarnpkg.com/install.sh | bash -s -- --version 1.3.2
+  - export PATH=$HOME/.yarn/bin:$PATH
 
 install:
   - rustfmt --version || cargo install rustfmt --version=0.9.0 --force
   - cargo install cargo-travis || true
+  - yarn install
 
 script:
   - cargo fmt -- --write-mode=diff
   - cargo test
+  - yarn build
+  - yarn test --ci
 
 after_success:
   - cargo coveralls

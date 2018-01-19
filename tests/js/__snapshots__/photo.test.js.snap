@@ -1,0 +1,47 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`chooseIcon() returns a location arrow element if the photo has a suggested location 1`] = `
+<div
+  className="icon"
+>
+  <FaLocationArrow
+    style={
+      Object {
+        "left": "-1px",
+        "position": "relative",
+        "top": "-2px",
+      }
+    }
+  />
+</div>
+`;
+
+exports[`chooseIcon() returns a map marker element if the photo has an existing location 1`] = `
+<div
+  className="icon"
+>
+  <FaMapMarker
+    style={
+      Object {
+        "position": "relative",
+        "top": "-2px",
+      }
+    }
+  />
+</div>
+`;
+
+exports[`chooseIcon() returns an exclamation circle element if the photo has an error 1`] = `
+<div
+  className="icon"
+>
+  <FaExclamationCircle
+    style={
+      Object {
+        "position": "relative",
+        "top": "-2px",
+      }
+    }
+  />
+</div>
+`;

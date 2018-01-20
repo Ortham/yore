@@ -1,0 +1,136 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Sidebar passing filterPhotos as true should check the filter checkbox 1`] = `
+<nav
+  id="sidebar"
+>
+  <div
+    id="photosList"
+  >
+    <div
+      className={undefined}
+      style={
+        Object {
+          "height": 0,
+          "overflow": "visible",
+          "width": 0,
+        }
+      }
+    >
+      <div
+        aria-label="grid"
+        aria-readonly={true}
+        className="ReactVirtualized__Grid ReactVirtualized__List"
+        id={undefined}
+        onScroll={[Function]}
+        role="grid"
+        style={
+          Object {
+            "WebkitOverflowScrolling": "touch",
+            "boxSizing": "border-box",
+            "direction": "ltr",
+            "height": 0,
+            "overflowX": "hidden",
+            "overflowY": "auto",
+            "position": "relative",
+            "width": 0,
+            "willChange": "transform",
+          }
+        }
+        tabIndex={0}
+      />
+    </div>
+  </div>
+  <footer>
+    <label
+      htmlFor="suggestionsCheckbox"
+    >
+      <input
+        checked={true}
+        id="suggestionsCheckbox"
+        onChange={[Function]}
+        type="checkbox"
+      />
+      Show only photos with suggestions
+    </label>
+  </footer>
+</nav>
+`;
+
+exports[`Sidebar renders a list of photo thumbnails and a filter checkbox and label 1`] = `
+<nav
+  id="sidebar"
+>
+  <div
+    id="photosList"
+  >
+    <div
+      className={undefined}
+      style={
+        Object {
+          "height": 0,
+          "overflow": "visible",
+          "width": 0,
+        }
+      }
+    >
+      <div
+        aria-label="grid"
+        aria-readonly={true}
+        className="ReactVirtualized__Grid ReactVirtualized__List"
+        id={undefined}
+        onScroll={[Function]}
+        role="grid"
+        style={
+          Object {
+            "WebkitOverflowScrolling": "touch",
+            "boxSizing": "border-box",
+            "direction": "ltr",
+            "height": 0,
+            "overflowX": "hidden",
+            "overflowY": "auto",
+            "position": "relative",
+            "width": 0,
+            "willChange": "transform",
+          }
+        }
+        tabIndex={0}
+      />
+    </div>
+  </div>
+  <footer>
+    <label
+      htmlFor="suggestionsCheckbox"
+    >
+      <input
+        checked={false}
+        id="suggestionsCheckbox"
+        onChange={[Function]}
+        type="checkbox"
+      />
+      Show only photos with suggestions
+    </label>
+  </footer>
+</nav>
+`;
+
+exports[`Sidebar rowRenderer returns a PhotoThumbnail for the photo at the given index 1`] = `
+<PhotoThumbnail
+  handleSelect={[Function]}
+  isSelected={false}
+  photo={
+    Object {
+      "height": 5,
+      "loaded": false,
+      "path": "path",
+      "src": "source",
+      "width": 10,
+    }
+  }
+  style={
+    Object {
+      "color": "black",
+    }
+  }
+/>
+`;

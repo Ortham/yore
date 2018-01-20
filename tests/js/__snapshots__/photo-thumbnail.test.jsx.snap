@@ -1,0 +1,23 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`PhotoThumbnail renders a div with an image and an icon 1`] = `
+<div
+  aria-selected={false}
+  className="photo"
+  onClick={[MockFunction]}
+  onKeyUp={[MockFunction]}
+  role="option"
+  style={
+    Object {
+      "top": 5,
+    }
+  }
+  tabIndex="0"
+>
+  <img
+    alt="thumbnail"
+    src="source"
+    title="path"
+  />
+</div>
+`;

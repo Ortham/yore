@@ -4,6 +4,7 @@ exports[`MainPanel renders an image, map, location description and disabled butt
 <main>
   <section>
     <img
+      alt="Selected"
       src="path"
     />
     <MapArea
@@ -43,6 +44,7 @@ exports[`MainPanel renders an image, map, location description and enabled butto
 <main>
   <section>
     <img
+      alt="Selected"
       src="path"
     />
     <MapArea
@@ -88,6 +90,7 @@ exports[`MainPanel renders an image, map, text and disabled buttons if photo has
 <main>
   <section>
     <img
+      alt="Selected"
       src="path"
     />
     <MapArea

@@ -6,25 +6,23 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 const paths = {
   DIST: path.resolve(__dirname, 'dist'),
   SRC: path.resolve(__dirname, 'src/gui'),
-  JS: path.resolve(__dirname, 'src/gui/js'),
+  JS: path.resolve(__dirname, 'src/gui/js')
 };
 
 // Webpack configuration
 module.exports = {
-context: path.join(__dirname),
-  entry: path.join(paths.JS, 'app.js'),
+  context: path.join(__dirname),
+  entry: path.join(paths.JS, 'app.jsx'),
   output: {
     path: paths.DIST,
     filename: 'app.bundle.js'
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: path.join(paths.SRC, 'index.html'),
+      template: path.join(paths.SRC, 'index.html')
     }),
-    new CopyWebpackPlugin([
-        { from: 'src/gui/style.css' }
-    ], {
-        copyUnmodified: true
+    new CopyWebpackPlugin([{ from: 'src/gui/style.css' }], {
+      copyUnmodified: true
     })
   ],
   module: {
@@ -32,13 +30,11 @@ context: path.join(__dirname),
       {
         test: /\.(js|jsx)$/,
         exclude: /node_modules/,
-        use: [
-          'babel-loader',
-        ],
-      },
-    ],
+        use: ['babel-loader']
+      }
+    ]
   },
   resolve: {
-    extensions: ['.js', '.jsx'],
-  },
+    extensions: ['.js', '.jsx']
+  }
 };

@@ -17,7 +17,8 @@ module.exports = {
         "linebreak-style": 0,
         "prettier/prettier": "error",
         "curly": ["error", "all"],
-        "no-confusing-arrow": "error"
+        "no-confusing-arrow": "error",
+        "prefer-destructuring": 0
     },
     "plugins": [
         "prettier"

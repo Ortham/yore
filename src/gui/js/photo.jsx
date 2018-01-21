@@ -28,7 +28,7 @@ export function googleMapsCoordinates(photo) {
       coordinates = photo.location.Existing;
     } else {
       ({ location: { Suggested: [coordinates] } } = photo);
-      coordinates = photo.location.Suggested[0]; // eslint-disable-line prefer-destructuring
+      coordinates = photo.location.Suggested[0];
     }
 
     return {

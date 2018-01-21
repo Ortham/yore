@@ -9,7 +9,14 @@ function MapMarker(props) {
     <FaMapMarker
       lat={props.lat}
       lng={props.lng}
-      style={{ height: '24px', width: '24px', color: 'crimson' }}
+      style={{
+        height: '24px',
+        width: '24px',
+        color: 'crimson',
+        position: 'relative',
+        top: '-24px',
+        left: '-12px'
+      }}
     />
   );
 }

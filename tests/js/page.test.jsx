@@ -101,6 +101,7 @@ describe('Page', () => {
     expect(pageInstance.state.currentPhoto).toEqual(
       pageInstance.state.photos[1]
     );
+    expect(pageInstance.sidebar.forceUpdate.mock.calls.length).toBe(1);
   });
 
   test('handleSuggestionApply calls writeCoordinates then moves suggested location to existing', () => {

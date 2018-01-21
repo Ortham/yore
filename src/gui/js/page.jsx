@@ -72,6 +72,7 @@ export default class Page extends React.Component {
 
   handlePhotoSelect(photo) {
     this.setState(Object.assign({}, this.state, { currentPhoto: photo }));
+    this.sidebar.forceUpdate();
   }
 
   handleSuggestionApply() {

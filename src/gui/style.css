@@ -80,7 +80,7 @@ main {
     color: black;
 }
 
-#photosList .photo[aria-selected] {
+#photosList .photo[aria-selected=true] {
     box-shadow: inset 0px 0px 0px 4px lightblue;
 }
 

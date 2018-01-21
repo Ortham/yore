@@ -16,6 +16,7 @@
     "react-virtualized": "^9.17.3"
   },
   "devDependencies": {
+    "archiver": "^2.1.1",
     "babel-core": "^6.26.0",
     "babel-jest": "^22.1.0",
     "babel-loader": "^7.1.2",

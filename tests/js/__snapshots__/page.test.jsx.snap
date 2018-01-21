@@ -1,0 +1,58 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Page renders a header, sidebar and main panel 1`] = `
+<div>
+  <header
+    id="titleBar"
+  >
+    <h1>
+      Yore
+    </h1>
+    <div />
+  </header>
+  <div>
+    <Sidebar
+      currentPhoto={undefined}
+      filterPhotos={false}
+      getAndStoreLocations={[Function]}
+      handleFilterToggle={[Function]}
+      handlePhotoSelect={[Function]}
+      photos={
+        Array [
+          Object {
+            "height": 5,
+            "loaded": false,
+            "path": "path 1",
+            "src": "source 1",
+            "width": 10,
+          },
+          Object {
+            "height": 5,
+            "loaded": true,
+            "location": Object {
+              "Suggested": Array [
+                Object {
+                  "latitude": 52,
+                  "longitude": 13.2,
+                },
+                Object {
+                  "meters": 5,
+                  "seconds": 20,
+                },
+              ],
+            },
+            "path": "path 2",
+            "src": "source 2",
+            "width": 10,
+          },
+        ]
+      }
+    />
+    <MainPanel
+      handleSuggestionApply={[Function]}
+      handleSuggestionDiscard={[Function]}
+      photo={undefined}
+    />
+  </div>
+</div>
+`;

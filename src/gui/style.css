@@ -1,0 +1,110 @@
+body {
+    background: #21252b;
+    color: white;
+    font-family: Helvetica, Arial, sans-serif;
+    font-size: 16px;
+    margin: 0;
+    padding: 30px;
+}
+
+#root {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
+#titleBar {
+    height: 80px;
+}
+
+#titleBar > * {
+    display: inline-block;
+    padding: 8px;
+    padding-left: 24px;
+}
+
+#root > div {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+#root > div > div {
+    display: flex;
+    flex-direction: row;
+    height: calc(100% - 80px);
+}
+
+main {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+}
+
+#sidebar {
+    max-width: 330px;
+}
+
+#photosList {
+    height: calc(100% - 48px);
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-content: flex-start;
+}
+
+#photosList .photo {
+    padding: 2px;
+    width: 150px;
+    position: relative;
+    overflow-y: hidden;
+}
+
+#photosList .photo img {
+    display: block;
+    width: 100%;
+}
+
+#photosList .photo .icon {
+    display: block;
+    position: absolute;
+    right: 5px;
+    top: 5px;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 16px;
+    height: 18px;
+    width: 18px;
+    text-align: center;
+    color: black;
+}
+
+#photosList .photo[aria-selected] {
+    box-shadow: inset 0px 0px 0px 4px lightblue;
+}
+
+#sidebar > footer {
+    height: 48px;
+    padding: 0 8px;
+    line-height: 48px;
+}
+
+main > section {
+    display: flex;
+    flex-direction: row;
+    flex: 1 1 auto;
+    justify-content: space-around;
+}
+
+main > section > * {
+    max-width: 50%;
+    align-self: center;
+}
+
+main > footer {
+    height: 96px;
+    padding: 0 8px;
+    line-height: 48px;
+    text-align: center;
+}

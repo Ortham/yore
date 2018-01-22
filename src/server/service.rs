@@ -1,3 +1,4 @@
+use std::ffi::OsStr;
 use std::fs::File;
 use std::io;
 use std::io::Read;
@@ -10,6 +11,8 @@ use futures::future::{Future, ok};
 use futures::Stream;
 use futures::sync::oneshot;
 use hyper;
+use hyper::header::ContentType;
+use hyper::mime;
 use hyper::server::{Request, Response, Service};
 use hyper::{StatusCode, Method, Uri};
 use serde::Serialize;
@@ -98,50 +101,69 @@ impl Service for GuiService {
 type GuiServiceResponse = <GuiService as Service>::Future;
 
 fn handle_root_path_request(state: Arc<GuiServiceState>) -> GuiServiceResponse {
-    handle_in_thread(move || serialize(RootPathResponse::new(&state)))
+    handle_in_thread(
+        move || serialize(RootPathResponse::new(&state)),
+        mime::APPLICATION_JSON,
+    )
 }
 
 fn handle_photos_request(state: Arc<GuiServiceState>, uri: Uri) -> GuiServiceResponse {
-    handle_in_thread(move || if has_filter_parameter(&uri) {
-        serialize(FilteredPhotosResponse::new(&state))
-    } else {
-        PhotosResponse::new(&state).and_then(serialize)
-    })
+    handle_in_thread(
+        move || if has_filter_parameter(&uri) {
+            serialize(FilteredPhotosResponse::new(&state))
+        } else {
+            PhotosResponse::new(&state).and_then(serialize)
+        },
+        mime::APPLICATION_JSON,
+    )
 }
 
 fn handle_locations_request(state: Arc<GuiServiceState>, uri: Uri) -> GuiServiceResponse {
-    handle_in_thread(move || {
-        queried_indices(&uri)
-            .and_then(|indices| {
-                LocationsResponse::new(&state, indices.0, indices.1)
-            })
-            .and_then(serialize)
-    })
+    handle_in_thread(
+        move || {
+            queried_indices(&uri)
+                .and_then(|indices| {
+                    LocationsResponse::new(&state, indices.0, indices.1)
+                })
+                .and_then(serialize)
+        },
+        mime::APPLICATION_JSON,
+    )
 }
 
 fn handle_location_request(state: Arc<GuiServiceState>, uri: Uri) -> GuiServiceResponse {
-    handle_in_thread(move || {
-        queried_path(&uri)
-            .and_then(|path| {
-                LocationResponse::new(&path, &state.location_history(), state.interpolate())
-            })
-            .and_then(serialize)
-    })
+    handle_in_thread(
+        move || {
+            queried_path(&uri)
+                .and_then(|path| {
+                    LocationResponse::new(&path, &state.location_history(), state.interpolate())
+                })
+                .and_then(serialize)
+        },
+        mime::APPLICATION_JSON,
+    )
 }
 
 fn handle_thumbnail_request(uri: Uri) -> GuiServiceResponse {
-    handle_in_thread(move || {
-        queried_path(&uri)
-            .and_then(|path| {
-                queried_dimensions(&uri).map(|(width, height)| (path, width, height))
-            })
-            .and_then(|(path, width, height)| thumbnail(&path, width, height))
-    })
+    handle_in_thread(
+        move || {
+            queried_path(&uri)
+                .and_then(|path| {
+                    queried_dimensions(&uri).map(|(width, height)| (path, width, height))
+                })
+                .and_then(|(path, width, height)| thumbnail(&path, width, height))
+        },
+        mime::IMAGE_JPEG,
+    )
 }
 
 fn handle_static_file_request(request_path: &str) -> GuiServiceResponse {
-    let owned_path = request_path.to_owned();
-    handle_in_thread(move || read_file_bytes(resolve_path(&owned_path)))
+    let resolved_path = resolve_path(request_path);
+    let owned_path = resolved_path.to_owned();
+    handle_in_thread(
+        move || read_file_bytes(&owned_path),
+        file_mime_type(resolved_path),
+    )
 }
 
 fn handle_write_location_request(uri: Uri, body: hyper::Body) -> GuiServiceResponse {
@@ -159,13 +181,13 @@ fn handle_write_location_request(uri: Uri, body: hyper::Body) -> GuiServiceRespo
                 })
                 .map(|_| Vec::<u8>::new());
 
-            ok(to_response(result))
+            ok(to_response(result, mime::TEXT_PLAIN_UTF_8))
         });
 
     Box::new(future)
 }
 
-fn handle_in_thread<T, F>(handle_request: F) -> GuiServiceResponse
+fn handle_in_thread<T, F>(handle_request: F, response_mime_type: mime::Mime) -> GuiServiceResponse
 where
     T: Into<hyper::Body>,
     F: FnOnce() -> Result<T, ServiceError> + Send + 'static,
@@ -175,7 +197,7 @@ where
     thread::spawn(move || {
         let result = handle_request();
 
-        tx.send(to_response(result)).expect(
+        tx.send(to_response(result, response_mime_type)).expect(
             "Error sending GET /thumbnail response from worker thread",
         );
     });
@@ -189,9 +211,16 @@ fn serialize<T: Serialize>(response_data: T) -> Result<String, ServiceError> {
     serde_json::to_string(&response_data).map_err(ServiceError::JsonError)
 }
 
-fn to_response<T: Into<hyper::Body>>(result: Result<T, ServiceError>) -> Response {
+fn to_response<T: Into<hyper::Body>>(
+    result: Result<T, ServiceError>,
+    mime_type: mime::Mime,
+) -> Response {
     match result {
-        Ok(body) => Response::new().with_body(body),
+        Ok(body) => {
+            Response::new().with_body(body).with_header(
+                ContentType(mime_type),
+            )
+        }
         Err(ServiceError::IoError(ref e)) if e.kind() == io::ErrorKind::NotFound => {
             Response::new().with_status(StatusCode::NotFound)
         }
@@ -205,6 +234,15 @@ fn to_response<T: Into<hyper::Body>>(result: Result<T, ServiceError>) -> Respons
                 .with_status(StatusCode::InternalServerError)
                 .with_body(format!("{:?}", e))
         }
+    }
+}
+
+fn file_mime_type(path: &Path) -> mime::Mime {
+    match path.extension().and_then(OsStr::to_str) {
+        Some("css") => mime::TEXT_CSS,
+        Some("html") => mime::TEXT_HTML_UTF_8,
+        Some("js") => mime::TEXT_JAVASCRIPT,
+        _ => mime::TEXT_PLAIN,
     }
 }
 
@@ -242,11 +280,13 @@ mod tests {
     }
 
     #[test]
-    fn to_response_should_map_ok_to_a_200_response() {
+    fn to_response_should_map_ok_to_a_200_response_with_the_given_mime_type() {
         let result = Ok("test");
-        let response = to_response(result);
+        let response = to_response(result, mime::TEXT_XML);
 
         assert_eq!(StatusCode::Ok, response.status());
+        let raw = response.headers().get_raw("content-type").unwrap();
+        assert_eq!(raw, "text/xml");
     }
 
     #[test]
@@ -254,7 +294,7 @@ mod tests {
         let result: Result<String, ServiceError> = Err(ServiceError::IoError(
             io::Error::new(io::ErrorKind::NotFound, ""),
         ));
-        let response = to_response(result);
+        let response = to_response(result, mime::TEXT_XML);
 
         assert_eq!(StatusCode::NotFound, response.status());
     }
@@ -262,7 +302,7 @@ mod tests {
     #[test]
     fn to_response_should_map_a_missing_query_parameter_error_to_a_400_response() {
         let result: Result<String, ServiceError> = Err(ServiceError::MissingQueryParameter("test"));
-        let response = to_response(result);
+        let response = to_response(result, mime::TEXT_XML);
 
         assert_eq!(StatusCode::BadRequest, response.status());
     }
@@ -270,9 +310,32 @@ mod tests {
     #[test]
     fn to_response_should_map_general_errors_to_a_500_response() {
         let result: Result<String, ServiceError> = Err(ServiceError::ImageSizeError);
-        let response = to_response(result);
+        let response = to_response(result, mime::TEXT_XML);
 
         assert_eq!(StatusCode::InternalServerError, response.status());
+    }
+
+    #[test]
+    fn file_mime_type_should_return_text_css_for_a_path_ending_in_dot_css() {
+        assert_eq!(mime::TEXT_CSS, file_mime_type(Path::new("test.css")));
+    }
+
+    #[test]
+    fn file_mime_type_should_return_text_html_for_a_path_ending_in_dot_html() {
+        assert_eq!(
+            mime::TEXT_HTML_UTF_8,
+            file_mime_type(Path::new("test.html"))
+        );
+    }
+
+    #[test]
+    fn file_mime_type_should_return_text_javascript_for_a_path_ending_in_dot_js() {
+        assert_eq!(mime::TEXT_JAVASCRIPT, file_mime_type(Path::new("test.js")));
+    }
+
+    #[test]
+    fn file_mime_type_should_return_text_plain_for_a_path_not_ending_in_dot_css_html_or_js() {
+        assert_eq!(mime::TEXT_PLAIN, file_mime_type(Path::new("test.jpg")));
     }
 
     #[test]

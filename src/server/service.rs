@@ -79,7 +79,7 @@ impl Service for GuiService {
         let (method, uri, _, _, body) = req.deconstruct();
 
         match (method, uri.path()) {
-            (Method::Get, "/rootPath") => handle_root_path_request(&self.0),
+            (Method::Get, "/rootPath") => handle_root_path_request(self.0.clone()),
             (Method::Get, "/photos") => handle_photos_request(self.0.clone(), uri.clone()),
             (Method::Get, "/locations") => handle_locations_request(self.0.clone(), uri.clone()),
             (Method::Get, "/location") => handle_location_request(self.0.clone(), uri.clone()),
@@ -97,8 +97,8 @@ impl Service for GuiService {
 
 type GuiServiceResponse = <GuiService as Service>::Future;
 
-fn handle_root_path_request(state: &Arc<GuiServiceState>) -> GuiServiceResponse {
-    to_future_response(serialize(RootPathResponse::new(&state)))
+fn handle_root_path_request(state: Arc<GuiServiceState>) -> GuiServiceResponse {
+    handle_in_thread(move || serialize(RootPathResponse::new(&state)))
 }
 
 fn handle_photos_request(state: Arc<GuiServiceState>, uri: Uri) -> GuiServiceResponse {
@@ -140,7 +140,8 @@ fn handle_thumbnail_request(uri: Uri) -> GuiServiceResponse {
 }
 
 fn handle_static_file_request(request_path: &str) -> GuiServiceResponse {
-    to_future_response(read_file_bytes(resolve_path(request_path)))
+    let owned_path = request_path.to_owned();
+    handle_in_thread(move || read_file_bytes(resolve_path(&owned_path)))
 }
 
 fn handle_write_location_request(uri: Uri, body: hyper::Body) -> GuiServiceResponse {
@@ -186,12 +187,6 @@ where
 
 fn serialize<T: Serialize>(response_data: T) -> Result<String, ServiceError> {
     serde_json::to_string(&response_data).map_err(ServiceError::JsonError)
-}
-
-fn to_future_response<T: Into<hyper::Body>>(result: Result<T, ServiceError>) -> GuiServiceResponse {
-    let response = to_response(result);
-
-    Box::new(ok(response))
 }
 
 fn to_response<T: Into<hyper::Body>>(result: Result<T, ServiceError>) -> Response {

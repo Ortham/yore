@@ -29,10 +29,18 @@ MapMarker.propTypes = {
 export default function MapArea(props) {
   if (props.photo && props.photo.location) {
     const coord = googleMapsCoordinates(props.photo);
+
+    const style = {
+      position: 'relative',
+      width: '50%'
+    };
+
     return (
-      <GoogleMapReact center={coord} zoom={5}>
-        <MapMarker lat={coord.lat} lng={coord.lng} />
-      </GoogleMapReact>
+      <div style={style}>
+        <GoogleMapReact center={coord} zoom={5}>
+          <MapMarker lat={coord.lat} lng={coord.lng} />
+        </GoogleMapReact>
+      </div>
     );
   }
   return <GoogleMapReact center={[0, 0]} zoom={5} />;

@@ -99,6 +99,9 @@ main > section {
 
 main > section > * {
     max-width: 50%;
+}
+
+main > section > img {
     align-self: center;
 }
 

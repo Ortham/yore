@@ -10,16 +10,21 @@ export default class Page extends React.Component {
 
     this.state = {
       rootPath: props.rootPath,
+      locationHistoryPath: props.locationHistoryPath,
+      interpolate: props.interpolate,
       filterPhotos: false,
       currentPhoto: undefined,
       photos: props.photos
     };
 
-    this.handleFilterToggle = this.handleFilterToggle.bind(this);
-    this.handlePhotoSelect = this.handlePhotoSelect.bind(this);
     this.getAndStoreLocations = this.getAndStoreLocations.bind(this);
+    this.handleFilterToggle = this.handleFilterToggle.bind(this);
+    this.handleInterpolateToggle = this.handleInterpolateToggle.bind(this);
+    this.handlePhotoSelect = this.handlePhotoSelect.bind(this);
     this.handleSuggestionApply = this.handleSuggestionApply.bind(this);
     this.handleSuggestionDiscard = this.handleSuggestionDiscard.bind(this);
+    this.getNewRootPath = this.getNewRootPath.bind(this);
+    this.getNewLocationHistory = this.getNewLocationHistory.bind(this);
   }
 
   getLocationsPromise(startIndex, stopIndex) {
@@ -54,6 +59,37 @@ export default class Page extends React.Component {
     });
   }
 
+  getNewRootPath() {
+    return requests.getNewRootPath().then(responseBody => {
+      const rootPath = responseBody.rootPath;
+      this.setState(Object.assign({}, this.state, { rootPath }));
+
+      return this.handleFilterToggle({
+        target: {
+          checked: this.state.filterPhotos
+        }
+      });
+    });
+  }
+
+  getNewLocationHistory() {
+    return requests.getNewLocationHistory().then(responseBody => {
+      const locationHistoryPath = responseBody.locationHistoryPath;
+      const photos = this.state.photos.map(photo =>
+        Object.assign({}, photo, { loaded: false })
+      );
+
+      this.setState(
+        Object.assign({}, this.state, {
+          locationHistoryPath,
+          photos
+        })
+      );
+
+      this.sidebar.forceUpdate();
+    });
+  }
+
   handleFilterToggle(event) {
     const filterPhotos = event.target.checked;
     let promise;
@@ -64,6 +100,14 @@ export default class Page extends React.Component {
     }
     return promise.then(photos => {
       this.setState(Object.assign({}, this.state, { filterPhotos, photos }));
+    });
+  }
+
+  handleInterpolateToggle(event) {
+    const interpolate = event.target.checked;
+
+    return requests.putInterpolate(interpolate).then(() => {
+      this.setState(Object.assign({}, this.state, { interpolate }));
     });
   }
 
@@ -113,7 +157,25 @@ export default class Page extends React.Component {
       <div>
         <header id="titleBar">
           <h1>Yore</h1>
-          <div>{this.state.rootPath}</div>
+          <div id="paths">
+            <div>Photos path: {this.state.rootPath}</div>
+            <div>Location history path: {this.state.locationHistoryPath}</div>
+          </div>
+          <div>
+            <button onClick={this.getNewRootPath}>Select Root Path</button>
+            <button onClick={this.getNewLocationHistory}>
+              Select Location History
+            </button>
+            <label htmlFor="interpolateCheckbox">
+              <input
+                type="checkbox"
+                id="interpolateCheckbox"
+                checked={this.state.interpolate}
+                onChange={this.handleInterpolateToggle}
+              />
+              Interpolate locations
+            </label>
+          </div>
         </header>
         <div>
           <Sidebar
@@ -148,5 +210,7 @@ const photoType = PropTypes.shape({
 
 Page.propTypes = {
   rootPath: PropTypes.string.isRequired,
+  locationHistoryPath: PropTypes.string.isRequired,
+  interpolate: PropTypes.bool.isRequired,
   photos: PropTypes.arrayOf(photoType).isRequired
 };

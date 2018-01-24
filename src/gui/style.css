@@ -17,12 +17,41 @@ body {
 
 #titleBar {
     height: 80px;
+    max-height: 80px;
+    display: flex;
+    flex-direction: row;
+    align-items: baseline;
 }
 
 #titleBar > * {
-    display: inline-block;
     padding: 8px;
     padding-left: 24px;
+}
+
+#paths {
+    flex: 1 0 auto;
+}
+
+#paths > div {
+    margin: 4px;
+    height: 1.25em;
+}
+
+#paths > div:last-child {
+    margin-top: 8px;
+}
+
+#titleBar > div {
+    align-self: center;
+}
+
+#titleBar > div:last-child > * {
+    display: inline-block;
+    margin: 4px;
+}
+
+#titleBar > div:last-child > button:first-child {
+    display: block;
 }
 
 #root > div {

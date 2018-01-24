@@ -61,17 +61,32 @@ describe('Page', () => {
       ])
     );
     requests.getPhotos = jest.fn().mockReturnValue(Promise.resolve(photos));
+    requests.getNewRootPath = jest
+      .fn()
+      .mockReturnValue(Promise.resolve({ rootPath: 'foo' }));
+    requests.getNewLocationHistory = jest
+      .fn()
+      .mockReturnValueOnce(Promise.resolve({ locationHistoryPath: 'bar' }));
+    requests.putInterpolate = jest.fn().mockReturnValueOnce(Promise.resolve());
 
-    page = renderer.create(<Page rootPath="" photos={photos} />, {
-      createNodeMock: element => {
-        if (element.type === 'Sidebar') {
-          return {
-            forceUpdate: jest.fn()
-          };
+    page = renderer.create(
+      <Page
+        rootPath=""
+        locationHistoryPath=""
+        photos={photos}
+        interpolate={false}
+      />,
+      {
+        createNodeMock: element => {
+          if (element.type === 'Sidebar') {
+            return {
+              forceUpdate: jest.fn()
+            };
+          }
+          return null;
         }
-        return null;
       }
-    });
+    );
   });
 
   beforeEach(() => {
@@ -80,9 +95,17 @@ describe('Page', () => {
     requests.getLocation.mockClear();
     requests.getLocations.mockClear();
     requests.getPhotos.mockClear();
+    requests.getNewRootPath.mockClear();
+    requests.getNewLocationHistory.mockClear();
+    requests.putInterpolate.mockClear();
 
-    page.root.instance.state.photos = photos;
-    page.root.instance.state.currentPhoto = undefined;
+    page.root.instance.setState({
+      rootPath: '',
+      interpolate: false,
+      filterPhotos: false,
+      currentPhoto: undefined,
+      photos
+    });
   });
 
   test('renders a header, sidebar and main panel', () => {
@@ -177,6 +200,81 @@ describe('Page', () => {
         expect(pageInstance.state.filterPhotos).toBe(false);
         expect(pageInstance.state.photos).toEqual(photos);
       });
+  });
+
+  test('handleInterpolateToggle should call putInterpolate then set state', () => {
+    const pageInstance = page.root.instance;
+
+    return pageInstance
+      .handleInterpolateToggle({ target: { checked: true } })
+      .then(() => {
+        expect(requests.putInterpolate.mock.calls.length).toBe(1);
+        expect(requests.putInterpolate.mock.calls[0]).toEqual([true]);
+        expect(pageInstance.state.interpolate).toBe(true);
+      });
+  });
+
+  test('getNewRootPath should make a getNewRootPath request and update state', () => {
+    const pageInstance = page.root.instance;
+
+    pageInstance.handleFilterToggle = jest
+      .fn()
+      .mockReturnValueOnce(Promise.resolve());
+
+    return pageInstance.getNewRootPath().then(() => {
+      expect(requests.getNewRootPath.mock.calls.length).toBe(1);
+
+      expect(pageInstance.state.rootPath).toBe('foo');
+
+      expect(pageInstance.handleFilterToggle.mock.calls.length).toBe(1);
+      expect(pageInstance.handleFilterToggle.mock.calls[0]).toEqual([
+        {
+          target: { checked: false }
+        }
+      ]);
+    });
+  });
+
+  test('getNewRootPath should filter photos according to current filter state', () => {
+    const pageInstance = page.root.instance;
+
+    pageInstance.handleFilterToggle = jest
+      .fn()
+      .mockReturnValueOnce(Promise.resolve());
+
+    pageInstance.setState(
+      Object.assign({}, pageInstance.state, { filterPhotos: true })
+    );
+
+    return pageInstance.getNewRootPath().then(() => {
+      expect(requests.getNewRootPath.mock.calls.length).toBe(1);
+
+      expect(pageInstance.state.rootPath).toBe('foo');
+
+      expect(pageInstance.handleFilterToggle.mock.calls.length).toBe(1);
+      expect(pageInstance.handleFilterToggle.mock.calls[0]).toEqual([
+        {
+          target: { checked: true }
+        }
+      ]);
+    });
+  });
+
+  test('getNewLocationHistory should make a request and update sidebar state', () => {
+    const pageInstance = page.root.instance;
+    const initialPhotos = pageInstance.state.photos;
+
+    return pageInstance.getNewLocationHistory().then(() => {
+      expect(requests.getNewLocationHistory.mock.calls.length).toBe(1);
+      expect(pageInstance.state.photos).not.toBe(initialPhotos);
+      expect(pageInstance.state.photos.length).toBe(2);
+      expect(pageInstance.state.photos[0]).not.toBe(initialPhotos[0]);
+      expect(pageInstance.state.photos[0]).toEqual(initialPhotos[0]);
+      expect(pageInstance.state.photos[1].path).toBe(initialPhotos[1].path);
+      expect(pageInstance.state.photos[1].loaded).toBe(false);
+
+      expect(pageInstance.sidebar.forceUpdate.mock.calls.length).toBe(1);
+    });
   });
 
   test('getLocationsPromise calls getLocation for each photo if filterPhotos is true', () => {

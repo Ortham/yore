@@ -3,7 +3,12 @@ import 'whatwg-fetch';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import Page from './page';
-import { getPhotos, getRootPath } from './requests';
+import {
+  getInterpolate,
+  getLocationHistoryPath,
+  getPhotos,
+  getRootPath
+} from './requests';
 
 function getInitialState() {
   const state = {
@@ -15,12 +20,22 @@ function getInitialState() {
 
   return getRootPath()
     .then(responseBody => {
-      state.rootPath = responseBody.rootPath;
+      state.rootPath = responseBody.rootPath || '';
 
       return getPhotos();
     })
     .then(photos => {
       state.photos = photos;
+
+      return getInterpolate();
+    })
+    .then(responseBody => {
+      state.interpolate = responseBody.interpolate;
+
+      return getLocationHistoryPath();
+    })
+    .then(responseBody => {
+      state.locationHistoryPath = responseBody.locationHistoryPath || '';
 
       return state;
     });
@@ -28,7 +43,12 @@ function getInitialState() {
 
 getInitialState().then(state => {
   ReactDOM.render(
-    <Page rootPath={state.rootPath} photos={state.photos} />,
+    <Page
+      rootPath={state.rootPath}
+      locationHistoryPath={state.locationHistoryPath}
+      photos={state.photos}
+      interpolate={state.interpolate}
+    />,
     document.getElementById('root')
   );
 });

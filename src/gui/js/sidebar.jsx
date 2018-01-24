@@ -49,6 +49,7 @@ export default class Sidebar extends React.Component {
   forceUpdate() {
     super.forceUpdate();
     this.list.forceUpdateGrid();
+    this.loader.resetLoadMoreRowsCache(true);
   }
 
   render() {
@@ -58,6 +59,9 @@ export default class Sidebar extends React.Component {
           <AutoSizer>
             {({ height, width }) => (
               <InfiniteLoader
+                ref={loader => {
+                  this.loader = loader;
+                }}
                 isRowLoaded={this.isRowLoaded}
                 loadMoreRows={this.loadMoreRows}
                 rowCount={this.props.photos.length}

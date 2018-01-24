@@ -8,8 +8,40 @@ exports[`Page renders a header, sidebar and main panel 1`] = `
     <h1>
       Yore
     </h1>
+    <div
+      id="paths"
+    >
+      <div>
+        Photos path: 
+        
+      </div>
+      <div>
+        Location history path: 
+        
+      </div>
+    </div>
     <div>
-      
+      <button
+        onClick={[Function]}
+      >
+        Select Root Path
+      </button>
+      <button
+        onClick={[Function]}
+      >
+        Select Location History
+      </button>
+      <label
+        htmlFor="interpolateCheckbox"
+      >
+        <input
+          checked={false}
+          id="interpolateCheckbox"
+          onChange={[Function]}
+          type="checkbox"
+        />
+        Interpolate locations
+      </label>
     </div>
   </header>
   <div>

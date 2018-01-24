@@ -133,13 +133,16 @@ describe('Sidebar', () => {
     });
   });
 
-  test("forceUpdate should force the list's grid to update", () => {
+  test("forceUpdate should force the list's grid to update and reset the loaded rows cache", () => {
     const sidebar = filteredSidebar.root.instance;
 
     sidebar.list.forceUpdateGrid = jest.fn();
+    sidebar.loader.resetLoadMoreRowsCache = jest.fn();
 
     sidebar.forceUpdate();
 
     expect(sidebar.list.forceUpdateGrid.mock.calls.length).toBe(1);
+    expect(sidebar.loader.resetLoadMoreRowsCache.mock.calls.length).toBe(1);
+    expect(sidebar.loader.resetLoadMoreRowsCache.mock.calls[0]).toEqual([true]);
   });
 });

@@ -36,6 +36,26 @@ export function getRootPath() {
   return get('/rootPath');
 }
 
+export function getNewRootPath() {
+  return get('/rootPath/new');
+}
+
+export function getLocationHistoryPath() {
+  return get('/locationHistoryPath');
+}
+
+export function getNewLocationHistory() {
+  return get('/locationHistory/new');
+}
+
+export function getInterpolate() {
+  return get('/interpolate');
+}
+
+export function putInterpolate(interpolate) {
+  return put('/interpolate', { interpolate });
+}
+
 export function getPhotos() {
   return get('/photos').then(mapPhotos);
 }

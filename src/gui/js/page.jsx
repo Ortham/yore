@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import MainPanel from './main-panel';
 import Sidebar from './sidebar';
+import * as requests from './requests';
 
 export default class Page extends React.Component {
   constructor(props) {
@@ -26,16 +27,14 @@ export default class Page extends React.Component {
     if (this.state.filterPhotos) {
       const promises = [];
       for (let i = startIndex; i < stopIndex; i += 1) {
-        const promise = this.props.getLocation(
-          this.state.sidebarPhotos[i].path
-        );
+        const promise = requests.getLocation(this.state.sidebarPhotos[i].path);
         promises.push(promise);
       }
 
       return Promise.all(promises);
     }
 
-    return this.props.getLocations(startIndex, stopIndex);
+    return requests.getLocations(startIndex, stopIndex);
   }
 
   getAndStoreLocations(startIndex, stopIndex) {
@@ -56,7 +55,7 @@ export default class Page extends React.Component {
     const checked = event.target.checked;
     let promise;
     if (checked) {
-      promise = this.props.getFilteredPhotos(this.state.photos);
+      promise = requests.getFilteredPhotos(this.state.photos);
     } else {
       promise = Promise.resolve(this.state.photos);
     }
@@ -76,7 +75,7 @@ export default class Page extends React.Component {
   }
 
   handleSuggestionApply() {
-    return this.props
+    return requests
       .writeCoordinates(
         this.state.currentPhoto.path,
         this.state.currentPhoto.location.Suggested[0]
@@ -149,9 +148,5 @@ const photoType = PropTypes.shape({
 
 Page.propTypes = {
   rootPath: PropTypes.string.isRequired,
-  photos: PropTypes.arrayOf(photoType).isRequired,
-  writeCoordinates: PropTypes.func.isRequired,
-  getLocations: PropTypes.func.isRequired,
-  getLocation: PropTypes.func.isRequired,
-  getFilteredPhotos: PropTypes.func.isRequired
+  photos: PropTypes.arrayOf(photoType).isRequired
 };

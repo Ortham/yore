@@ -3,14 +3,12 @@ import renderer from 'react-test-renderer';
 
 jest.mock('../../src/gui/js/main-panel', () => 'MainPanel');
 jest.mock('../../src/gui/js/sidebar', () => 'Sidebar');
+jest.unmock('../../src/gui/js/requests');
 
+import * as requests from '../../src/gui/js/requests'; // eslint-disable-line import/first
 import Page from '../../src/gui/js/page'; // eslint-disable-line import/first
 
 describe('Page', () => {
-  let mockWriteCoordinates;
-  let mockGetLocations;
-  let mockGetLocation;
-  let mockGetFilteredPhotos;
   let page;
 
   beforeEach(() => {
@@ -43,15 +41,14 @@ describe('Page', () => {
       }
     ];
 
-    mockWriteCoordinates = jest.fn();
-    mockGetLocations = jest.fn();
-    mockGetLocation = jest.fn();
-    mockGetFilteredPhotos = jest.fn();
-
-    mockWriteCoordinates.mockReturnValueOnce(Promise.resolve());
-    mockGetFilteredPhotos.mockReturnValueOnce(Promise.resolve([photos[1]]));
-    mockGetLocation.mockReturnValue(Promise.resolve());
-    mockGetLocations.mockReturnValueOnce(
+    requests.writeCoordinates = jest
+      .fn()
+      .mockReturnValueOnce(Promise.resolve());
+    requests.getFilteredPhotos = jest
+      .fn()
+      .mockReturnValueOnce(Promise.resolve([photos[1]]));
+    requests.getLocation = jest.fn().mockReturnValue(Promise.resolve());
+    requests.getLocations = jest.fn().mockReturnValue(
       Promise.resolve([
         { error: 'Oh no!' },
         {
@@ -65,26 +62,16 @@ describe('Page', () => {
       ])
     );
 
-    page = renderer.create(
-      <Page
-        rootPath=""
-        photos={photos}
-        writeCoordinates={mockWriteCoordinates}
-        getLocations={mockGetLocations}
-        getLocation={mockGetLocation}
-        getFilteredPhotos={mockGetFilteredPhotos}
-      />,
-      {
-        createNodeMock: element => {
-          if (element.type === 'Sidebar') {
-            return {
-              forceUpdate: jest.fn()
-            };
-          }
-          return null;
+    page = renderer.create(<Page rootPath="" photos={photos} />, {
+      createNodeMock: element => {
+        if (element.type === 'Sidebar') {
+          return {
+            forceUpdate: jest.fn()
+          };
         }
+        return null;
       }
-    );
+    });
   });
 
   test('renders a header, sidebar and main panel', () => {
@@ -110,7 +97,7 @@ describe('Page', () => {
     pageInstance.handlePhotoSelect(pageInstance.state.photos[1]);
 
     return pageInstance.handleSuggestionApply().then(() => {
-      expect(mockWriteCoordinates.mock.calls.length).toBe(1);
+      expect(requests.writeCoordinates.mock.calls.length).toBe(1);
       expect(pageInstance.state.currentPhoto.location).toEqual({
         Existing: {
           latitude: 52.0,
@@ -146,7 +133,7 @@ describe('Page', () => {
     return pageInstance
       .handleFilterToggle({ target: { checked: true } })
       .then(() => {
-        expect(mockGetFilteredPhotos.mock.calls.length).toBe(1);
+        expect(requests.getFilteredPhotos.mock.calls.length).toBe(1);
         expect(pageInstance.state.filterPhotos).toBe(true);
         expect(pageInstance.state.sidebarPhotos.length).toBe(1);
         expect(pageInstance.state.sidebarPhotos[0]).toEqual(
@@ -161,7 +148,7 @@ describe('Page', () => {
     return pageInstance
       .handleFilterToggle({ target: { checked: false } })
       .then(() => {
-        expect(mockGetFilteredPhotos.mock.calls.length).toBe(0);
+        expect(requests.getFilteredPhotos.mock.calls.length).toBe(0);
         expect(pageInstance.state.filterPhotos).toBe(false);
         expect(pageInstance.state.sidebarPhotos.length).toBe(2);
         expect(pageInstance.state.sidebarPhotos).toEqual(
@@ -178,7 +165,7 @@ describe('Page', () => {
     );
 
     return pageInstance.getLocationsPromise(0, 2).then(() => {
-      expect(mockGetLocation.mock.calls.length).toBe(2);
+      expect(requests.getLocation.mock.calls.length).toBe(2);
     });
   });
 
@@ -186,7 +173,7 @@ describe('Page', () => {
     const pageInstance = page.root.instance;
 
     return pageInstance.getLocationsPromise(0, 2).then(() => {
-      expect(mockGetLocations.mock.calls.length).toBe(1);
+      expect(requests.getLocations.mock.calls.length).toBe(1);
     });
   });
 
@@ -194,7 +181,7 @@ describe('Page', () => {
     const pageInstance = page.root.instance;
 
     return pageInstance.getAndStoreLocations(0, 2).then(() => {
-      expect(mockGetLocations.mock.calls.length).toBe(1);
+      expect(requests.getLocations.mock.calls.length).toBe(1);
 
       expect(pageInstance.state.sidebarPhotos[0].location).toBe(undefined);
       expect(pageInstance.state.sidebarPhotos[0].error).toBe('Oh no!');

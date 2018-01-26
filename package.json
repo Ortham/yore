@@ -8,12 +8,14 @@
   "license": "MIT",
   "private": true,
   "dependencies": {
+    "babel-polyfill": "^6.26.0",
     "google-map-react": "^0.27.0",
     "prop-types": "^15.6.0",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
     "react-icons": "^2.2.7",
-    "react-virtualized": "^9.17.3"
+    "react-virtualized": "^9.17.3",
+    "whatwg-fetch": "^2.0.3"
   },
   "devDependencies": {
     "archiver": "^2.1.1",
@@ -21,6 +23,7 @@
     "babel-jest": "^22.1.0",
     "babel-loader": "^7.1.2",
     "babel-preset-env": "^1.6.1",
+    "babel-preset-es2015-ie": "^6.7.0",
     "babel-preset-react": "^6.24.1",
     "copy-webpack-plugin": "^4.3.1",
     "eslint": "^4.16.0",

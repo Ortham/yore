@@ -11,7 +11,7 @@ use futures::future::{Future, ok};
 use futures::Stream;
 use futures::sync::oneshot;
 use hyper;
-use hyper::header::ContentType;
+use hyper::header::{CacheControl, CacheDirective, ContentType};
 use hyper::mime;
 use hyper::server::{Request, Response, Service};
 use hyper::{StatusCode, Method, Uri};
@@ -215,7 +215,7 @@ fn to_response<T: Into<hyper::Body>>(
     result: Result<T, ServiceError>,
     mime_type: mime::Mime,
 ) -> Response {
-    match result {
+    let response = match result {
         Ok(body) => {
             Response::new().with_body(body).with_header(
                 ContentType(mime_type),
@@ -234,7 +234,9 @@ fn to_response<T: Into<hyper::Body>>(
                 .with_status(StatusCode::InternalServerError)
                 .with_body(format!("{:?}", e))
         }
-    }
+    };
+
+    response.with_header(CacheControl(vec![CacheDirective::NoCache]))
 }
 
 fn file_mime_type(path: &Path) -> mime::Mime {

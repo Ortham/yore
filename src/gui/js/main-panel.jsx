@@ -6,7 +6,7 @@ import { locationDescription, hasSuggestion } from './photo';
 export default function MainPanel(props) {
   if (props.photo) {
     return (
-      <main>
+      <div id="main">
         <section>
           <img src={props.photo.src} alt="Selected" />
           <MapArea photo={props.photo} />
@@ -27,18 +27,18 @@ export default function MainPanel(props) {
             Discard
           </button>
         </footer>
-      </main>
+      </div>
     );
   }
   return (
-    <main>
+    <div id="main">
       <section>No photo selected.</section>
       <footer>
         <br />
         <button disabled>Apply</button>
         <button disabled>Discard</button>
       </footer>
-    </main>
+    </div>
   );
 }
 

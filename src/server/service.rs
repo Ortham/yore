@@ -19,51 +19,44 @@ use hyper::{StatusCode, Method, Uri};
 use serde::Serialize;
 use serde_json;
 use tinyfiledialogs::{open_file_dialog, select_folder_dialog};
-use yore::golo::{GoogleLocationHistory, load_location_history};
+use yore::golo::{GoogleLocationHistory, HistoryError, load_location_history};
 
 use super::error::ServiceError;
 use super::image::thumbnail;
 use super::responses::{InterpolateResponse, LocationHistoryPathResponse, LocationResponse,
                        LocationsResponse, PhotosResponse, RootPathResponse};
-use super::super::{ApplicationError, exiv2_write_coordinates, photo_paths};
+use super::super::{exiv2_write_coordinates, photo_paths};
 use super::uri::{has_filter_parameter, queried_dimensions, queried_indices, queried_path};
 
 pub struct GuiServiceState {
-    root_path: PathBuf,
+    root_path: Option<PathBuf>,
     photo_paths: Vec<PathBuf>,
-    location_history_path: PathBuf,
+    location_history_path: Option<PathBuf>,
     location_history: GoogleLocationHistory,
     interpolate: bool,
 }
 
 impl GuiServiceState {
-    pub fn new(
-        root_path: &Path,
-        location_history_path: &Path,
-        interpolate: bool,
-    ) -> Result<GuiServiceState, ApplicationError> {
-        let location_history_file = File::open(location_history_path)?;
-        let location_history = unsafe { load_location_history(&location_history_file)? };
-
-        Ok(GuiServiceState {
-            root_path: root_path.to_path_buf(),
-            photo_paths: photo_paths(root_path),
-            location_history_path: location_history_path.to_path_buf(),
-            location_history,
+    pub fn with_interpolate(interpolate: bool) -> GuiServiceState {
+        GuiServiceState {
+            root_path: None,
+            photo_paths: Vec::default(),
+            location_history_path: None,
+            location_history: GoogleLocationHistory::default(),
             interpolate,
-        })
+        }
     }
 
-    pub fn root_path(&self) -> &Path {
-        &self.root_path
+    pub fn root_path(&self) -> Option<&PathBuf> {
+        self.root_path.as_ref()
     }
 
     pub fn photo_paths(&self) -> &[PathBuf] {
         &self.photo_paths
     }
 
-    pub fn location_history_path(&self) -> &Path {
-        &self.location_history_path
+    pub fn location_history_path(&self) -> Option<&PathBuf> {
+        self.location_history_path.as_ref()
     }
 
     pub fn location_history(&self) -> &GoogleLocationHistory {
@@ -74,20 +67,20 @@ impl GuiServiceState {
         self.interpolate
     }
 
-    fn search_new_root_path(&mut self, root_path: PathBuf) {
-        self.root_path = root_path;
-        self.photo_paths = photo_paths(&self.root_path);
+    pub fn search_new_root_path(&mut self, root_path: PathBuf) {
+        self.photo_paths = photo_paths(&root_path);
+        self.root_path = Some(root_path);
     }
 
-    fn load_location_history(&mut self, path: PathBuf) -> Result<(), ServiceError> {
+    pub fn load_location_history(&mut self, path: PathBuf) -> Result<(), HistoryError> {
         let file = File::open(&path)?;
         self.location_history = unsafe { load_location_history(&file)? };
-        self.location_history_path = path;
+        self.location_history_path = Some(path);
 
         Ok(())
     }
 
-    fn set_interpolate(&mut self, interpolate: bool) {
+    pub fn set_interpolate(&mut self, interpolate: bool) {
         self.interpolate = interpolate;
     }
 }
@@ -386,11 +379,13 @@ mod tests {
 
     #[test]
     fn serialize_should_serialize_the_given_data_structure() {
-        let state = GuiServiceState::new(
-            Path::new("tests/assets"),
-            Path::new("tests/assets/location_history.json"),
-            false,
-        ).unwrap();
+        let state = GuiServiceState {
+            root_path: Some(PathBuf::from("tests/assets")),
+            photo_paths: Vec::default(),
+            location_history_path: Some(PathBuf::from("tests/assets/location_history.json")),
+            location_history: GoogleLocationHistory::default(),
+            interpolate: false,
+        };
         let string = serialize(&RootPathResponse::new(&state)).unwrap();
 
         assert_eq!("{\"rootPath\":\"tests/assets\"}", string);

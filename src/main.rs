@@ -27,7 +27,7 @@ use yore::golo::HistoryError;
 
 use cli::run_cli;
 
-use server::run_server;
+use server::Server;
 
 fn main() {
     let matches = App::new("yore")
@@ -43,7 +43,7 @@ fn main() {
                 .short("l")
                 .value_name("FILE")
                 .takes_value(true)
-                .required(true)
+                .required_unless("gui")
                 .help("The path to a Google Location History JSON file"),
         )
         .arg(
@@ -71,22 +71,42 @@ fn main() {
                 .default_value("8080")
                 .help("The port that the GUI server should listen on"),
         )
-        .arg(Arg::with_name("INPUT").required(true).index(1).help(
-            "The image or a directory of images to suggest a location for",
-        ))
+        .arg(
+            Arg::with_name("INPUT")
+                .required_unless("gui")
+                .index(1)
+                .help(
+                    "The image or a directory of images to suggest a location for",
+                ),
+        )
         .get_matches();
 
-    let photo_path = Path::new(matches.value_of("INPUT").unwrap());
-    let location_history_path = Path::new(matches.value_of("location_history").unwrap());
+    let photo_path = matches.value_of("INPUT").map(Path::new);
+    let location_history_path = matches.value_of("location_history").map(Path::new);
     let interpolate = matches.is_present("interpolate");
     let read_only = matches.is_present("read-only");
     let use_gui = matches.is_present("gui");
     let gui_port = matches.value_of("port").unwrap().parse::<u16>().unwrap();
 
     if use_gui {
-        run_server(gui_port, photo_path, location_history_path, interpolate).unwrap();
+        let mut server = Server::new(gui_port, interpolate);
+
+        if let Some(path) = photo_path {
+            server.search_photos_path(path);
+        }
+
+        if let Some(path) = location_history_path {
+            server.load_location_history(path).unwrap();
+        }
+
+        server.run().unwrap();
     } else {
-        run_cli(photo_path, location_history_path, interpolate, read_only).unwrap();
+        run_cli(
+            photo_path.unwrap(),
+            location_history_path.unwrap(),
+            interpolate,
+            read_only,
+        ).unwrap();
     }
 }
 

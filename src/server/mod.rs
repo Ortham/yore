@@ -14,22 +14,37 @@ mod uri;
 use self::service::{GuiService, GuiServiceState};
 use super::ApplicationError;
 
-pub fn run_server(
-    port: u16,
-    root_path: &Path,
-    location_history_path: &Path,
-    interpolate: bool,
-) -> Result<(), ApplicationError> {
-    let state = GuiServiceState::new(root_path, location_history_path, interpolate)?;
-    let shared_state = Arc::new(RwLock::new(state));
+pub struct Server {
+    address: SocketAddr,
+    state: GuiServiceState,
+}
 
-    let address = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), port);
-    let server = Http::new().bind(&address, move || {
-        Ok(GuiService::new(shared_state.clone()))
-    })?;
+impl Server {
+    pub fn new(port: u16, interpolate: bool) -> Server {
+        let address = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), port);
+        let state = GuiServiceState::with_interpolate(interpolate);
 
-    println!("Listening on http://{}", address);
-    server.run()?;
+        Server { address, state }
+    }
 
-    Ok(())
+    pub fn search_photos_path(&mut self, path: &Path) {
+        self.state.search_new_root_path(path.to_path_buf());
+    }
+
+    pub fn load_location_history(&mut self, path: &Path) -> Result<(), ApplicationError> {
+        self.state
+            .load_location_history(path.to_path_buf())
+            .map_err(ApplicationError::from)
+    }
+
+    pub fn run(self) -> Result<(), ApplicationError> {
+        let shared_state = Arc::new(RwLock::new(self.state));
+
+        let server = Http::new().bind(&self.address, move || {
+            Ok(GuiService::new(shared_state.clone()))
+        })?;
+
+        println!("Listening on http://{}", server.local_addr()?);
+        server.run().map_err(ApplicationError::from)
+    }
 }

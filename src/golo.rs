@@ -10,6 +10,12 @@ pub enum HistoryError {
     IOError(io::Error),
 }
 
+impl From<io::Error> for HistoryError {
+    fn from(error: io::Error) -> Self {
+        HistoryError::IOError(error)
+    }
+}
+
 pub unsafe fn load_location_history(file: &File) -> Result<GoogleLocationHistory, HistoryError> {
     let mmap = Mmap::map(file).map_err(HistoryError::IOError)?;
 

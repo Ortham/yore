@@ -3,8 +3,9 @@ use std::fs::File;
 use std::io;
 use std::io::Read;
 use std::marker::Send;
+use std::ops::Deref;
 use std::path::{Path, PathBuf};
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 use std::thread;
 
 use futures::future::{Future, ok};
@@ -62,12 +63,16 @@ impl GuiServiceState {
     pub fn interpolate(&self) -> bool {
         self.interpolate
     }
+
+    fn set_interpolate(&mut self, interpolate: bool) {
+        self.interpolate = interpolate;
+    }
 }
 
-pub struct GuiService(Arc<GuiServiceState>);
+pub struct GuiService(Arc<RwLock<GuiServiceState>>);
 
 impl GuiService {
-    pub fn new(state: Arc<GuiServiceState>) -> GuiService {
+    pub fn new(state: Arc<RwLock<GuiServiceState>>) -> GuiService {
         GuiService(state)
     }
 }
@@ -90,6 +95,8 @@ impl Service for GuiService {
             (Method::Get, "/location") => handle_location_request(self.0.clone(), uri.clone()),
             (Method::Get, "/thumbnail") => handle_thumbnail_request(uri.clone()),
             (Method::Get, path) => handle_static_file_request(path),
+
+            (Method::Put, "/interpolate") => handle_put_interpolate(self.0.clone(), body),
             (Method::Put, "/location") => handle_write_location_request(uri.clone(), body),
             _ => {
                 Box::new(ok(
@@ -100,38 +107,50 @@ impl Service for GuiService {
     }
 }
 
+#[derive(Deserialize)]
+struct InterpolateRequestBody {
+    interpolate: bool,
+}
+
 type GuiServiceResponse = <GuiService as Service>::Future;
 
-fn handle_root_path_request(state: Arc<GuiServiceState>) -> GuiServiceResponse {
+fn handle_root_path_request(state: Arc<RwLock<GuiServiceState>>) -> GuiServiceResponse {
     handle_in_thread(
-        move || serialize(RootPathResponse::new(&state)),
-        mime::APPLICATION_JSON,
-    )
-}
-
-fn handle_get_interpolate(state: Arc<GuiServiceState>) -> GuiServiceResponse {
-    handle_in_thread(
-        move || serialize(InterpolateResponse::new(&state)),
-        mime::APPLICATION_JSON,
-    )
-}
-
-fn handle_photos_request(state: Arc<GuiServiceState>, uri: Uri) -> GuiServiceResponse {
-    handle_in_thread(
-        move || if has_filter_parameter(&uri) {
-            PhotosResponse::filtered(&state).and_then(serialize)
-        } else {
-            PhotosResponse::new(&state).and_then(serialize)
+        move || {
+            let state = state.read()?;
+            serialize(RootPathResponse::new(&state))
         },
         mime::APPLICATION_JSON,
     )
 }
 
-fn handle_locations_request(state: Arc<GuiServiceState>, uri: Uri) -> GuiServiceResponse {
+fn handle_get_interpolate(state: Arc<RwLock<GuiServiceState>>) -> GuiServiceResponse {
+    handle_in_thread(
+        move || {
+            let state = state.read()?;
+            serialize(InterpolateResponse::new(&state))
+        },
+        mime::APPLICATION_JSON,
+    )
+}
+
+fn handle_photos_request(state: Arc<RwLock<GuiServiceState>>, uri: Uri) -> GuiServiceResponse {
+    handle_in_thread(
+        move || if has_filter_parameter(&uri) {
+            PhotosResponse::filtered(&state.read()?.deref()).and_then(serialize)
+        } else {
+            PhotosResponse::new(&state.read()?.deref()).and_then(serialize)
+        },
+        mime::APPLICATION_JSON,
+    )
+}
+
+fn handle_locations_request(state: Arc<RwLock<GuiServiceState>>, uri: Uri) -> GuiServiceResponse {
     handle_in_thread(
         move || {
             queried_indices(&uri)
                 .and_then(|indices| {
+                    let state = state.read()?;
                     LocationsResponse::new(&state, indices.0, indices.1)
                 })
                 .and_then(serialize)
@@ -140,11 +159,14 @@ fn handle_locations_request(state: Arc<GuiServiceState>, uri: Uri) -> GuiService
     )
 }
 
-fn handle_location_request(state: Arc<GuiServiceState>, uri: Uri) -> GuiServiceResponse {
+fn handle_location_request(state: Arc<RwLock<GuiServiceState>>, uri: Uri) -> GuiServiceResponse {
     handle_in_thread(
         move || {
             queried_path(&uri)
-                .and_then(|path| LocationResponse::new(&path, &state))
+                .and_then(|path| {
+                    let state = state.read()?;
+                    LocationResponse::new(&path, &state)
+                })
                 .and_then(serialize)
         },
         mime::APPLICATION_JSON,
@@ -173,20 +195,41 @@ fn handle_static_file_request(request_path: &str) -> GuiServiceResponse {
     )
 }
 
+fn handle_put_interpolate(
+    state: Arc<RwLock<GuiServiceState>>,
+    body: hyper::Body,
+) -> GuiServiceResponse {
+    handle_request_body(body, move |bytes| {
+        serde_json::from_slice(&bytes)
+            .map_err(ServiceError::JsonError)
+            .and_then(|body: InterpolateRequestBody| {
+                Ok(state.write()?.set_interpolate(body.interpolate))
+            })
+    })
+}
+
 fn handle_write_location_request(uri: Uri, body: hyper::Body) -> GuiServiceResponse {
+    handle_request_body(body, move |bytes| {
+        serde_json::from_slice(&bytes)
+            .map_err(ServiceError::JsonError)
+            .and_then(|coordinates| {
+                queried_path(&uri).map(|path| (path, coordinates))
+            })
+            .and_then(|(path, coordinates)| {
+                exiv2_write_coordinates(&path, &coordinates).map_err(ServiceError::IoError)
+            })
+    })
+}
+
+fn handle_request_body<T, F>(body: hyper::Body, body_handler: F) -> GuiServiceResponse
+where
+    F: FnOnce(Vec<u8>) -> Result<T, ServiceError> + Send + 'static,
+{
     let future = body.fold(Vec::new(), |mut vec, chunk| {
         vec.extend(&chunk[..]);
         ok::<Vec<u8>, hyper::Error>(vec)
     }).and_then(move |bytes| {
-            let result = serde_json::from_slice(&bytes)
-                .map_err(ServiceError::JsonError)
-                .and_then(|coordinates| {
-                    queried_path(&uri).map(|path| (path, coordinates))
-                })
-                .and_then(|(path, coordinates)| {
-                    exiv2_write_coordinates(&path, &coordinates).map_err(ServiceError::IoError)
-                })
-                .map(|_| Vec::<u8>::new());
+            let result = body_handler(bytes).map(|_| Vec::<u8>::new());
 
             ok(to_response(result, mime::TEXT_PLAIN_UTF_8))
         });

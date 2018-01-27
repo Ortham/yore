@@ -1,12 +1,14 @@
 
 use std::io;
 use std::num::ParseIntError;
+use std::sync::PoisonError;
 
 use exif;
 use image;
 use jpeg_decoder;
 use serde_json;
 use url;
+use yore::golo::HistoryError;
 
 #[derive(Debug)]
 pub enum ServiceError {
@@ -20,6 +22,8 @@ pub enum ServiceError {
     QueryParameterParseError(ParseIntError),
     JsonError(serde_json::Error),
     ExifError(exif::Error),
+    HistoryError(HistoryError),
+    PoisonError,
 }
 
 impl From<exif::Error> for ServiceError {
@@ -34,9 +38,21 @@ impl From<io::Error> for ServiceError {
     }
 }
 
+impl From<HistoryError> for ServiceError {
+    fn from(error: HistoryError) -> Self {
+        ServiceError::HistoryError(error)
+    }
+}
+
 impl From<url::ParseError> for ServiceError {
     fn from(error: url::ParseError) -> Self {
         ServiceError::UrlParseError(error)
+    }
+}
+
+impl<T> From<PoisonError<T>> for ServiceError {
+    fn from(_error: PoisonError<T>) -> Self {
+        ServiceError::PoisonError
     }
 }
 

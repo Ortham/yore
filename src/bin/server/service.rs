@@ -365,9 +365,9 @@ fn resolve_path(path: &str) -> &Path {
 
 fn read_file_bytes(path: &Path) -> Result<&'static [u8], ServiceError> {
     match path.to_str() {
-        Some("style.css") => Ok(include_bytes!("../../dist/style.css")),
-        Some("index.html") => Ok(include_bytes!("../../dist/index.html")),
-        Some("app.bundle.js") => Ok(include_bytes!("../../dist/app.bundle.js")),
+        Some("style.css") => Ok(include_bytes!("../../../dist/style.css")),
+        Some("index.html") => Ok(include_bytes!("../../../dist/index.html")),
+        Some("app.bundle.js") => Ok(include_bytes!("../../../dist/app.bundle.js")),
         _ => {
             Err(ServiceError::IoError(io::Error::new(
                 io::ErrorKind::NotFound,

@@ -27,8 +27,8 @@ tempdir = "0.3"
 
 [[bin]]
 name = "yore"
-path = "src/main.rs"
+path = "src/bin/main.rs"
 
 [[bin]]
 name = "yore-webview"
-path = "src/webview.rs"
+path = "src/bin/webview.rs"

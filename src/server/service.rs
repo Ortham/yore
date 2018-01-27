@@ -18,7 +18,7 @@ use hyper::server::{Request, Response, Service};
 use hyper::{StatusCode, Method, Uri};
 use serde::Serialize;
 use serde_json;
-use tinyfiledialogs::select_folder_dialog;
+use tinyfiledialogs::{open_file_dialog, select_folder_dialog};
 use yore::golo::{GoogleLocationHistory, load_location_history};
 
 use super::error::ServiceError;
@@ -79,6 +79,14 @@ impl GuiServiceState {
         self.photo_paths = photo_paths(&self.root_path);
     }
 
+    fn load_location_history(&mut self, path: PathBuf) -> Result<(), ServiceError> {
+        let file = File::open(&path)?;
+        self.location_history = unsafe { load_location_history(&file)? };
+        self.location_history_path = path;
+
+        Ok(())
+    }
+
     fn set_interpolate(&mut self, interpolate: bool) {
         self.interpolate = interpolate;
     }
@@ -105,6 +113,9 @@ impl Service for GuiService {
             (Method::Get, "/rootPath") => handle_root_path_request(self.0.clone()),
             (Method::Get, "/rootPath/new") => handle_get_new_root_path(self.0.clone()),
             (Method::Get, "/locationHistoryPath") => handle_get_location_history(self.0.clone()),
+            (Method::Get, "/locationHistory/new") => handle_get_new_location_history(
+                self.0.clone(),
+            ),
             (Method::Get, "/interpolate") => handle_get_interpolate(self.0.clone()),
 
             (Method::Get, "/photos") => handle_photos_request(self.0.clone(), uri.clone()),
@@ -158,6 +169,19 @@ fn handle_get_new_root_path(state: Arc<RwLock<GuiServiceState>>) -> GuiServiceRe
 fn handle_get_location_history(state: Arc<RwLock<GuiServiceState>>) -> GuiServiceResponse {
     handle_in_thread(
         move || {
+            let state = state.read()?;
+            serialize(LocationHistoryPathResponse::new(&state))
+        },
+        mime::APPLICATION_JSON,
+    )
+}
+
+fn handle_get_new_location_history(state: Arc<RwLock<GuiServiceState>>) -> GuiServiceResponse {
+    handle_in_thread(
+        move || {
+            if let Some(path) = open_file_dialog("", "", None) {
+                state.write()?.load_location_history(PathBuf::from(&path))?;
+            }
             let state = state.read()?;
             serialize(LocationHistoryPathResponse::new(&state))
         },

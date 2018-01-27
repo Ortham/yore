@@ -1,7 +1,7 @@
-sudo: false
+sudo: required
 language: rust
 
-# Dependencies of kcov, used by coverage
+# Dependencies of kcov, used by cargo-travis, and of the web-view library.
 addons:
   apt:
     packages:
@@ -10,8 +10,10 @@ addons:
       - libdw-dev
       - binutils-dev
       - cmake
+      - libwebkit2gtk-4.0-dev
     sources:
       - kalakris-cmake
+      - sourceline: 'ppa:webkit-team/ppa'
 
 cache:
   cargo: true

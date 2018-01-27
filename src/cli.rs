@@ -6,7 +6,7 @@ use std::path::Path;
 use yore::{get_location_suggestion, PhotoError, PhotoLocation};
 use yore::golo::{load_location_history, GoogleLocationHistory};
 
-use super::{ApplicationError, exiv2_write_coordinates, photo_paths};
+use common::{ApplicationError, exiv2_write_coordinates, photo_paths};
 
 pub fn run_cli(
     root_path: &Path,

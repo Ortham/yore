@@ -20,11 +20,11 @@ use serde_json;
 use tinyfiledialogs::{open_file_dialog, select_folder_dialog};
 use yore::golo::{GoogleLocationHistory, HistoryError, load_location_history};
 
+use common::{exiv2_write_coordinates, photo_paths};
 use super::error::ServiceError;
 use super::image::thumbnail;
 use super::responses::{InterpolateResponse, LocationHistoryPathResponse, LocationResponse,
                        LocationsResponse, PhotosResponse, RootPathResponse};
-use super::super::{exiv2_write_coordinates, photo_paths};
 use super::uri::{has_filter_parameter, queried_dimensions, queried_indices, queried_path};
 
 pub struct GuiServiceState {

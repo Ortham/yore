@@ -21,7 +21,8 @@ use yore::golo::GoogleLocationHistory;
 
 use super::error::ServiceError;
 use super::image::thumbnail;
-use super::responses::{LocationResponse, LocationsResponse, PhotosResponse, RootPathResponse};
+use super::responses::{InterpolateResponse, LocationResponse, LocationsResponse, PhotosResponse,
+                       RootPathResponse};
 use super::super::{exiv2_write_coordinates, photo_paths};
 use super::uri::{has_filter_parameter, queried_dimensions, queried_indices, queried_path};
 
@@ -82,6 +83,8 @@ impl Service for GuiService {
 
         match (method, uri.path()) {
             (Method::Get, "/rootPath") => handle_root_path_request(self.0.clone()),
+            (Method::Get, "/interpolate") => handle_get_interpolate(self.0.clone()),
+
             (Method::Get, "/photos") => handle_photos_request(self.0.clone(), uri.clone()),
             (Method::Get, "/locations") => handle_locations_request(self.0.clone(), uri.clone()),
             (Method::Get, "/location") => handle_location_request(self.0.clone(), uri.clone()),
@@ -102,6 +105,13 @@ type GuiServiceResponse = <GuiService as Service>::Future;
 fn handle_root_path_request(state: Arc<GuiServiceState>) -> GuiServiceResponse {
     handle_in_thread(
         move || serialize(RootPathResponse::new(&state)),
+        mime::APPLICATION_JSON,
+    )
+}
+
+fn handle_get_interpolate(state: Arc<GuiServiceState>) -> GuiServiceResponse {
+    handle_in_thread(
+        move || serialize(InterpolateResponse::new(&state)),
         mime::APPLICATION_JSON,
     )
 }

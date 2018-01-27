@@ -22,6 +22,17 @@ impl RootPathResponse {
 }
 
 #[derive(Serialize)]
+pub struct InterpolateResponse {
+    interpolate: bool,
+}
+
+impl InterpolateResponse {
+    pub fn new(state: &GuiServiceState) -> InterpolateResponse {
+        InterpolateResponse { interpolate: state.interpolate() }
+    }
+}
+
+#[derive(Serialize)]
 pub struct PhotosResponse {
     photos: Vec<ImageDimensions>,
 }
@@ -131,6 +142,18 @@ mod tests {
         let response = RootPathResponse::new(&state);
 
         assert_eq!(state.root_path(), response.root_path);
+    }
+
+    #[test]
+    fn interpolate_response_new_should_get_the_root_path() {
+        let state = GuiServiceState::new(
+            Path::new("tests/assets"),
+            GoogleLocationHistory::default(),
+            false,
+        );
+        let response = InterpolateResponse::new(&state);
+
+        assert_eq!(state.interpolate(), response.interpolate);
     }
 
     #[test]

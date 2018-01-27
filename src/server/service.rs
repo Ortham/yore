@@ -135,9 +135,7 @@ fn handle_location_request(state: Arc<GuiServiceState>, uri: Uri) -> GuiServiceR
     handle_in_thread(
         move || {
             queried_path(&uri)
-                .and_then(|path| {
-                    LocationResponse::new(&path, &state.location_history(), state.interpolate())
-                })
+                .and_then(|path| LocationResponse::new(&path, &state))
                 .and_then(serialize)
         },
         mime::APPLICATION_JSON,

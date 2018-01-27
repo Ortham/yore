@@ -80,9 +80,7 @@ impl LocationsResponse {
     ) -> Result<LocationsResponse, ServiceError> {
         state.photo_paths()[start_index..stop_index]
             .par_iter()
-            .map(|path| {
-                LocationResponse::new(path, &state.location_history(), state.interpolate())
-            })
+            .map(|path| LocationResponse::new(path, state))
             .collect::<Result<Vec<LocationResponse>, ServiceError>>()
             .map(|locations| {
                 LocationsResponse {
@@ -106,12 +104,8 @@ pub struct LocationResponse {
 }
 
 impl LocationResponse {
-    pub fn new(
-        path: &Path,
-        location_history: &GoogleLocationHistory,
-        interpolate: bool,
-    ) -> Result<LocationResponse, ServiceError> {
-        let result = get_location_suggestion(&path, &location_history, interpolate)
+    pub fn new(path: &Path, state: &GuiServiceState) -> Result<LocationResponse, ServiceError> {
+        let result = get_location_suggestion(path, &state.location_history(), state.interpolate())
             .map_err(|e| format!("{}", e));
 
         let (location, error) = match result {
@@ -213,8 +207,12 @@ mod tests {
     #[test]
     fn location_response_new_should_set_an_error_message_if_passed_a_non_jpeg_file() {
         let path = Path::new("Cargo.toml");
-        let history = GoogleLocationHistory::default();
-        let response = LocationResponse::new(path, &history, false).unwrap();
+        let state = GuiServiceState::new(
+            Path::new("tests/assets"),
+            GoogleLocationHistory::default(),
+            false,
+        );
+        let response = LocationResponse::new(path, &state).unwrap();
 
         assert_eq!(path, response.path);
         assert!(response.location.is_none());
@@ -224,8 +222,12 @@ mod tests {
     #[test]
     fn location_response_new_should_set_only_a_path_for_empty_location_history() {
         let path = Path::new("tests/assets/photo_without_gps.jpg");
-        let history = GoogleLocationHistory::default();
-        let response = LocationResponse::new(path, &history, false).unwrap();
+        let state = GuiServiceState::new(
+            Path::new("tests/assets"),
+            GoogleLocationHistory::default(),
+            false,
+        );
+        let response = LocationResponse::new(path, &state).unwrap();
 
         assert_eq!(path, response.path);
         assert!(response.location.is_none());
@@ -235,8 +237,12 @@ mod tests {
     #[test]
     fn get_location_suggestion_should_set_a_location_if_the_photo_has_gps_metadata() {
         let path = Path::new("tests/assets/photo.jpg");
-        let history = GoogleLocationHistory::default();
-        let response = LocationResponse::new(path, &history, false).unwrap();
+        let state = GuiServiceState::new(
+            Path::new("tests/assets"),
+            GoogleLocationHistory::default(),
+            false,
+        );
+        let response = LocationResponse::new(path, &state).unwrap();
 
         assert_eq!(path, response.path);
         assert!(response.location.is_some());

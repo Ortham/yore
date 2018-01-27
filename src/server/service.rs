@@ -110,7 +110,7 @@ impl Service for GuiService {
         let (method, uri, _, _, body) = req.deconstruct();
 
         match (method, uri.path()) {
-            (Method::Get, "/rootPath") => handle_root_path_request(self.0.clone()),
+            (Method::Get, "/rootPath") => handle_get_root_path(self.0.clone()),
             (Method::Get, "/rootPath/new") => handle_get_new_root_path(self.0.clone()),
             (Method::Get, "/locationHistoryPath") => handle_get_location_history(self.0.clone()),
             (Method::Get, "/locationHistory/new") => handle_get_new_location_history(
@@ -118,14 +118,14 @@ impl Service for GuiService {
             ),
             (Method::Get, "/interpolate") => handle_get_interpolate(self.0.clone()),
 
-            (Method::Get, "/photos") => handle_photos_request(self.0.clone(), uri.clone()),
-            (Method::Get, "/locations") => handle_locations_request(self.0.clone(), uri.clone()),
-            (Method::Get, "/location") => handle_location_request(self.0.clone(), uri.clone()),
-            (Method::Get, "/thumbnail") => handle_thumbnail_request(uri.clone()),
-            (Method::Get, path) => handle_static_file_request(path),
+            (Method::Get, "/photos") => handle_get_photos(self.0.clone(), uri.clone()),
+            (Method::Get, "/locations") => handle_get_locations(self.0.clone(), uri.clone()),
+            (Method::Get, "/location") => handle_get_location(self.0.clone(), uri.clone()),
+            (Method::Get, "/thumbnail") => handle_get_thumbnail(uri.clone()),
+            (Method::Get, path) => handle_get_static_file(path),
 
             (Method::Put, "/interpolate") => handle_put_interpolate(self.0.clone(), body),
-            (Method::Put, "/location") => handle_write_location_request(uri.clone(), body),
+            (Method::Put, "/location") => handle_put_location(uri.clone(), body),
             _ => {
                 Box::new(ok(
                     Response::new().with_status(StatusCode::MethodNotAllowed),
@@ -142,7 +142,7 @@ struct InterpolateRequestBody {
 
 type GuiServiceResponse = <GuiService as Service>::Future;
 
-fn handle_root_path_request(state: Arc<RwLock<GuiServiceState>>) -> GuiServiceResponse {
+fn handle_get_root_path(state: Arc<RwLock<GuiServiceState>>) -> GuiServiceResponse {
     handle_in_thread(
         move || {
             let state = state.read()?;
@@ -199,7 +199,7 @@ fn handle_get_interpolate(state: Arc<RwLock<GuiServiceState>>) -> GuiServiceResp
     )
 }
 
-fn handle_photos_request(state: Arc<RwLock<GuiServiceState>>, uri: Uri) -> GuiServiceResponse {
+fn handle_get_photos(state: Arc<RwLock<GuiServiceState>>, uri: Uri) -> GuiServiceResponse {
     handle_in_thread(
         move || if has_filter_parameter(&uri) {
             PhotosResponse::filtered(&state.read()?.deref()).and_then(serialize)
@@ -210,7 +210,7 @@ fn handle_photos_request(state: Arc<RwLock<GuiServiceState>>, uri: Uri) -> GuiSe
     )
 }
 
-fn handle_locations_request(state: Arc<RwLock<GuiServiceState>>, uri: Uri) -> GuiServiceResponse {
+fn handle_get_locations(state: Arc<RwLock<GuiServiceState>>, uri: Uri) -> GuiServiceResponse {
     handle_in_thread(
         move || {
             queried_indices(&uri)
@@ -224,7 +224,7 @@ fn handle_locations_request(state: Arc<RwLock<GuiServiceState>>, uri: Uri) -> Gu
     )
 }
 
-fn handle_location_request(state: Arc<RwLock<GuiServiceState>>, uri: Uri) -> GuiServiceResponse {
+fn handle_get_location(state: Arc<RwLock<GuiServiceState>>, uri: Uri) -> GuiServiceResponse {
     handle_in_thread(
         move || {
             queried_path(&uri)
@@ -238,7 +238,7 @@ fn handle_location_request(state: Arc<RwLock<GuiServiceState>>, uri: Uri) -> Gui
     )
 }
 
-fn handle_thumbnail_request(uri: Uri) -> GuiServiceResponse {
+fn handle_get_thumbnail(uri: Uri) -> GuiServiceResponse {
     handle_in_thread(
         move || {
             queried_path(&uri)
@@ -251,7 +251,7 @@ fn handle_thumbnail_request(uri: Uri) -> GuiServiceResponse {
     )
 }
 
-fn handle_static_file_request(request_path: &str) -> GuiServiceResponse {
+fn handle_get_static_file(request_path: &str) -> GuiServiceResponse {
     let resolved_path = resolve_path(request_path);
     let owned_path = resolved_path.to_owned();
     handle_in_thread(
@@ -273,7 +273,7 @@ fn handle_put_interpolate(
     })
 }
 
-fn handle_write_location_request(uri: Uri, body: hyper::Body) -> GuiServiceResponse {
+fn handle_put_location(uri: Uri, body: hyper::Body) -> GuiServiceResponse {
     handle_request_body(body, move |bytes| {
         serde_json::from_slice(&bytes)
             .map_err(ServiceError::JsonError)

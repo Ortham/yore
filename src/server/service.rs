@@ -18,6 +18,7 @@ use hyper::server::{Request, Response, Service};
 use hyper::{StatusCode, Method, Uri};
 use serde::Serialize;
 use serde_json;
+use tinyfiledialogs::select_folder_dialog;
 use yore::golo::GoogleLocationHistory;
 
 use super::error::ServiceError;
@@ -64,6 +65,11 @@ impl GuiServiceState {
         self.interpolate
     }
 
+    fn search_new_root_path(&mut self, root_path: PathBuf) {
+        self.root_path = root_path;
+        self.photo_paths = photo_paths(&self.root_path);
+    }
+
     fn set_interpolate(&mut self, interpolate: bool) {
         self.interpolate = interpolate;
     }
@@ -88,6 +94,7 @@ impl Service for GuiService {
 
         match (method, uri.path()) {
             (Method::Get, "/rootPath") => handle_root_path_request(self.0.clone()),
+            (Method::Get, "/rootPath/new") => handle_get_new_root_path(self.0.clone()),
             (Method::Get, "/interpolate") => handle_get_interpolate(self.0.clone()),
 
             (Method::Get, "/photos") => handle_photos_request(self.0.clone(), uri.clone()),
@@ -117,6 +124,20 @@ type GuiServiceResponse = <GuiService as Service>::Future;
 fn handle_root_path_request(state: Arc<RwLock<GuiServiceState>>) -> GuiServiceResponse {
     handle_in_thread(
         move || {
+            let state = state.read()?;
+            serialize(RootPathResponse::new(&state))
+        },
+        mime::APPLICATION_JSON,
+    )
+}
+
+fn handle_get_new_root_path(state: Arc<RwLock<GuiServiceState>>) -> GuiServiceResponse {
+    handle_in_thread(
+        move || {
+            if let Some(path) = select_folder_dialog("", "") {
+                state.write()?.search_new_root_path(PathBuf::from(path));
+            }
+
             let state = state.read()?;
             serialize(RootPathResponse::new(&state))
         },

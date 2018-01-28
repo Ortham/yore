@@ -19,18 +19,19 @@ use hyper::{StatusCode, Method, Uri};
 use serde::Serialize;
 use serde_json;
 use tinyfiledialogs::select_folder_dialog;
-use yore::golo::GoogleLocationHistory;
+use yore::golo::{GoogleLocationHistory, load_location_history};
 
 use super::error::ServiceError;
 use super::image::thumbnail;
-use super::responses::{InterpolateResponse, LocationResponse, LocationsResponse, PhotosResponse,
-                       RootPathResponse};
-use super::super::{exiv2_write_coordinates, photo_paths};
+use super::responses::{InterpolateResponse, LocationHistoryPathResponse, LocationResponse,
+                       LocationsResponse, PhotosResponse, RootPathResponse};
+use super::super::{ApplicationError, exiv2_write_coordinates, photo_paths};
 use super::uri::{has_filter_parameter, queried_dimensions, queried_indices, queried_path};
 
 pub struct GuiServiceState {
     root_path: PathBuf,
     photo_paths: Vec<PathBuf>,
+    location_history_path: PathBuf,
     location_history: GoogleLocationHistory,
     interpolate: bool,
 }
@@ -38,15 +39,19 @@ pub struct GuiServiceState {
 impl GuiServiceState {
     pub fn new(
         root_path: &Path,
-        location_history: GoogleLocationHistory,
+        location_history_path: &Path,
         interpolate: bool,
-    ) -> GuiServiceState {
-        GuiServiceState {
+    ) -> Result<GuiServiceState, ApplicationError> {
+        let location_history_file = File::open(location_history_path)?;
+        let location_history = unsafe { load_location_history(&location_history_file)? };
+
+        Ok(GuiServiceState {
             root_path: root_path.to_path_buf(),
             photo_paths: photo_paths(root_path),
+            location_history_path: location_history_path.to_path_buf(),
             location_history,
             interpolate,
-        }
+        })
     }
 
     pub fn root_path(&self) -> &Path {
@@ -55,6 +60,10 @@ impl GuiServiceState {
 
     pub fn photo_paths(&self) -> &[PathBuf] {
         &self.photo_paths
+    }
+
+    pub fn location_history_path(&self) -> &Path {
+        &self.location_history_path
     }
 
     pub fn location_history(&self) -> &GoogleLocationHistory {
@@ -95,6 +104,7 @@ impl Service for GuiService {
         match (method, uri.path()) {
             (Method::Get, "/rootPath") => handle_root_path_request(self.0.clone()),
             (Method::Get, "/rootPath/new") => handle_get_new_root_path(self.0.clone()),
+            (Method::Get, "/locationHistoryPath") => handle_get_location_history(self.0.clone()),
             (Method::Get, "/interpolate") => handle_get_interpolate(self.0.clone()),
 
             (Method::Get, "/photos") => handle_photos_request(self.0.clone(), uri.clone()),
@@ -140,6 +150,16 @@ fn handle_get_new_root_path(state: Arc<RwLock<GuiServiceState>>) -> GuiServiceRe
 
             let state = state.read()?;
             serialize(RootPathResponse::new(&state))
+        },
+        mime::APPLICATION_JSON,
+    )
+}
+
+fn handle_get_location_history(state: Arc<RwLock<GuiServiceState>>) -> GuiServiceResponse {
+    handle_in_thread(
+        move || {
+            let state = state.read()?;
+            serialize(LocationHistoryPathResponse::new(&state))
         },
         mime::APPLICATION_JSON,
     )
@@ -344,9 +364,9 @@ mod tests {
     fn serialize_should_serialize_the_given_data_structure() {
         let state = GuiServiceState::new(
             Path::new("tests/assets"),
-            GoogleLocationHistory::default(),
+            Path::new("tests/assets/location_history.json"),
             false,
-        );
+        ).unwrap();
         let string = serialize(&RootPathResponse::new(&state)).unwrap();
 
         assert_eq!("{\"rootPath\":\"tests/assets\"}", string);

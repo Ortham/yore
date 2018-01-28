@@ -1,10 +1,8 @@
-use std::fs::File;
 use std::net::{SocketAddr, IpAddr, Ipv4Addr};
 use std::path::Path;
 use std::sync::{Arc, RwLock};
 
 use hyper::server::Http;
-use yore::golo::load_location_history;
 
 mod error;
 mod image;
@@ -22,12 +20,7 @@ pub fn run_server(
     location_history_path: &Path,
     interpolate: bool,
 ) -> Result<(), ApplicationError> {
-    println!("Loading location history...");
-    let location_history_file = File::open(location_history_path)?;
-    let location_history = unsafe { load_location_history(&location_history_file)? };
-
-    println!("Scanning for photos...");
-    let state = GuiServiceState::new(root_path, location_history, interpolate);
+    let state = GuiServiceState::new(root_path, location_history_path, interpolate)?;
     let shared_state = Arc::new(RwLock::new(state));
 
     let address = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), port);

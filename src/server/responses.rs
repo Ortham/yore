@@ -2,7 +2,6 @@ use std::path::{Path, PathBuf};
 
 use rayon::prelude::*;
 use yore::get_location_suggestion;
-use yore::golo::GoogleLocationHistory;
 use yore::{Photo, PhotoLocation};
 
 use super::error::ServiceError;
@@ -18,6 +17,20 @@ pub struct RootPathResponse {
 impl RootPathResponse {
     pub fn new(state: &GuiServiceState) -> RootPathResponse {
         RootPathResponse { root_path: state.root_path().to_path_buf() }
+    }
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LocationHistoryPathResponse {
+    location_history_path: PathBuf,
+}
+
+impl LocationHistoryPathResponse {
+    pub fn new(state: &GuiServiceState) -> LocationHistoryPathResponse {
+        LocationHistoryPathResponse {
+            location_history_path: state.location_history_path().to_path_buf(),
+        }
     }
 }
 
@@ -128,29 +141,42 @@ impl LocationResponse {
 mod tests {
     use super::*;
 
-    use std::fs::File;
     use serde_json::to_string;
-    use yore::golo::load_location_history;
 
     #[test]
     fn root_path_response_new_should_get_the_root_path() {
         let state = GuiServiceState::new(
             Path::new("tests/assets"),
-            GoogleLocationHistory::default(),
+            Path::new("tests/assets/location_history.json"),
             false,
-        );
+        ).unwrap();
         let response = RootPathResponse::new(&state);
 
         assert_eq!(state.root_path(), response.root_path);
     }
 
     #[test]
+    fn location_history_path_response_new_should_get_the_location_history_path() {
+        let state = GuiServiceState::new(
+            Path::new("tests/assets"),
+            Path::new("tests/assets/location_history.json"),
+            false,
+        ).unwrap();
+        let response = LocationHistoryPathResponse::new(&state);
+
+        assert_eq!(
+            state.location_history_path(),
+            response.location_history_path,
+        );
+    }
+
+    #[test]
     fn interpolate_response_new_should_get_the_root_path() {
         let state = GuiServiceState::new(
             Path::new("tests/assets"),
-            GoogleLocationHistory::default(),
+            Path::new("tests/assets/location_history.json"),
             false,
-        );
+        ).unwrap();
         let response = InterpolateResponse::new(&state);
 
         assert_eq!(state.interpolate(), response.interpolate);
@@ -160,9 +186,9 @@ mod tests {
     fn photos_response_new_should_get_data_for_all_found_photos() {
         let state = GuiServiceState::new(
             Path::new("tests/assets"),
-            GoogleLocationHistory::default(),
+            Path::new("tests/assets/location_history.json"),
             false,
-        );
+        ).unwrap();
         let response = PhotosResponse::new(&state).unwrap();
 
         assert_eq!(
@@ -188,11 +214,11 @@ mod tests {
 
     #[test]
     fn filtered_photos_response_new_should_store_indices_of_photos_with_location_suggestions() {
-        let history = unsafe {
-            load_location_history(&File::open("tests/assets/location_history.json").unwrap())
-                .unwrap()
-        };
-        let state = GuiServiceState::new(Path::new("tests/assets"), history, false);
+        let state = GuiServiceState::new(
+            Path::new("tests/assets"),
+            Path::new("tests/assets/location_history.json"),
+            false,
+        ).unwrap();
         let response = PhotosResponse::filtered(&state).unwrap();
 
         assert_eq!(
@@ -207,9 +233,9 @@ mod tests {
     fn locations_response_new_should_get_locations_for_the_given_photo_index_range() {
         let state = GuiServiceState::new(
             Path::new("tests/assets"),
-            GoogleLocationHistory::default(),
+            Path::new("tests/assets/location_history.json"),
             false,
-        );
+        ).unwrap();
         let response = LocationsResponse::new(&state, 1, 3).unwrap();
 
         assert_eq!(1, response.start_index);
@@ -224,9 +250,9 @@ mod tests {
         let path = Path::new("Cargo.toml");
         let state = GuiServiceState::new(
             Path::new("tests/assets"),
-            GoogleLocationHistory::default(),
+            Path::new("tests/assets/location_history.json"),
             false,
-        );
+        ).unwrap();
         let response = LocationResponse::new(path, &state).unwrap();
 
         assert_eq!(path, response.path);
@@ -235,28 +261,13 @@ mod tests {
     }
 
     #[test]
-    fn location_response_new_should_set_only_a_path_for_empty_location_history() {
-        let path = Path::new("tests/assets/photo_without_gps.jpg");
-        let state = GuiServiceState::new(
-            Path::new("tests/assets"),
-            GoogleLocationHistory::default(),
-            false,
-        );
-        let response = LocationResponse::new(path, &state).unwrap();
-
-        assert_eq!(path, response.path);
-        assert!(response.location.is_none());
-        assert!(response.error.is_none());
-    }
-
-    #[test]
     fn get_location_suggestion_should_set_a_location_if_the_photo_has_gps_metadata() {
         let path = Path::new("tests/assets/photo.jpg");
         let state = GuiServiceState::new(
             Path::new("tests/assets"),
-            GoogleLocationHistory::default(),
+            Path::new("tests/assets/location_history.json"),
             false,
-        );
+        ).unwrap();
         let response = LocationResponse::new(path, &state).unwrap();
 
         assert_eq!(path, response.path);

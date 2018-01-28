@@ -24,20 +24,23 @@ exports[`MainPanel renders an image, map, location description and disabled butt
     />
   </section>
   <footer>
-    Existing location
-    <br />
-    <button
-      disabled={true}
-      onClick={[Function]}
-    >
-      Apply
-    </button>
-    <button
-      disabled={true}
-      onClick={[Function]}
-    >
-      Discard
-    </button>
+    <div>
+      Existing location
+    </div>
+    <div>
+      <button
+        disabled={true}
+        onClick={[Function]}
+      >
+        Apply
+      </button>
+      <button
+        disabled={true}
+        onClick={[Function]}
+      >
+        Discard
+      </button>
+    </div>
   </footer>
 </div>
 `;
@@ -72,20 +75,23 @@ exports[`MainPanel renders an image, map, location description and enabled butto
     />
   </section>
   <footer>
-    Suggested location: accuracy is 5 meters and 10 seconds
-    <br />
-    <button
-      disabled={false}
-      onClick={[Function]}
-    >
-      Apply
-    </button>
-    <button
-      disabled={false}
-      onClick={[Function]}
-    >
-      Discard
-    </button>
+    <div>
+      Suggested location: accuracy is 5 meters and 10 seconds
+    </div>
+    <div>
+      <button
+        disabled={false}
+        onClick={[Function]}
+      >
+        Apply
+      </button>
+      <button
+        disabled={false}
+        onClick={[Function]}
+      >
+        Discard
+      </button>
+    </div>
   </footer>
 </div>
 `;
@@ -108,20 +114,23 @@ exports[`MainPanel renders an image, map, text and disabled buttons if photo has
     />
   </section>
   <footer>
-    No location
-    <br />
-    <button
-      disabled={true}
-      onClick={[Function]}
-    >
-      Apply
-    </button>
-    <button
-      disabled={true}
-      onClick={[Function]}
-    >
-      Discard
-    </button>
+    <div>
+      No location
+    </div>
+    <div>
+      <button
+        disabled={true}
+        onClick={[Function]}
+      >
+        Apply
+      </button>
+      <button
+        disabled={true}
+        onClick={[Function]}
+      >
+        Discard
+      </button>
+    </div>
   </footer>
 </div>
 `;
@@ -134,17 +143,19 @@ exports[`MainPanel renders text and disabled buttons if photo is undefined 1`] =
     No photo selected.
   </section>
   <footer>
-    <br />
-    <button
-      disabled={true}
-    >
-      Apply
-    </button>
-    <button
-      disabled={true}
-    >
-      Discard
-    </button>
+    <div />
+    <div>
+      <button
+        disabled={true}
+      >
+        Apply
+      </button>
+      <button
+        disabled={true}
+      >
+        Discard
+      </button>
+    </div>
   </footer>
 </div>
 `;

@@ -12,20 +12,21 @@ export default function MainPanel(props) {
           <MapArea photo={props.photo} />
         </section>
         <footer>
-          {locationDescription(props.photo)}
-          <br />
-          <button
-            disabled={!hasSuggestion(props.photo)}
-            onClick={props.handleSuggestionApply}
-          >
-            Apply
-          </button>
-          <button
-            disabled={!hasSuggestion(props.photo)}
-            onClick={props.handleSuggestionDiscard}
-          >
-            Discard
-          </button>
+          <div>{locationDescription(props.photo)}</div>
+          <div>
+            <button
+              disabled={!hasSuggestion(props.photo)}
+              onClick={props.handleSuggestionApply}
+            >
+              Apply
+            </button>
+            <button
+              disabled={!hasSuggestion(props.photo)}
+              onClick={props.handleSuggestionDiscard}
+            >
+              Discard
+            </button>
+          </div>
         </footer>
       </div>
     );
@@ -34,9 +35,11 @@ export default function MainPanel(props) {
     <div id="main">
       <section>No photo selected.</section>
       <footer>
-        <br />
-        <button disabled>Apply</button>
-        <button disabled>Discard</button>
+        <div />
+        <div>
+          <button disabled>Apply</button>
+          <button disabled>Discard</button>
+        </div>
       </footer>
     </div>
   );

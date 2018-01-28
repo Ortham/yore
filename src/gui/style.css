@@ -95,10 +95,13 @@ body {
     flex-direction: row;
     flex: 1 1 auto;
     justify-content: space-around;
+    height: calc(100% - 96px);
 }
 
 #main > section > * {
+    min-width: 0%;
     max-width: 50%;
+    max-height: 100%;
 }
 
 #main > section > img {
@@ -107,7 +110,10 @@ body {
 
 #main > footer {
     height: 96px;
-    padding: 0 8px;
-    line-height: 48px;
     text-align: center;
+}
+
+#main > footer > * {
+    padding: 8px;
+    height: 32px;
 }

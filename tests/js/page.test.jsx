@@ -11,7 +11,7 @@ import Page from '../../src/gui/js/page'; // eslint-disable-line import/first
 describe('Page', () => {
   let page;
 
-  beforeEach(() => {
+  beforeAll(() => {
     const photos = [
       {
         height: 5,
@@ -72,6 +72,13 @@ describe('Page', () => {
         return null;
       }
     });
+  });
+
+  beforeEach(() => {
+    requests.writeCoordinates.mockClear();
+    requests.getFilteredPhotos.mockClear();
+    requests.getLocation.mockClear();
+    requests.getLocations.mockClear();
   });
 
   test('renders a header, sidebar and main panel', () => {
@@ -171,6 +178,10 @@ describe('Page', () => {
 
   test('getLocationsPromise calls getLocations for range if filterPhotos is false', () => {
     const pageInstance = page.root.instance;
+
+    pageInstance.setState(
+      Object.assign({}, pageInstance.state, { filterPhotos: false })
+    );
 
     return pageInstance.getLocationsPromise(0, 2).then(() => {
       expect(requests.getLocations.mock.calls.length).toBe(1);

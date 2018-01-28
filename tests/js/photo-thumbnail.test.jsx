@@ -6,7 +6,7 @@ describe('PhotoThumbnail', () => {
   let mockHandleSelect;
   let thumbnail;
 
-  beforeEach(() => {
+  beforeAll(() => {
     mockHandleSelect = jest.fn();
 
     thumbnail = renderer
@@ -23,6 +23,10 @@ describe('PhotoThumbnail', () => {
         />
       )
       .toJSON();
+  });
+
+  beforeEach(() => {
+    mockHandleSelect.mockClear();
   });
 
   test('renders a div with an image and an icon', () => {

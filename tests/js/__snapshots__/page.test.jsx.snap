@@ -8,7 +8,9 @@ exports[`Page renders a header, sidebar and main panel 1`] = `
     <h1>
       Yore
     </h1>
-    <div />
+    <div>
+      
+    </div>
   </header>
   <div>
     <Sidebar

@@ -9,7 +9,7 @@ export default class Page extends React.Component {
     super(props);
 
     this.state = {
-      rootPath: props.rootPath || undefined,
+      rootPath: props.rootPath,
       filterPhotos: false,
       currentPhoto: undefined,
       photos: props.photos

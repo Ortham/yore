@@ -35,33 +35,24 @@ impl PhotosResponse {
             .collect::<Result<Vec<ImageDimensions>, ServiceError>>()
             .map(|photos| PhotosResponse { photos })
     }
-}
 
-#[derive(Serialize)]
-pub struct FilteredPhotosResponse {
-    photo_indices: Vec<usize>,
-}
-
-impl FilteredPhotosResponse {
-    pub fn new(state: &GuiServiceState) -> FilteredPhotosResponse {
-        let photo_indices: Vec<usize> = state
+    pub fn filtered(state: &GuiServiceState) -> Result<PhotosResponse, ServiceError> {
+        state
             .photo_paths()
             .par_iter()
-            .enumerate()
-            .filter_map(|(index, path)| {
+            .filter_map(|path| {
                 Photo::new(path).ok().and_then(
                     |photo| if photo.location().is_some() {
                         None
                     } else if state.location_history().contains(photo.timestamp()) {
-                        Some(index)
+                        Some(ImageDimensions::new(path))
                     } else {
                         None
                     },
                 )
             })
-            .collect();
-
-        FilteredPhotosResponse { photo_indices }
+            .collect::<Result<Vec<ImageDimensions>, ServiceError>>()
+            .map(|photos| PhotosResponse { photos })
     }
 }
 
@@ -179,12 +170,13 @@ mod tests {
                 .unwrap()
         };
         let state = GuiServiceState::new(Path::new("tests/assets"), history, false);
-        let response = FilteredPhotosResponse::new(&state);
+        let response = PhotosResponse::filtered(&state).unwrap();
 
-        assert_eq!(1, response.photo_indices.len());
         assert_eq!(
-            Path::new("tests/assets/photo_without_gps.jpg"),
-            state.photo_paths()[response.photo_indices[0]],
+            "{\"photos\":[\
+                {\"path\":\"tests/assets/photo_without_gps.jpg\",\"height\":37,\"width\":55}\
+            ]}",
+            to_string(&response).unwrap().replace("\\\\", "/")
         );
     }
 

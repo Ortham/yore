@@ -20,28 +20,28 @@ function put(url, body) {
   });
 }
 
+function setPhotoSrc(photo) {
+  return Object.assign(photo, {
+    src: `/thumbnail?path=${encodeURIComponent(
+      photo.path
+    )}&maxWidth=500&maxHeight=500`
+  });
+}
+
+function mapPhotos(responseBody) {
+  return responseBody.photos.map(setPhotoSrc);
+}
+
 export function getRootPath() {
   return get('/rootPath');
 }
 
 export function getPhotos() {
-  return get('/photos').then(responseBody =>
-    responseBody.photos.map(photo =>
-      Object.assign(photo, {
-        src: `/thumbnail?path=${encodeURIComponent(
-          photo.path
-        )}&maxWidth=500&maxHeight=500`
-      })
-    )
-  );
+  return get('/photos').then(mapPhotos);
 }
 
-export function getFilteredPhotos(photos) {
-  return get('/photos?filter').then(responseBody =>
-    responseBody.photo_indices.map(index =>
-      Object.assign({}, photos[index], { index })
-    )
-  );
+export function getFilteredPhotos() {
+  return get('/photos?filter').then(mapPhotos);
 }
 
 export function writeCoordinates(path, coordinates) {

@@ -12,8 +12,7 @@ export default class Page extends React.Component {
       rootPath: props.rootPath || undefined,
       filterPhotos: false,
       currentPhoto: undefined,
-      photos: props.photos,
-      sidebarPhotos: props.photos
+      photos: props.photos
     };
 
     this.handleFilterToggle = this.handleFilterToggle.bind(this);
@@ -27,8 +26,7 @@ export default class Page extends React.Component {
     if (this.state.filterPhotos) {
       const promises = [];
       for (let i = startIndex; i < stopIndex; i += 1) {
-        const promise = requests.getLocation(this.state.sidebarPhotos[i].path);
-        promises.push(promise);
+        promises.push(requests.getLocation(this.state.photos[i].path));
       }
 
       return Promise.all(promises);
@@ -39,33 +37,28 @@ export default class Page extends React.Component {
 
   getAndStoreLocations(startIndex, stopIndex) {
     return this.getLocationsPromise(startIndex, stopIndex).then(locations => {
-      const sidebarPhotos = this.state.sidebarPhotos.slice();
+      const photos = this.state.photos.slice();
 
       for (let i = startIndex; i < stopIndex; i += 1) {
-        sidebarPhotos[i].location = locations[i - startIndex].location;
-        sidebarPhotos[i].error = locations[i - startIndex].error;
-        sidebarPhotos[i].loaded = true;
+        photos[i].location = locations[i - startIndex].location;
+        photos[i].error = locations[i - startIndex].error;
+        photos[i].loaded = true;
       }
 
-      this.setState(Object.assign({}, this.state, { sidebarPhotos }));
+      this.setState(Object.assign({}, this.state, { photos }));
     });
   }
 
   handleFilterToggle(event) {
-    const checked = event.target.checked;
+    const filterPhotos = event.target.checked;
     let promise;
-    if (checked) {
-      promise = requests.getFilteredPhotos(this.state.photos);
+    if (filterPhotos) {
+      promise = requests.getFilteredPhotos();
     } else {
-      promise = Promise.resolve(this.state.photos);
+      promise = requests.getPhotos();
     }
     return promise.then(photos => {
-      this.setState(
-        Object.assign({}, this.state, {
-          filterPhotos: checked,
-          sidebarPhotos: photos
-        })
-      );
+      this.setState(Object.assign({}, this.state, { filterPhotos, photos }));
     });
   }
 
@@ -81,30 +74,26 @@ export default class Page extends React.Component {
         this.state.currentPhoto.location.Suggested[0]
       )
       .then(() => {
-        const sidebarPhotos = this.state.sidebarPhotos.slice();
-        const currentPhoto = sidebarPhotos.find(
+        const photos = this.state.photos.slice();
+        const currentPhoto = photos.find(
           photo => photo.path === this.state.currentPhoto.path
         );
         currentPhoto.location.Existing = currentPhoto.location.Suggested[0];
         currentPhoto.location.Suggested = undefined;
 
-        this.setState(
-          Object.assign({}, this.state, { currentPhoto, sidebarPhotos })
-        );
+        this.setState(Object.assign({}, this.state, { currentPhoto, photos }));
         this.sidebar.forceUpdate();
       });
   }
 
   handleSuggestionDiscard() {
-    const sidebarPhotos = this.state.sidebarPhotos.slice();
-    const currentPhoto = sidebarPhotos.find(
+    const photos = this.state.photos.slice();
+    const currentPhoto = photos.find(
       photo => photo.path === this.state.currentPhoto.path
     );
     currentPhoto.location = undefined;
 
-    this.setState(
-      Object.assign({}, this.state, { currentPhoto, sidebarPhotos })
-    );
+    this.setState(Object.assign({}, this.state, { currentPhoto, photos }));
     this.sidebar.forceUpdate();
   }
 
@@ -120,7 +109,7 @@ export default class Page extends React.Component {
             ref={sidebar => {
               this.sidebar = sidebar;
             }}
-            photos={this.state.sidebarPhotos}
+            photos={this.state.photos}
             filterPhotos={this.state.filterPhotos}
             currentPhoto={this.state.currentPhoto}
             handleFilterToggle={this.handleFilterToggle}

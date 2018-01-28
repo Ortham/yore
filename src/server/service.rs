@@ -21,8 +21,7 @@ use yore::golo::GoogleLocationHistory;
 
 use super::error::ServiceError;
 use super::image::thumbnail;
-use super::responses::{FilteredPhotosResponse, LocationResponse, LocationsResponse,
-                       PhotosResponse, RootPathResponse};
+use super::responses::{LocationResponse, LocationsResponse, PhotosResponse, RootPathResponse};
 use super::super::{exiv2_write_coordinates, photo_paths};
 use super::uri::{has_filter_parameter, queried_dimensions, queried_indices, queried_path};
 
@@ -110,7 +109,7 @@ fn handle_root_path_request(state: Arc<GuiServiceState>) -> GuiServiceResponse {
 fn handle_photos_request(state: Arc<GuiServiceState>, uri: Uri) -> GuiServiceResponse {
     handle_in_thread(
         move || if has_filter_parameter(&uri) {
-            serialize(FilteredPhotosResponse::new(&state))
+            PhotosResponse::filtered(&state).and_then(serialize)
         } else {
             PhotosResponse::new(&state).and_then(serialize)
         },

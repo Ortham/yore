@@ -9,38 +9,37 @@ import * as requests from '../../src/gui/js/requests'; // eslint-disable-line im
 import Page from '../../src/gui/js/page'; // eslint-disable-line import/first
 
 describe('Page', () => {
+  const photos = [
+    {
+      height: 5,
+      width: 10,
+      loaded: false,
+      path: 'path 1',
+      src: 'source 1'
+    },
+    {
+      height: 5,
+      width: 10,
+      loaded: true,
+      path: 'path 2',
+      src: 'source 2',
+      location: {
+        Suggested: [
+          {
+            latitude: 52.0,
+            longitude: 13.2
+          },
+          {
+            meters: 5,
+            seconds: 20
+          }
+        ]
+      }
+    }
+  ];
   let page;
 
   beforeAll(() => {
-    const photos = [
-      {
-        height: 5,
-        width: 10,
-        loaded: false,
-        path: 'path 1',
-        src: 'source 1'
-      },
-      {
-        height: 5,
-        width: 10,
-        loaded: true,
-        path: 'path 2',
-        src: 'source 2',
-        location: {
-          Suggested: [
-            {
-              latitude: 52.0,
-              longitude: 13.2
-            },
-            {
-              meters: 5,
-              seconds: 20
-            }
-          ]
-        }
-      }
-    ];
-
     requests.writeCoordinates = jest
       .fn()
       .mockReturnValueOnce(Promise.resolve());
@@ -61,6 +60,7 @@ describe('Page', () => {
         }
       ])
     );
+    requests.getPhotos = jest.fn().mockReturnValueOnce(Promise.resolve(photos));
 
     page = renderer.create(<Page rootPath="" photos={photos} />, {
       createNodeMock: element => {
@@ -79,6 +79,9 @@ describe('Page', () => {
     requests.getFilteredPhotos.mockClear();
     requests.getLocation.mockClear();
     requests.getLocations.mockClear();
+    requests.getPhotos.mockClear();
+
+    page.root.instance.state.photos = photos;
   });
 
   test('renders a header, sidebar and main panel', () => {
@@ -142,10 +145,8 @@ describe('Page', () => {
       .then(() => {
         expect(requests.getFilteredPhotos.mock.calls.length).toBe(1);
         expect(pageInstance.state.filterPhotos).toBe(true);
-        expect(pageInstance.state.sidebarPhotos.length).toBe(1);
-        expect(pageInstance.state.sidebarPhotos[0]).toEqual(
-          pageInstance.state.photos[1]
-        );
+        expect(pageInstance.state.photos.length).toBe(1);
+        expect(pageInstance.state.photos[0]).toEqual(photos[1]);
       });
   });
 
@@ -157,10 +158,7 @@ describe('Page', () => {
       .then(() => {
         expect(requests.getFilteredPhotos.mock.calls.length).toBe(0);
         expect(pageInstance.state.filterPhotos).toBe(false);
-        expect(pageInstance.state.sidebarPhotos.length).toBe(2);
-        expect(pageInstance.state.sidebarPhotos).toEqual(
-          pageInstance.state.photos
-        );
+        expect(pageInstance.state.photos).toEqual(photos);
       });
   });
 
@@ -194,17 +192,17 @@ describe('Page', () => {
     return pageInstance.getAndStoreLocations(0, 2).then(() => {
       expect(requests.getLocations.mock.calls.length).toBe(1);
 
-      expect(pageInstance.state.sidebarPhotos[0].location).toBe(undefined);
-      expect(pageInstance.state.sidebarPhotos[0].error).toBe('Oh no!');
-      expect(pageInstance.state.sidebarPhotos[0].loaded).toBe(true);
-      expect(pageInstance.state.sidebarPhotos[1].location).toEqual({
+      expect(pageInstance.state.photos[0].location).toBe(undefined);
+      expect(pageInstance.state.photos[0].error).toBe('Oh no!');
+      expect(pageInstance.state.photos[0].loaded).toBe(true);
+      expect(pageInstance.state.photos[1].location).toEqual({
         Existing: {
           latitude: 5,
           longitude: 30
         }
       });
-      expect(pageInstance.state.sidebarPhotos[1].error).toBe(undefined);
-      expect(pageInstance.state.sidebarPhotos[1].loaded).toBe(true);
+      expect(pageInstance.state.photos[1].error).toBe(undefined);
+      expect(pageInstance.state.photos[1].loaded).toBe(true);
     });
   });
 });

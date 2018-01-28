@@ -40,6 +40,11 @@ export default class Page extends React.Component {
       const photos = this.state.photos.slice();
 
       for (let i = startIndex; i < stopIndex; i += 1) {
+        // Don't mutate the existing object.
+        photos[i] = Object.assign({}, photos[i]);
+
+        // Assign these here instead of using Object.assign to set any undefined
+        // values.
         photos[i].location = locations[i - startIndex].location;
         photos[i].error = locations[i - startIndex].error;
         photos[i].loaded = true;
@@ -74,12 +79,17 @@ export default class Page extends React.Component {
         this.state.currentPhoto.location.Suggested[0]
       )
       .then(() => {
+        const currentPhoto = Object.assign({}, this.state.currentPhoto, {
+          location: {
+            Existing: this.state.currentPhoto.location.Suggested[0]
+          }
+        });
+
         const photos = this.state.photos.slice();
-        const currentPhoto = photos.find(
-          photo => photo.path === this.state.currentPhoto.path
+        const index = photos.findIndex(
+          photo => photo.path === currentPhoto.path
         );
-        currentPhoto.location.Existing = currentPhoto.location.Suggested[0];
-        currentPhoto.location.Suggested = undefined;
+        photos[index] = currentPhoto;
 
         this.setState(Object.assign({}, this.state, { currentPhoto, photos }));
         this.sidebar.forceUpdate();
@@ -87,11 +97,12 @@ export default class Page extends React.Component {
   }
 
   handleSuggestionDiscard() {
-    const photos = this.state.photos.slice();
-    const currentPhoto = photos.find(
-      photo => photo.path === this.state.currentPhoto.path
-    );
+    const currentPhoto = Object.assign({}, this.state.currentPhoto);
     currentPhoto.location = undefined;
+
+    const photos = this.state.photos.slice();
+    const index = photos.findIndex(photo => photo.path === currentPhoto.path);
+    photos[index] = currentPhoto;
 
     this.setState(Object.assign({}, this.state, { currentPhoto, photos }));
     this.sidebar.forceUpdate();

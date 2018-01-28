@@ -89,6 +89,8 @@ describe('Sidebar', () => {
     photoThumbnail.props.handleSelect();
 
     expect(mockHandlePhotoSelect.mock.calls.length).toBe(1);
+    expect(mockHandlePhotoSelect.mock.calls[0].length).toBe(1);
+    expect(mockHandlePhotoSelect.mock.calls[0][0]).toBe(photos[0]);
   });
 
   test('rowHeight scales the height of the photo at the given index to match a width of 272', () => {
@@ -114,20 +116,24 @@ describe('Sidebar', () => {
 
     sidebar.loadMoreRows({ startIndex: 0, stopIndex: 1 });
     expect(mockGetAndStoreLocations.mock.calls.length).toBe(1);
+    expect(mockGetAndStoreLocations.mock.calls[0]).toEqual([0, 1]);
   });
 
   test('handleFilterToggle should call the handleFilterToggle callback', () => {
     const sidebar = filteredSidebar.root.instance;
+    const event = { target: { checked: true } };
 
     sidebar.list.recomputeRowHeights = jest.fn();
 
-    return sidebar.handleFilterToggle({}).then(() => {
+    return sidebar.handleFilterToggle(event).then(() => {
       expect(mockHandleFilterToggle.mock.calls.length).toBe(1);
+      expect(mockHandleFilterToggle.mock.calls[0].length).toBe(1);
+      expect(mockHandleFilterToggle.mock.calls[0][0]).toBe(event);
       expect(sidebar.list.recomputeRowHeights.mock.calls.length).toBe(1);
     });
   });
 
-  test('forceUpdate should also call forceUpdateGrid on the internal list', () => {
+  test("forceUpdate should force the list's grid to update", () => {
     const sidebar = filteredSidebar.root.instance;
 
     sidebar.list.forceUpdateGrid = jest.fn();

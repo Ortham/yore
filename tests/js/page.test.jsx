@@ -60,7 +60,7 @@ describe('Page', () => {
         }
       ])
     );
-    requests.getPhotos = jest.fn().mockReturnValueOnce(Promise.resolve(photos));
+    requests.getPhotos = jest.fn().mockReturnValue(Promise.resolve(photos));
 
     page = renderer.create(<Page rootPath="" photos={photos} />, {
       createNodeMock: element => {
@@ -82,6 +82,7 @@ describe('Page', () => {
     requests.getPhotos.mockClear();
 
     page.root.instance.state.photos = photos;
+    page.root.instance.state.currentPhoto = undefined;
   });
 
   test('renders a header, sidebar and main panel', () => {
@@ -95,9 +96,7 @@ describe('Page', () => {
 
     pageInstance.handlePhotoSelect(pageInstance.state.photos[1]);
 
-    expect(pageInstance.state.currentPhoto).toEqual(
-      pageInstance.state.photos[1]
-    );
+    expect(pageInstance.state.currentPhoto).toBe(pageInstance.state.photos[1]);
     expect(pageInstance.sidebar.forceUpdate.mock.calls.length).toBe(1);
   });
 
@@ -106,18 +105,32 @@ describe('Page', () => {
 
     pageInstance.handlePhotoSelect(pageInstance.state.photos[1]);
 
+    const currentPhoto = pageInstance.state.currentPhoto;
+    const path = currentPhoto.path;
+    const coordinates = currentPhoto.location.Suggested[0];
+
     return pageInstance.handleSuggestionApply().then(() => {
       expect(requests.writeCoordinates.mock.calls.length).toBe(1);
-      expect(pageInstance.state.currentPhoto.location).toEqual({
-        Existing: {
-          latitude: 52.0,
-          longitude: 13.2
-        }
-      });
-      expect(pageInstance.state.currentPhoto).toEqual(
-        pageInstance.state.photos[1]
-      );
+      expect(requests.writeCoordinates.mock.calls[0].length).toBe(2);
+      expect(requests.writeCoordinates.mock.calls[0][0]).toBe(path);
+      expect(requests.writeCoordinates.mock.calls[0][1]).toBe(coordinates);
       expect(pageInstance.sidebar.forceUpdate.mock.calls.length).toBe(1);
+
+      expect(pageInstance.state.currentPhoto).not.toBe(currentPhoto);
+      expect(pageInstance.state.photos).not.toBe(photos);
+
+      expect(pageInstance.state.currentPhoto.location.Suggested).toBe(
+        undefined
+      );
+      expect(pageInstance.state.currentPhoto.location.Existing).toBe(
+        coordinates
+      );
+
+      expect(pageInstance.state.photos.length).toBe(2);
+      expect(pageInstance.state.photos[0]).toBe(photos[0]);
+      expect(pageInstance.state.photos[1]).toBe(
+        pageInstance.state.currentPhoto
+      );
     });
   });
 
@@ -128,10 +141,13 @@ describe('Page', () => {
 
     pageInstance.handleSuggestionDiscard();
 
+    expect(pageInstance.state.currentPhoto).not.toBe(photos[1]);
     expect(pageInstance.state.currentPhoto.location).toBe(undefined);
-    expect(pageInstance.state.currentPhoto).toEqual(
-      pageInstance.state.photos[1]
-    );
+
+    expect(pageInstance.state.photos).not.toBe(photos);
+    expect(pageInstance.state.photos[0]).toBe(photos[0]);
+    expect(pageInstance.state.photos[1]).toBe(pageInstance.state.currentPhoto);
+
     expect(pageInstance.sidebar.forceUpdate.mock.calls.length).toBe(1);
   });
 
@@ -144,6 +160,7 @@ describe('Page', () => {
       .handleFilterToggle({ target: { checked: true } })
       .then(() => {
         expect(requests.getFilteredPhotos.mock.calls.length).toBe(1);
+
         expect(pageInstance.state.filterPhotos).toBe(true);
         expect(pageInstance.state.photos.length).toBe(1);
         expect(pageInstance.state.photos[0]).toEqual(photos[1]);
@@ -171,6 +188,8 @@ describe('Page', () => {
 
     return pageInstance.getLocationsPromise(0, 2).then(() => {
       expect(requests.getLocation.mock.calls.length).toBe(2);
+      expect(requests.getLocation.mock.calls[0]).toEqual([photos[0].path]);
+      expect(requests.getLocation.mock.calls[1]).toEqual([photos[1].path]);
     });
   });
 
@@ -183,6 +202,7 @@ describe('Page', () => {
 
     return pageInstance.getLocationsPromise(0, 2).then(() => {
       expect(requests.getLocations.mock.calls.length).toBe(1);
+      expect(requests.getLocations.mock.calls[0]).toEqual([0, 2]);
     });
   });
 
@@ -192,9 +212,11 @@ describe('Page', () => {
     return pageInstance.getAndStoreLocations(0, 2).then(() => {
       expect(requests.getLocations.mock.calls.length).toBe(1);
 
+      expect(pageInstance.state.photos[0]).not.toBe(photos[0]);
       expect(pageInstance.state.photos[0].location).toBe(undefined);
       expect(pageInstance.state.photos[0].error).toBe('Oh no!');
       expect(pageInstance.state.photos[0].loaded).toBe(true);
+      expect(pageInstance.state.photos[1]).not.toBe(photos[1]);
       expect(pageInstance.state.photos[1].location).toEqual({
         Existing: {
           latitude: 5,

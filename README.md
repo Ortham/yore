@@ -16,25 +16,17 @@ Yore relies on [Exiv2](http://www.exiv2.org/) to write GPS metadata.
 
 ## Build
 
-The CLI and GUI server are written in [Rust](https://www.rust-lang.org), with it
-installed run
+To build Yore and its browser-based GUI, install
+[Rust](https://www.rust-lang.org) and [Node 8](http://nodejs.org/) then run
 
 ```
+npm install
+npm run build-production
 cargo build --release
 ```
 
 to create a release executable at `target/release/yore` (`yore.exe` on Windows).
-
-The GUI is browser-based, and building it requires [Node 8](http://nodejs.org/).
-With it installed run
-
-```
-yarn install
-yarn build-production
-node ./archive.js
-```
-
-to create a release archive at `dist/yore.zip`.
+The GUI resources are bundled in the executable, so it's the only file you need.
 
 ## Usage
 
@@ -61,10 +53,7 @@ will be displayed instead.
 
 ```
 ./yore -g -l LocationHistory.json photos/
-Loading location history...
-Scanning for photos...
 Listening on http://127.0.0.1:8080
-
 ```
 
 The port Yore listens on can be set using the `-p` CLI argument, and defaults to

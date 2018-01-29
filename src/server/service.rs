@@ -1,7 +1,6 @@
 use std::ffi::OsStr;
 use std::fs::File;
 use std::io;
-use std::io::Read;
 use std::marker::Send;
 use std::ops::Deref;
 use std::path::{Path, PathBuf};
@@ -364,13 +363,18 @@ fn resolve_path(path: &str) -> &Path {
     }
 }
 
-fn read_file_bytes(path: &Path) -> Result<Vec<u8>, ServiceError> {
-    let mut file = File::open(path)?;
-
-    let mut content: Vec<u8> = Vec::new();
-    file.read_to_end(&mut content)?;
-
-    Ok(content)
+fn read_file_bytes(path: &Path) -> Result<&'static [u8], ServiceError> {
+    match path.to_str() {
+        Some("style.css") => Ok(include_bytes!("../../dist/style.css")),
+        Some("index.html") => Ok(include_bytes!("../../dist/index.html")),
+        Some("app.bundle.js") => Ok(include_bytes!("../../dist/app.bundle.js")),
+        _ => {
+            Err(ServiceError::IoError(io::Error::new(
+                io::ErrorKind::NotFound,
+                "unrecognised resource",
+            )))
+        }
+    }
 }
 
 #[cfg(test)]
@@ -461,14 +465,14 @@ mod tests {
     }
 
     #[test]
-    fn read_file_bytes_should_read_the_contents_of_the_file_at_the_given_path() {
-        let path = Path::new("README.md");
-        let content = read_file_bytes(path).unwrap();
+    fn read_file_bytes_should_error_for_an_unrecognised_path() {
+        assert!(read_file_bytes(Path::new("README.md")).is_err());
+    }
 
-        let mut content_string = String::new();
-        let mut file = File::open(path).unwrap();
-        file.read_to_string(&mut content_string).unwrap();
-
-        assert_eq!(content_string.into_bytes(), content);
+    #[test]
+    fn read_file_bytes_should_ok_for_a_recognised_path() {
+        assert!(read_file_bytes(Path::new("index.html")).is_ok());
+        assert!(read_file_bytes(Path::new("style.css")).is_ok());
+        assert!(read_file_bytes(Path::new("app.bundle.js")).is_ok());
     }
 }

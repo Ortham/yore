@@ -1,0 +1,38 @@
+os: Visual Studio 2017
+
+version: "{build}-{branch}"
+
+cache:
+  - node_modules
+  - C:\Users\appveyor\AppData\Local\Yarn\cache
+  - C:\Users\appveyor\.cargo
+  - target
+
+install:
+  - ps: Install-Product node LTS
+
+  - appveyor DownloadFile https://win.rustup.rs/ -FileName rustup-init.exe
+  - rustup-init -yv
+  - set PATH=%PATH%;%USERPROFILE%\.cargo\bin
+  - rustc -vV
+  - cargo -vV
+
+  - rustfmt --version || cargo install rustfmt --version=0.9.0 --force
+  - yarn install
+
+build: false
+
+test_script:
+  - yarn lint
+  - yarn test --ci
+  - yarn build-production
+  - cargo fmt -- --write-mode=diff
+  - cargo test --release
+  - cargo build --release
+
+after_test:
+  - 7z a yore.7z .\target\release\yore.exe
+
+artifacts:
+  - path: yore.7z
+    name: yore

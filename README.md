@@ -1,7 +1,8 @@
 Yore
 ====
 
-[![Build Status](https://www.travis-ci.org/WrinklyNinja/yore.svg?branch=master)](https://www.travis-ci.org/WrinklyNinja/yore)
+[![Travis Build Status](https://www.travis-ci.org/WrinklyNinja/yore.svg?branch=master)](https://www.travis-ci.org/WrinklyNinja/yore)
+[![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/WrinklyNinja/yore?branch=master&svg=true)](https://ci.appveyor.com/project/WrinklyNinja/yore)
 [![Coveralls branch](https://img.shields.io/coveralls/WrinklyNinja/yore/master.svg)](https://coveralls.io/github/WrinklyNinja/yore)
 
 A cross-platform utility to help geotag JPEG photos using your Google
@@ -16,8 +17,8 @@ Yore relies on [Exiv2](http://www.exiv2.org/) to write GPS metadata.
 
 ## Build
 
-To build Yore and its browser-based GUI, install
-[Rust](https://www.rust-lang.org) and [Node 8](http://nodejs.org/) then run
+To build Yore, install [Rust 1.20+](https://www.rust-lang.org) and
+[Node 8+](http://nodejs.org/) then run
 
 ```
 npm install
@@ -25,8 +26,8 @@ npm run build-production
 cargo build --release
 ```
 
-to create a release executable at `target/release/yore` (`yore.exe` on Windows).
-The GUI resources are bundled in the executable, so it's the only file you need.
+to create release executables at `target/release/yore` and
+`target/release/yore-webview` (`yore.exe` and `yore-webview.exe` on Windows).
 
 ## Usage
 
@@ -35,9 +36,9 @@ Before using Yore, you need to
 your Google Location History data as a JSON file.
 
 Also ensure that you have [Exiv2](http://www.exiv2.org/) installed and that its
-executables are on your PATH or in the same directory as your `yore` executable.
-You don't need Exiv2 installed if you don't attempt to save any suggested
-locations.
+executables are on your PATH or in the same directory as your `yore` and/or
+`yore-webview` executable(s). You don't need Exiv2 installed if you aren't going
+to apply any suggested locations.
 
 Suggestions are made by finding the closest match to the photo's date taken
 timestamp in the location history data. The accuracy distance is as recorded by
@@ -49,16 +50,15 @@ Suggestions are not made for photos without date taken timestamps or photos
 which already have location metadata. In the latter case, the existing metadata
 will be displayed instead.
 
-### GUI
+### Webview
+
+Just run `yore-webview`. Alternatively, you can set the initial values for the
+photo and location history file paths and whether or not location suggestions
+are interpolated, using command line parameters:
 
 ```
-./yore -g -l LocationHistory.json photos/
-Listening on http://127.0.0.1:8080
+./yore-webview -i -l LocationHistory.json photos/
 ```
-
-The port Yore listens on can be set using the `-p` CLI argument, and defaults to
-`8080`. Once Yore is listening, open your web browser to the URL Yore is
-listening on, and you'll see Yore's GUI.
 
 ### CLI
 
@@ -70,12 +70,12 @@ To get a suggested location for a single photo:
 "photo.jpg":
         Suggested location: (55.6382576, 12.6572722)
         Suggestion accuracy: 6 metres, -3 seconds
-        View on map: <https://www.google.co.uk/maps/place/55.6382576,12.6572722>
+        View on map: <https://www.google.co.uk/maps/place/55.6382576%2C12.6572722>
 
 Save the suggested location to this image? (y/n)
 ```
 
-Or to recursively scan a directory for photos and get suggested locations for
+To recursively scan a directory for photos and get suggested locations for
 them:
 
 ```
@@ -84,7 +84,7 @@ them:
 "photos/folder1/photo1.jpg":
         Suggested location: (55.6382576, 12.6572722)
         Suggestion accuracy: 6 metres, -3 seconds
-        View on map: <https://www.google.co.uk/maps/place/55.6382576,12.6572722>
+        View on map: <https://www.google.co.uk/maps/place/55.6382576%2C12.6572722>
 
 Save the suggested location to this image? (y/n)
 y
@@ -93,7 +93,7 @@ Location saved for folder1/photo1.jpg
 "photos/folder2/photo2.jpg":
         Suggested location: (55.638164, 12.6563669)
         Suggestion accuracy: 21 metres, 1 minute, 59 seconds
-        View on map: <https://www.google.co.uk/maps/place/55.638164,12.6563669>
+        View on map: <https://www.google.co.uk/maps/place/55.638164%2C12.6563669>
 
 Save the suggested location to this image? (y/n)
 n
@@ -102,9 +102,42 @@ n
         Already has a location: (38.76544, -9.094802222222222)
 ```
 
-Yore can also be run in read-only mode with the `-r` flag, which will skip
-prompts to save suggested locations, and just print out the details for each
-photo found.
+To get location suggestions and skip prompts to save them:
+
+```
+./yore -r -l LocationHistory.json photos/
+
+"photos/folder1/photo1.jpg":
+        Suggested location: (55.6382576, 12.6572722)
+        Suggestion accuracy: 6 metres, -3 seconds
+        View on map: <https://www.google.co.uk/maps/place/55.6382576%2C12.6572722>
+
+"photos/folder2/photo2.jpg":
+        Suggested location: (55.638164, 12.6563669)
+        Suggestion accuracy: 21 metres, 1 minute, 59 seconds
+        View on map: <https://www.google.co.uk/maps/place/55.638164%2C12.6563669>
+
+"photos/folder2/photo3.jpg":
+        Already has a location: (38.76544, -9.094802222222222)
+```
+
+### Browser-based GUI
+
+The CLI can also be used to start a server for the GUI that can then be used via
+a web browser.
+
+```
+./yore -g -l LocationHistory.json photos/
+Listening on http://127.0.0.1:8080
+```
+
+Once Yore is listening, open your web browser to the URL Yore is
+listening on, and you'll see Yore's GUI.
+
+The port Yore listens on can be set using the `-p` CLI argument, and defaults to
+`8080`. A value of `0` will bind the server to an ephemeral port. When running
+the GUI server, the `-r` flag is ignored, and the location history and photo
+path parameters are optional.
 
 ### Interpolation
 

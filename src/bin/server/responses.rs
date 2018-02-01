@@ -177,7 +177,7 @@ mod tests {
 
         assert_eq!(
             state.location_history_path().unwrap(),
-            &response.location_history_path.unwrap(),
+            &response.location_history_path.unwrap()
         );
     }
 

@@ -31,7 +31,7 @@ test_script:
   - cargo build --release
 
 after_test:
-  - 7z a yore.7z .\target\release\yore.exe .\target\release\yore-webview.exe
+  - 7z a yore.7z .\target\release\yore.exe .\target\release\yore-webview.exe README.md
 
 artifacts:
   - path: yore.7z

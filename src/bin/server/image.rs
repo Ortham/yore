@@ -49,6 +49,17 @@ pub fn thumbnail(path: &Path, max_width: u32, max_height: u32) -> Result<Vec<u8>
     Ok(content)
 }
 
+pub fn oriented_image(path: &Path) -> Result<Vec<u8>, ServiceError> {
+    let image = image::open(&path)?;
+    let orientation = Orientation::read(&path)?;
+    let image = fix_image_orientation(image, orientation);
+
+    let mut content: Vec<u8> = Vec::new();
+    image.save(&mut content, image::ImageFormat::JPEG)?;
+
+    Ok(content)
+}
+
 fn viewing_dimensions(image_info: jpeg_decoder::ImageInfo, orientation: Orientation) -> (u16, u16) {
     match orientation {
         Orientation::Untransformed |
@@ -135,6 +146,16 @@ mod tests {
 
         assert_eq!(330, image.width());
         assert_eq!(500, image.height());
+    }
+
+    #[test]
+    fn oriented_image_should_rotate_image_according_to_its_orientation() {
+        let path = Path::new("tests/assets/photo_rotated.jpg");
+        let oriented_image = oriented_image(path).unwrap();
+        let image = image::load_from_memory(&oriented_image).unwrap();
+
+        assert_eq!(33, image.width());
+        assert_eq!(50, image.height());
     }
 
     #[test]

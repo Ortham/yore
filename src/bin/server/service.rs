@@ -22,7 +22,7 @@ use yore::golo::{GoogleLocationHistory, HistoryError, load_location_history};
 
 use common::{exiv2_write_coordinates, photo_paths};
 use super::error::ServiceError;
-use super::image::thumbnail;
+use super::image::{oriented_image, thumbnail};
 use super::responses::{InterpolateResponse, LocationHistoryPathResponse, LocationResponse,
                        LocationsResponse, PhotosResponse, RootPathResponse};
 use super::uri::{has_filter_parameter, queried_dimensions, queried_indices, queried_path};
@@ -113,6 +113,7 @@ impl Service for GuiService {
             (Method::Get, "/photos") => handle_get_photos(self.0.clone(), uri.clone()),
             (Method::Get, "/locations") => handle_get_locations(self.0.clone(), uri.clone()),
             (Method::Get, "/location") => handle_get_location(self.0.clone(), uri.clone()),
+            (Method::Get, "/photo") => handle_get_photo(uri.clone()),
             (Method::Get, "/thumbnail") => handle_get_thumbnail(uri.clone()),
             (Method::Get, path) => handle_get_static_file(path),
 
@@ -239,6 +240,13 @@ fn handle_get_thumbnail(uri: Uri) -> GuiServiceResponse {
                 })
                 .and_then(|(path, width, height)| thumbnail(&path, width, height))
         },
+        mime::IMAGE_JPEG,
+    )
+}
+
+fn handle_get_photo(uri: Uri) -> GuiServiceResponse {
+    handle_in_thread(
+        move || queried_path(&uri).and_then(|path| oriented_image(&path)),
         mime::IMAGE_JPEG,
     )
 }

@@ -27,23 +27,26 @@ MapMarker.propTypes = {
 };
 
 export default function MapArea(props) {
+  let coord = [0, 0];
+  let marker;
   if (props.photo && props.photo.location) {
-    const coord = googleMapsCoordinates(props.photo);
-
-    const style = {
-      position: 'relative',
-      width: '50%'
-    };
-
-    return (
-      <div style={style}>
-        <GoogleMapReact center={coord} zoom={5}>
-          <MapMarker lat={coord.lat} lng={coord.lng} />
-        </GoogleMapReact>
-      </div>
-    );
+    coord = googleMapsCoordinates(props.photo);
+    marker = <MapMarker lat={coord.lat} lng={coord.lng} />;
   }
-  return <GoogleMapReact center={[0, 0]} zoom={5} />;
+
+  const style = {
+    position: 'relative',
+    width: '100%',
+    height: '50%'
+  };
+
+  return (
+    <div style={style}>
+      <GoogleMapReact center={coord} zoom={5}>
+        {marker}
+      </GoogleMapReact>
+    </div>
+  );
 }
 
 MapArea.propTypes = {

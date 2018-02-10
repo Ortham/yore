@@ -4,7 +4,6 @@ import Sidebar from '../../src/gui/js/sidebar';
 
 describe('Sidebar', () => {
   let mockGetAndStoreLocations;
-  let mockHandleFilterToggle;
   let mockHandlePhotoSelect;
   let filteredSidebar;
 
@@ -27,15 +26,12 @@ describe('Sidebar', () => {
 
   beforeAll(() => {
     mockGetAndStoreLocations = jest.fn();
-    mockHandleFilterToggle = jest.fn().mockReturnValueOnce(Promise.resolve());
     mockHandlePhotoSelect = jest.fn();
 
     filteredSidebar = renderer.create(
       <Sidebar
         photos={photos}
-        filterPhotos
         getAndStoreLocations={mockGetAndStoreLocations}
-        handleFilterToggle={mockHandleFilterToggle}
         handlePhotoSelect={mockHandlePhotoSelect}
       />
     );
@@ -43,18 +39,15 @@ describe('Sidebar', () => {
 
   beforeEach(() => {
     mockGetAndStoreLocations.mockClear();
-    mockHandleFilterToggle.mockClear();
     mockHandlePhotoSelect.mockClear();
   });
 
-  test('renders a list of photo thumbnails and a filter checkbox and label', () => {
+  test('renders a grid of photo thumbnails and a filter checkbox and label', () => {
     const sidebar = renderer
       .create(
         <Sidebar
           photos={photos}
-          filterPhotos={false}
           getAndStoreLocations={mockGetAndStoreLocations}
-          handleFilterToggle={mockHandleFilterToggle}
           handlePhotoSelect={mockHandlePhotoSelect}
         />
       )
@@ -62,8 +55,50 @@ describe('Sidebar', () => {
     expect(sidebar).toMatchSnapshot();
   });
 
-  test('passing filterPhotos as true should check the filter checkbox', () => {
-    expect(filteredSidebar.toJSON()).toMatchSnapshot();
+  test('onSectionRendered calls onRowsRendered with the correct indices', () => {
+    const sidebar = filteredSidebar.root.instance;
+    sidebar.columnCount = 5;
+
+    sidebar.onRowsRendered = jest.fn();
+
+    sidebar.onSectionRendered({
+      columnStartIndex: 1,
+      columnStopIndex: 3,
+      rowStartIndex: 2,
+      rowStopIndex: 4
+    });
+
+    expect(sidebar.onRowsRendered.mock.calls.length).toBe(1);
+    expect(sidebar.onRowsRendered.mock.calls[0].length).toBe(1);
+    expect(sidebar.onRowsRendered.mock.calls[0][0]).toEqual({
+      startIndex: 11,
+      stopIndex: 23
+    });
+  });
+
+  test('cellRenderer calls rowRenderer with the correct photo index', () => {
+    const sidebar = filteredSidebar.root.instance;
+    sidebar.columnCount = 5;
+
+    const originalRowRenderer = sidebar.rowRenderer;
+    sidebar.rowRenderer = jest.fn();
+
+    sidebar.cellRenderer({
+      columnIndex: 1,
+      key: 5,
+      rowIndex: 3,
+      style: { height: 'auto' }
+    });
+
+    expect(sidebar.rowRenderer.mock.calls.length).toBe(1);
+    expect(sidebar.rowRenderer.mock.calls[0].length).toBe(1);
+    expect(sidebar.rowRenderer.mock.calls[0][0]).toEqual({
+      index: 16,
+      key: 5,
+      style: { height: 'auto' }
+    });
+
+    sidebar.rowRenderer = originalRowRenderer;
   });
 
   test('rowRenderer returns a PhotoThumbnail for the photo at the given index', () => {
@@ -95,8 +130,9 @@ describe('Sidebar', () => {
 
   test('rowHeight scales the height of the photo at the given index to match a width of 272', () => {
     const sidebar = filteredSidebar.root.instance;
+    sidebar.columnCount = 2;
 
-    expect(sidebar.rowHeight({ index: 0 })).toBe(136);
+    expect(sidebar.rowHeight({ index: 0 })).toBe(75);
   });
 
   test('isRowLoaded returns false if the photo at the given index has loaded = false', () => {
@@ -119,29 +155,15 @@ describe('Sidebar', () => {
     expect(mockGetAndStoreLocations.mock.calls[0]).toEqual([0, 1]);
   });
 
-  test('handleFilterToggle should call the handleFilterToggle callback', () => {
-    const sidebar = filteredSidebar.root.instance;
-    const event = { target: { checked: true } };
-
-    sidebar.list.recomputeRowHeights = jest.fn();
-
-    return sidebar.handleFilterToggle(event).then(() => {
-      expect(mockHandleFilterToggle.mock.calls.length).toBe(1);
-      expect(mockHandleFilterToggle.mock.calls[0].length).toBe(1);
-      expect(mockHandleFilterToggle.mock.calls[0][0]).toBe(event);
-      expect(sidebar.list.recomputeRowHeights.mock.calls.length).toBe(1);
-    });
-  });
-
-  test("forceUpdate should force the list's grid to update and reset the loaded rows cache", () => {
+  test('forceUpdate should force the grid to update and reset the loaded rows cache', () => {
     const sidebar = filteredSidebar.root.instance;
 
-    sidebar.list.forceUpdateGrid = jest.fn();
+    sidebar.grid.recomputeGridSize = jest.fn();
     sidebar.loader.resetLoadMoreRowsCache = jest.fn();
 
     sidebar.forceUpdate();
 
-    expect(sidebar.list.forceUpdateGrid.mock.calls.length).toBe(1);
+    expect(sidebar.grid.recomputeGridSize.mock.calls.length).toBe(1);
     expect(sidebar.loader.resetLoadMoreRowsCache.mock.calls.length).toBe(1);
     expect(sidebar.loader.resetLoadMoreRowsCache.mock.calls[0]).toEqual([true]);
   });

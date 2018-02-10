@@ -21,35 +21,48 @@ exports[`Page renders a header, sidebar and main panel 1`] = `
       </div>
     </div>
     <div>
-      <button
-        onClick={[Function]}
-      >
-        Select Root Path
-      </button>
-      <button
-        onClick={[Function]}
-      >
-        Select Location History
-      </button>
-      <label
-        htmlFor="interpolateCheckbox"
-      >
-        <input
-          checked={false}
-          id="interpolateCheckbox"
-          onChange={[Function]}
-          type="checkbox"
-        />
-        Interpolate locations
-      </label>
+      <div>
+        <button
+          onClick={[Function]}
+        >
+          Select Root Path
+        </button>
+        <label
+          htmlFor="suggestionsCheckbox"
+        >
+          <input
+            checked={false}
+            id="suggestionsCheckbox"
+            onChange={[Function]}
+            type="checkbox"
+          />
+          Show only photos with suggestions
+        </label>
+      </div>
+      <div>
+        <button
+          onClick={[Function]}
+        >
+          Select Location History
+        </button>
+        <label
+          htmlFor="interpolateCheckbox"
+        >
+          <input
+            checked={false}
+            id="interpolateCheckbox"
+            onChange={[Function]}
+            type="checkbox"
+          />
+          Interpolate locations
+        </label>
+      </div>
     </div>
   </header>
   <div>
     <Sidebar
       currentPhoto={undefined}
-      filterPhotos={false}
       getAndStoreLocations={[Function]}
-      handleFilterToggle={[Function]}
       handlePhotoSelect={[Function]}
       photos={
         Array [

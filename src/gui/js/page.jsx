@@ -162,19 +162,32 @@ export default class Page extends React.Component {
             <div>Location history path: {this.state.locationHistoryPath}</div>
           </div>
           <div>
-            <button onClick={this.getNewRootPath}>Select Root Path</button>
-            <button onClick={this.getNewLocationHistory}>
-              Select Location History
-            </button>
-            <label htmlFor="interpolateCheckbox">
-              <input
-                type="checkbox"
-                id="interpolateCheckbox"
-                checked={this.state.interpolate}
-                onChange={this.handleInterpolateToggle}
-              />
-              Interpolate locations
-            </label>
+            <div>
+              <button onClick={this.getNewRootPath}>Select Root Path</button>
+              <label htmlFor="suggestionsCheckbox">
+                <input
+                  type="checkbox"
+                  id="suggestionsCheckbox"
+                  checked={this.state.filterPhotos}
+                  onChange={this.handleFilterToggle}
+                />
+                Show only photos with suggestions
+              </label>
+            </div>
+            <div>
+              <button onClick={this.getNewLocationHistory}>
+                Select Location History
+              </button>
+              <label htmlFor="interpolateCheckbox">
+                <input
+                  type="checkbox"
+                  id="interpolateCheckbox"
+                  checked={this.state.interpolate}
+                  onChange={this.handleInterpolateToggle}
+                />
+                Interpolate locations
+              </label>
+            </div>
           </div>
         </header>
         <div>
@@ -183,9 +196,7 @@ export default class Page extends React.Component {
               this.sidebar = sidebar;
             }}
             photos={this.state.photos}
-            filterPhotos={this.state.filterPhotos}
             currentPhoto={this.state.currentPhoto}
-            handleFilterToggle={this.handleFilterToggle}
             handlePhotoSelect={this.handlePhotoSelect}
             getAndStoreLocations={this.getAndStoreLocations}
           />

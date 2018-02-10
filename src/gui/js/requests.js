@@ -24,7 +24,7 @@ function setPhotoSrc(photo) {
   return Object.assign(photo, {
     src: `/thumbnail?path=${encodeURIComponent(
       photo.path
-    )}&maxWidth=500&maxHeight=500`
+    )}&maxWidth=300&maxHeight=300`
   });
 }
 

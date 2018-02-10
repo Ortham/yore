@@ -20,7 +20,7 @@ body {
     max-height: 80px;
     display: flex;
     flex-direction: row;
-    align-items: baseline;
+    align-items: center;
 }
 
 #titleBar > * {
@@ -41,17 +41,8 @@ body {
     margin-top: 8px;
 }
 
-#titleBar > div {
-    align-self: center;
-}
-
 #titleBar > div:last-child > * {
-    display: inline-block;
     margin: 4px;
-}
-
-#titleBar > div:last-child > button:first-child {
-    display: block;
 }
 
 #root > div {
@@ -70,14 +61,12 @@ body {
     display: flex;
     flex-direction: column;
     flex: 1 1 auto;
-}
-
-#sidebar {
-    max-width: 330px;
+    max-width: 360px;
 }
 
 #photosList {
-    height: calc(100% - 48px);
+    flex: 2 1 auto;
+    height: 100%;
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
@@ -85,7 +74,6 @@ body {
 }
 
 #photosList .photo {
-    padding: 2px;
     width: 150px;
     position: relative;
     overflow-y: hidden;
@@ -109,32 +97,27 @@ body {
     color: black;
 }
 
-#photosList .photo[aria-selected=true] {
+#photosList .photo[aria-selected=true]::after {
     box-shadow: inset 0px 0px 0px 4px lightblue;
-}
-
-#sidebar > footer {
-    height: 48px;
-    padding: 0 8px;
-    line-height: 48px;
+    content: '';
+    display: block;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    width: 100%;
 }
 
 #main > section {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     flex: 1 1 auto;
     justify-content: space-around;
+    align-items: center;
     height: calc(100% - 96px);
 }
 
-#main > section > * {
-    min-width: 0%;
-    max-width: 50%;
-    max-height: 100%;
-}
-
 #main > section > img {
-    align-self: center;
+    max-width: 100%;
 }
 
 #main > footer {

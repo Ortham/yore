@@ -4,8 +4,9 @@ exports[`MapArea renders a map centered and with a marker at the photo's locatio
 <div
   style={
     Object {
+      "height": "50%",
       "position": "relative",
-      "width": "50%",
+      "width": "100%",
     }
   }
 >
@@ -37,25 +38,45 @@ exports[`MapArea renders a map centered and with a marker at the photo's locatio
 `;
 
 exports[`MapArea renders a map centered at (0,0) if no photo prop is set 1`] = `
-<GoogleMapReact
-  center={
-    Array [
-      0,
-      0,
-    ]
+<div
+  style={
+    Object {
+      "height": "50%",
+      "position": "relative",
+      "width": "100%",
+    }
   }
-  zoom={5}
-/>
+>
+  <GoogleMapReact
+    center={
+      Array [
+        0,
+        0,
+      ]
+    }
+    zoom={5}
+  />
+</div>
 `;
 
 exports[`MapArea renders a map centered at (0,0) if the photo has no location 1`] = `
-<GoogleMapReact
-  center={
-    Array [
-      0,
-      0,
-    ]
+<div
+  style={
+    Object {
+      "height": "50%",
+      "position": "relative",
+      "width": "100%",
+    }
   }
-  zoom={5}
-/>
+>
+  <GoogleMapReact
+    center={
+      Array [
+        0,
+        0,
+      ]
+    }
+    zoom={5}
+  />
+</div>
 `;

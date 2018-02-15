@@ -1,6 +1,6 @@
-use std::net::{SocketAddr, IpAddr, Ipv4Addr};
+use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 use std::path::Path;
-use std::sync::{Arc, mpsc, RwLock};
+use std::sync::{mpsc, Arc, RwLock};
 use std::thread;
 
 use hyper::server::Http;
@@ -62,20 +62,18 @@ impl Server {
                 })
                 .expect(&format!("Failed to bind HTTP server to {}", self.address));
 
-            let address = server.local_addr().expect(
-                "Failed to get server's listen address",
-            );
+            let address = server
+                .local_addr()
+                .expect("Failed to get server's listen address");
 
-            tx.send(address).expect(
-                "Failed to send the server's listen address to the main thread",
-            );
+            tx.send(address)
+                .expect("Failed to send the server's listen address to the main thread");
 
             server.run().expect("Failed to run the server");
         });
 
-        let address = rx.recv().expect(
-            "Failed to receive the server's listen address from its main thread",
-        );
+        let address = rx.recv()
+            .expect("Failed to receive the server's listen address from its main thread");
 
         println!("Listening on http://{}", address);
 

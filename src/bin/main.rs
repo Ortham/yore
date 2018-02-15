@@ -20,7 +20,7 @@ mod server;
 
 use std::path::Path;
 
-use clap::{Arg, App};
+use clap::{App, Arg};
 
 use cli::run_cli;
 
@@ -47,9 +47,7 @@ fn main() {
             Arg::with_name("interpolate")
                 .long("interpolate")
                 .short("i")
-                .help(
-                    "Interpolate between locations if an exact match is not found",
-                ),
+                .help("Interpolate between locations if an exact match is not found"),
         )
         .arg(
             Arg::with_name("read-only")
@@ -57,9 +55,12 @@ fn main() {
                 .short("r")
                 .help("Don't offer to save suggested locations"),
         )
-        .arg(Arg::with_name("gui").long("gui").short("g").help(
-            "Start a server for the browser-based GUI",
-        ))
+        .arg(
+            Arg::with_name("gui")
+                .long("gui")
+                .short("g")
+                .help("Start a server for the browser-based GUI"),
+        )
         .arg(
             Arg::with_name("port")
                 .long("port")
@@ -72,9 +73,7 @@ fn main() {
             Arg::with_name("INPUT")
                 .required_unless("gui")
                 .index(1)
-                .help(
-                    "The image or a directory of images to suggest a location for",
-                ),
+                .help("The image or a directory of images to suggest a location for"),
         )
         .get_matches();
 

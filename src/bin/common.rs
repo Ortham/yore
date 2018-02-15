@@ -3,7 +3,7 @@ use std::path::{Path, PathBuf};
 use std::process::{Command, Output, Stdio};
 
 use hyper;
-use yore::{Coordinates, find_jpegs};
+use yore::{find_jpegs, Coordinates};
 use yore::golo::HistoryError;
 
 pub fn photo_paths(root_path: &Path) -> Vec<PathBuf> {
@@ -71,7 +71,6 @@ pub fn exiv2_write_coordinates(path: &Path, coordinates: &Coordinates) -> io::Re
 fn dms_string(coordinate: f64) -> String {
     format!("{}/10000000 0/1 0/1", (coordinate * 1e7) as u32)
 }
-
 
 #[cfg(test)]
 mod tests {

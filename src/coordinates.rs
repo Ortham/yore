@@ -23,7 +23,11 @@ impl Coordinates {
     }
 
     pub fn latitude_ref(&self) -> char {
-        if self.latitude >= 0.0 { 'N' } else { 'S' }
+        if self.latitude >= 0.0 {
+            'N'
+        } else {
+            'S'
+        }
     }
 
     pub fn longitude(&self) -> f64 {
@@ -31,14 +35,17 @@ impl Coordinates {
     }
 
     pub fn longitude_ref(&self) -> char {
-        if self.longitude >= 0.0 { 'E' } else { 'W' }
+        if self.longitude >= 0.0 {
+            'E'
+        } else {
+            'W'
+        }
     }
 
     pub fn map_url(&self) -> String {
         format!(
             "<https://www.google.co.uk/maps/place/{}%2C{}>",
-            self.latitude,
-            self.longitude
+            self.latitude, self.longitude
         )
     }
 
@@ -48,9 +55,9 @@ impl Coordinates {
         let delta_lat = (self.latitude.to_radians() - other.latitude.to_radians()).abs();
         let delta_long = (self.longitude.to_radians() - other.longitude.to_radians()).abs();
 
-        let a = haversine(delta_lat) +
-            self.latitude.to_radians().cos() * other.latitude.to_radians().cos() *
-                haversine(delta_long);
+        let a = haversine(delta_lat)
+            + self.latitude.to_radians().cos() * other.latitude.to_radians().cos()
+                * haversine(delta_long);
 
         2.0 * RADIUS_OF_EARTH_IN_KM * a.sqrt().asin()
     }

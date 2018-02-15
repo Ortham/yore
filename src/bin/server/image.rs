@@ -62,10 +62,10 @@ pub fn oriented_image(path: &Path) -> Result<Vec<u8>, ServiceError> {
 
 fn viewing_dimensions(image_info: jpeg_decoder::ImageInfo, orientation: Orientation) -> (u16, u16) {
     match orientation {
-        Orientation::Untransformed |
-        Orientation::FlippedHorizontally |
-        Orientation::HalfRotated |
-        Orientation::FlippedVertically => (image_info.width, image_info.height),
+        Orientation::Untransformed
+        | Orientation::FlippedHorizontally
+        | Orientation::HalfRotated
+        | Orientation::FlippedVertically => (image_info.width, image_info.height),
         _ => (image_info.height, image_info.width),
     }
 }

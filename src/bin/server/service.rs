@@ -7,20 +7,20 @@ use std::path::{Path, PathBuf};
 use std::sync::{Arc, RwLock};
 use std::thread;
 
-use futures::future::{Future, ok};
+use futures::future::{ok, Future};
 use futures::Stream;
 use futures::sync::oneshot;
 use hyper;
 use hyper::header::{CacheControl, CacheDirective, ContentType};
 use hyper::mime;
 use hyper::server::{Request, Response, Service};
-use hyper::{StatusCode, Method, Uri};
+use hyper::{Method, StatusCode, Uri};
 use serde::Serialize;
 use serde_json;
 use tinyfiledialogs::{open_file_dialog, select_folder_dialog};
-use yore::golo::{GoogleLocationHistory, HistoryError, load_location_history};
+use yore::golo::{load_location_history, GoogleLocationHistory, HistoryError};
 
-use common::{exiv2_write_coordinates, photo_paths};
+use common::{photo_paths, exiv2_write_coordinates};
 use super::error::ServiceError;
 use super::image::{oriented_image, thumbnail};
 use super::responses::{InterpolateResponse, LocationHistoryPathResponse, LocationResponse,
@@ -105,9 +105,9 @@ impl Service for GuiService {
             (Method::Get, "/rootPath") => handle_get_root_path(self.0.clone()),
             (Method::Get, "/rootPath/new") => handle_get_new_root_path(self.0.clone()),
             (Method::Get, "/locationHistoryPath") => handle_get_location_history(self.0.clone()),
-            (Method::Get, "/locationHistory/new") => handle_get_new_location_history(
-                self.0.clone(),
-            ),
+            (Method::Get, "/locationHistory/new") => {
+                handle_get_new_location_history(self.0.clone())
+            }
             (Method::Get, "/interpolate") => handle_get_interpolate(self.0.clone()),
 
             (Method::Get, "/photos") => handle_get_photos(self.0.clone(), uri.clone()),
@@ -119,11 +119,8 @@ impl Service for GuiService {
 
             (Method::Put, "/interpolate") => handle_put_interpolate(self.0.clone(), body),
             (Method::Put, "/location") => handle_put_location(uri.clone(), body),
-            _ => {
-                Box::new(ok(
-                    Response::new().with_status(StatusCode::MethodNotAllowed),
-                ))
-            }
+            _ => Box::new(ok(Response::new()
+                .with_status(StatusCode::MethodNotAllowed))),
         }
     }
 }
@@ -194,10 +191,12 @@ fn handle_get_interpolate(state: Arc<RwLock<GuiServiceState>>) -> GuiServiceResp
 
 fn handle_get_photos(state: Arc<RwLock<GuiServiceState>>, uri: Uri) -> GuiServiceResponse {
     handle_in_thread(
-        move || if has_filter_parameter(&uri) {
-            PhotosResponse::filtered(&state.read()?.deref()).and_then(serialize)
-        } else {
-            PhotosResponse::new(&state.read()?.deref()).and_then(serialize)
+        move || {
+            if has_filter_parameter(&uri) {
+                PhotosResponse::filtered(&state.read()?.deref()).and_then(serialize)
+            } else {
+                PhotosResponse::new(&state.read()?.deref()).and_then(serialize)
+            }
         },
         mime::APPLICATION_JSON,
     )
@@ -277,9 +276,7 @@ fn handle_put_location(uri: Uri, body: hyper::Body) -> GuiServiceResponse {
     handle_request_body(body, move |bytes| {
         serde_json::from_slice(&bytes)
             .map_err(ServiceError::JsonError)
-            .and_then(|coordinates| {
-                queried_path(&uri).map(|path| (path, coordinates))
-            })
+            .and_then(|coordinates| queried_path(&uri).map(|path| (path, coordinates)))
             .and_then(|(path, coordinates)| {
                 exiv2_write_coordinates(&path, &coordinates).map_err(ServiceError::IoError)
             })
@@ -294,10 +291,10 @@ where
         vec.extend(&chunk[..]);
         ok::<Vec<u8>, hyper::Error>(vec)
     }).and_then(move |bytes| {
-            let result = body_handler(bytes).map(|_| Vec::<u8>::new());
+        let result = body_handler(bytes).map(|_| Vec::<u8>::new());
 
-            ok(to_response(result, mime::TEXT_PLAIN_UTF_8))
-        });
+        ok(to_response(result, mime::TEXT_PLAIN_UTF_8))
+    });
 
     Box::new(future)
 }
@@ -312,14 +309,11 @@ where
     thread::spawn(move || {
         let result = handle_request();
 
-        tx.send(to_response(result, response_mime_type)).expect(
-            "Error sending GET /thumbnail response from worker thread",
-        );
+        tx.send(to_response(result, response_mime_type))
+            .expect("Error sending GET /thumbnail response from worker thread");
     });
 
-    Box::new(rx.map_err(|e| {
-        hyper::Error::from(io::Error::new(io::ErrorKind::Other, e))
-    }))
+    Box::new(rx.map_err(|e| hyper::Error::from(io::Error::new(io::ErrorKind::Other, e))))
 }
 
 fn serialize<T: Serialize>(response_data: T) -> Result<String, ServiceError> {
@@ -331,24 +325,18 @@ fn to_response<T: Into<hyper::Body>>(
     mime_type: mime::Mime,
 ) -> Response {
     let response = match result {
-        Ok(body) => {
-            Response::new().with_body(body).with_header(
-                ContentType(mime_type),
-            )
-        }
+        Ok(body) => Response::new()
+            .with_body(body)
+            .with_header(ContentType(mime_type)),
         Err(ServiceError::IoError(ref e)) if e.kind() == io::ErrorKind::NotFound => {
             Response::new().with_status(StatusCode::NotFound)
         }
-        Err(ServiceError::MissingQueryParameter(e)) => {
-            Response::new()
-                .with_status(StatusCode::BadRequest)
-                .with_body(format!("Missing query parameter: {:?}", e))
-        }
-        Err(e) => {
-            Response::new()
-                .with_status(StatusCode::InternalServerError)
-                .with_body(format!("{:?}", e))
-        }
+        Err(ServiceError::MissingQueryParameter(e)) => Response::new()
+            .with_status(StatusCode::BadRequest)
+            .with_body(format!("Missing query parameter: {:?}", e)),
+        Err(e) => Response::new()
+            .with_status(StatusCode::InternalServerError)
+            .with_body(format!("{:?}", e)),
     };
 
     response.with_header(CacheControl(vec![CacheDirective::NoCache]))
@@ -376,12 +364,10 @@ fn read_file_bytes(path: &Path) -> Result<&'static [u8], ServiceError> {
         Some("style.css") => Ok(include_bytes!("../../../dist/style.css")),
         Some("index.html") => Ok(include_bytes!("../../../dist/index.html")),
         Some("app.bundle.js") => Ok(include_bytes!("../../../dist/app.bundle.js")),
-        _ => {
-            Err(ServiceError::IoError(io::Error::new(
-                io::ErrorKind::NotFound,
-                "unrecognised resource",
-            )))
-        }
+        _ => Err(ServiceError::IoError(io::Error::new(
+            io::ErrorKind::NotFound,
+            "unrecognised resource",
+        ))),
     }
 }
 
@@ -415,9 +401,10 @@ mod tests {
 
     #[test]
     fn to_response_should_map_a_not_found_io_error_to_a_404_response() {
-        let result: Result<String, ServiceError> = Err(ServiceError::IoError(
-            io::Error::new(io::ErrorKind::NotFound, ""),
-        ));
+        let result: Result<String, ServiceError> = Err(ServiceError::IoError(io::Error::new(
+            io::ErrorKind::NotFound,
+            "",
+        )));
         let response = to_response(result, mime::TEXT_XML);
 
         assert_eq!(StatusCode::NotFound, response.status());

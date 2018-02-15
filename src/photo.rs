@@ -141,13 +141,11 @@ impl Photo {
 
         match date_time {
             None => Err(PhotoError::TimestampMissing),
-            Some(timestamp) => {
-                Ok(Photo {
-                    path: path.to_path_buf(),
-                    timestamp,
-                    location,
-                })
-            }
+            Some(timestamp) => Ok(Photo {
+                path: path.to_path_buf(),
+                timestamp,
+                location,
+            }),
         }
     }
 

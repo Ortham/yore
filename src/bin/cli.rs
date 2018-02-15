@@ -1,4 +1,3 @@
-
 use std::fs::File;
 use std::io::stdin;
 use std::path::Path;
@@ -6,7 +5,7 @@ use std::path::Path;
 use yore::{get_location_suggestion, PhotoError, PhotoLocation};
 use yore::golo::{load_location_history, GoogleLocationHistory};
 
-use common::{ApplicationError, exiv2_write_coordinates, photo_paths};
+use common::{photo_paths, ApplicationError, exiv2_write_coordinates};
 
 pub fn run_cli(
     root_path: &Path,
@@ -81,9 +80,9 @@ fn should_write() -> bool {
 
     loop {
         let mut input = String::new();
-        stdin().read_line(&mut input).expect(
-            "Couldn't read input line",
-        );
+        stdin()
+            .read_line(&mut input)
+            .expect("Couldn't read input line");
 
         match input.trim() {
             "y" => return true,

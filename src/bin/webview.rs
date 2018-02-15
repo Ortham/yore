@@ -22,7 +22,7 @@ mod server;
 
 use std::path::Path;
 
-use clap::{Arg, App};
+use clap::{App, Arg};
 
 use server::Server;
 
@@ -46,13 +46,13 @@ fn main() {
             Arg::with_name("interpolate")
                 .long("interpolate")
                 .short("i")
-                .help(
-                    "Interpolate between locations if an exact match is not found",
-                ),
+                .help("Interpolate between locations if an exact match is not found"),
         )
-        .arg(Arg::with_name("INPUT").index(1).help(
-            "The image or a directory of images to suggest a location for",
-        ))
+        .arg(
+            Arg::with_name("INPUT")
+                .index(1)
+                .help("The image or a directory of images to suggest a location for"),
+        )
         .get_matches();
 
     let photo_path = matches.value_of("INPUT").map(Path::new);

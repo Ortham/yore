@@ -86,10 +86,10 @@ impl GoogleLocationHistory {
                 let timestamp_ms = timestamp * 1000;
                 let time_offset = timestamp_ms - before.timestamp_ms;
 
-                let latitude_e7 = before.latitude_e7 +
-                    latitude_difference * time_offset / time_difference;
-                let longitude_e7 = before.longitude_e7 +
-                    longitude_difference * time_offset / time_difference;
+                let latitude_e7 =
+                    before.latitude_e7 + latitude_difference * time_offset / time_difference;
+                let longitude_e7 =
+                    before.longitude_e7 + longitude_difference * time_offset / time_difference;
                 let accuracy = interpolate_accuracy(timestamp_ms, before, after);
 
                 Some(Location {
@@ -139,8 +139,9 @@ fn interpolate_accuracy(timestamp_ms: i64, before: &Location, after: &Location) 
     } else if time_offset <= time_difference / 2 {
         before_accuracy + (half_distance - before_accuracy) * time_offset * 2 / time_difference
     } else {
-        half_distance +
-            (after_accuracy - half_distance) * (time_offset * 2 - time_difference) / time_difference
+        half_distance
+            + (after_accuracy - half_distance) * (time_offset * 2 - time_difference)
+                / time_difference
     };
 
     accuracy as u16
@@ -149,8 +150,7 @@ fn interpolate_accuracy(timestamp_ms: i64, before: &Location, after: &Location) 
 #[derive(Clone, Deserialize, PartialEq, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Location {
-    #[serde(deserialize_with = "i64_string::deserialize")]
-    timestamp_ms: i64,
+    #[serde(deserialize_with = "i64_string::deserialize")] timestamp_ms: i64,
     latitude_e7: i64,
     longitude_e7: i64,
     accuracy: u16,
@@ -198,9 +198,9 @@ mod i64_string {
     where
         D: Deserializer<'de>,
     {
-        String::deserialize(deserializer)?.parse::<i64>().map_err(
-            de::Error::custom,
-        )
+        String::deserialize(deserializer)?
+            .parse::<i64>()
+            .map_err(de::Error::custom)
     }
 }
 
@@ -287,7 +287,9 @@ mod tests {
 
     #[test]
     fn contains_should_be_false_if_history_is_empty() {
-        let history = GoogleLocationHistory { locations: BTreeMap::new() };
+        let history = GoogleLocationHistory {
+            locations: BTreeMap::new(),
+        };
 
         assert!(!history.contains(1));
     }
@@ -406,7 +408,9 @@ mod tests {
 
     #[test]
     fn get_most_likely_location_should_return_none_if_no_locations_exist() {
-        let ghl = GoogleLocationHistory { locations: BTreeMap::new() };
+        let ghl = GoogleLocationHistory {
+            locations: BTreeMap::new(),
+        };
 
         let location = ghl.get_most_likely_location(0);
 
@@ -511,7 +515,9 @@ mod tests {
 
     #[test]
     fn interpolate_location_should_return_none_if_no_locations_exist() {
-        let ghl = GoogleLocationHistory { locations: BTreeMap::new() };
+        let ghl = GoogleLocationHistory {
+            locations: BTreeMap::new(),
+        };
 
         let location = ghl.interpolate_location(0);
 

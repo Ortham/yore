@@ -24,7 +24,8 @@ before_install:
   - export PATH=$HOME/.yarn/bin:$PATH
 
 install:
-  - rustfmt --version || cargo install rustfmt --version=0.9.0 --force
+  - rustup component add rustfmt-preview
+  - rustfmt --version
   - cargo install cargo-travis || true
   - yarn install
 

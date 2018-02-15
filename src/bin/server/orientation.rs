@@ -28,10 +28,12 @@ impl Orientation {
 
         let orientation = reader
             .get_field(exif::Tag::Orientation, false)
-            .map(|field| if let exif::Value::Short(ref x) = field.value {
-                Orientation::from_exif_value(x[0])
-            } else {
-                Orientation::Untransformed
+            .map(|field| {
+                if let exif::Value::Short(ref x) = field.value {
+                    Orientation::from_exif_value(x[0])
+                } else {
+                    Orientation::Untransformed
+                }
             })
             .unwrap_or(Orientation::Untransformed);
 

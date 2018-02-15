@@ -11,21 +11,21 @@ use super::image::ImageDimensions;
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct RootPathResponse {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    root_path: Option<PathBuf>,
+    #[serde(skip_serializing_if = "Option::is_none")] root_path: Option<PathBuf>,
 }
 
 impl RootPathResponse {
     pub fn new(state: &GuiServiceState) -> RootPathResponse {
-        RootPathResponse { root_path: state.root_path().cloned() }
+        RootPathResponse {
+            root_path: state.root_path().cloned(),
+        }
     }
 }
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct LocationHistoryPathResponse {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    location_history_path: Option<PathBuf>,
+    #[serde(skip_serializing_if = "Option::is_none")] location_history_path: Option<PathBuf>,
 }
 
 impl LocationHistoryPathResponse {
@@ -43,7 +43,9 @@ pub struct InterpolateResponse {
 
 impl InterpolateResponse {
     pub fn new(state: &GuiServiceState) -> InterpolateResponse {
-        InterpolateResponse { interpolate: state.interpolate() }
+        InterpolateResponse {
+            interpolate: state.interpolate(),
+        }
     }
 }
 
@@ -67,15 +69,15 @@ impl PhotosResponse {
             .photo_paths()
             .par_iter()
             .filter_map(|path| {
-                Photo::new(path).ok().and_then(
-                    |photo| if photo.location().is_some() {
+                Photo::new(path).ok().and_then(|photo| {
+                    if photo.location().is_some() {
                         None
                     } else if state.location_history().contains(photo.timestamp()) {
                         Some(ImageDimensions::new(path))
                     } else {
                         None
-                    },
-                )
+                    }
+                })
             })
             .collect::<Result<Vec<ImageDimensions>, ServiceError>>()
             .map(|photos| PhotosResponse { photos })
@@ -99,12 +101,10 @@ impl LocationsResponse {
             .par_iter()
             .map(|path| LocationResponse::new(path, state))
             .collect::<Result<Vec<LocationResponse>, ServiceError>>()
-            .map(|locations| {
-                LocationsResponse {
-                    locations,
-                    start_index,
-                    stop_index,
-                }
+            .map(|locations| LocationsResponse {
+                locations,
+                start_index,
+                stop_index,
             })
     }
 }
@@ -113,11 +113,9 @@ impl LocationsResponse {
 pub struct LocationResponse {
     path: PathBuf,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
-    location: Option<PhotoLocation>,
+    #[serde(skip_serializing_if = "Option::is_none")] location: Option<PhotoLocation>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
-    error: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")] error: Option<String>,
 }
 
 impl LocationResponse {
@@ -196,21 +194,21 @@ mod tests {
 
         assert_eq!(
             "{\"photos\":[\
-                {\"path\":\"tests/assets/photo.jpg\",\"height\":37,\"width\":55},\
-                {\"path\":\"tests/assets/photo_rotated.jpg\",\"height\":50,\"width\":33},\
-                {\"path\":\"tests/assets/photo_without_exif.jpg\",\"height\":37,\"width\":55},\
-                {\"path\":\"tests/assets/photo_without_gps.jpg\",\"height\":37,\"width\":55},\
-                {\
-                    \"path\":\"tests/assets/photo_without_orientation.jpg\",\
-                    \"height\":33,\
-                    \"width\":50\
-                },\
-                {\
-                    \"path\":\"tests/assets/photo_without_timestamp.jpg\",\
-                    \"height\":37,\
-                    \"width\":55\
-                }\
-            ]}",
+             {\"path\":\"tests/assets/photo.jpg\",\"height\":37,\"width\":55},\
+             {\"path\":\"tests/assets/photo_rotated.jpg\",\"height\":50,\"width\":33},\
+             {\"path\":\"tests/assets/photo_without_exif.jpg\",\"height\":37,\"width\":55},\
+             {\"path\":\"tests/assets/photo_without_gps.jpg\",\"height\":37,\"width\":55},\
+             {\
+             \"path\":\"tests/assets/photo_without_orientation.jpg\",\
+             \"height\":33,\
+             \"width\":50\
+             },\
+             {\
+             \"path\":\"tests/assets/photo_without_timestamp.jpg\",\
+             \"height\":37,\
+             \"width\":55\
+             }\
+             ]}",
             to_string(&response).unwrap().replace("\\\\", "/")
         );
     }
@@ -225,8 +223,8 @@ mod tests {
 
         assert_eq!(
             "{\"photos\":[\
-                {\"path\":\"tests/assets/photo_without_gps.jpg\",\"height\":37,\"width\":55}\
-            ]}",
+             {\"path\":\"tests/assets/photo_without_gps.jpg\",\"height\":37,\"width\":55}\
+             ]}",
             to_string(&response).unwrap().replace("\\\\", "/")
         );
     }

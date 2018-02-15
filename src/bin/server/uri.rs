@@ -41,9 +41,9 @@ pub fn queried_dimensions(uri: &Uri) -> Result<(u32, u32), ServiceError> {
 fn url(uri: &Uri) -> Result<Url, ServiceError> {
     let base_url = Url::parse("http://127.0.0.1/")?;
     let parse_options = Url::options().base_url(Some(&base_url));
-    parse_options.parse(uri.as_ref()).map_err(
-        ServiceError::UrlParseError,
-    )
+    parse_options
+        .parse(uri.as_ref())
+        .map_err(ServiceError::UrlParseError)
 }
 
 fn integer_query_parameter<T: FromStr<Err = ParseIntError>>(
@@ -51,9 +51,9 @@ fn integer_query_parameter<T: FromStr<Err = ParseIntError>>(
     parameter: &'static str,
 ) -> Result<T, ServiceError> {
     query_parameter(url, parameter).and_then(|value| {
-        value.parse().map_err(
-            ServiceError::QueryParameterParseError,
-        )
+        value
+            .parse()
+            .map_err(ServiceError::QueryParameterParseError)
     })
 }
 

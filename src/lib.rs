@@ -1,4 +1,3 @@
-
 extern crate chrono;
 extern crate exif;
 extern crate memmap;

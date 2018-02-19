@@ -5,14 +5,9 @@ language: rust
 addons:
   apt:
     packages:
-      - libcurl4-openssl-dev
-      - libelf-dev
-      - libdw-dev
-      - binutils-dev
-      - cmake
+      - libssl-dev
       - libwebkit2gtk-4.0-dev
     sources:
-      - kalakris-cmake
       - sourceline: 'ppa:webkit-team/ppa'
 
 cache:
@@ -26,7 +21,7 @@ before_install:
 install:
   - rustup component add rustfmt-preview
   - rustfmt --version
-  - cargo install cargo-travis || true
+  - cargo install cargo-tarpaulin || true
   - yarn install
 
 script:
@@ -35,6 +30,5 @@ script:
   - yarn test --ci
   - cargo fmt -- --write-mode=diff
   - cargo test
+  - cargo tarpaulin --ciserver travis-ci --coveralls $TRAVIS_JOB_ID
 
-after_success:
-  - cargo coveralls

@@ -1,4 +1,17 @@
-function get(url) {
+interface Coordinates {
+  latitude: number;
+  longitude: number;
+}
+
+interface Photo {
+  path: string;
+}
+
+interface PhotosResponseBody {
+  photos: Photo[];
+}
+
+function get(url: string) {
   return fetch(url).then(response => {
     if (response.ok) {
       return response.json();
@@ -7,10 +20,10 @@ function get(url) {
   });
 }
 
-function put(url, body) {
+function put(url: string, body: any) {
   const init = {
-    method: 'PUT',
-    body: JSON.stringify(body)
+    body: JSON.stringify(body),
+    method: 'PUT'
   };
 
   return fetch(url, init).then(response => {
@@ -20,7 +33,7 @@ function put(url, body) {
   });
 }
 
-function setPhotoSrc(photo) {
+function setPhotoSrc(photo: Photo) {
   return Object.assign(photo, {
     src: `/thumbnail?path=${encodeURIComponent(
       photo.path
@@ -28,7 +41,7 @@ function setPhotoSrc(photo) {
   });
 }
 
-function mapPhotos(responseBody) {
+function mapPhotos(responseBody: PhotosResponseBody) {
   return responseBody.photos.map(setPhotoSrc);
 }
 
@@ -52,7 +65,7 @@ export function getInterpolate() {
   return get('/interpolate');
 }
 
-export function putInterpolate(interpolate) {
+export function putInterpolate(interpolate: boolean) {
   return put('/interpolate', { interpolate });
 }
 
@@ -64,16 +77,16 @@ export function getFilteredPhotos() {
   return get('/photos?filter').then(mapPhotos);
 }
 
-export function writeCoordinates(path, coordinates) {
+export function writeCoordinates(path: string, coordinates: Coordinates) {
   return put(`/location?path=${encodeURIComponent(path)}`, coordinates);
 }
 
-export function getLocations(startIndex, endIndex) {
+export function getLocations(startIndex: number, endIndex: number) {
   return get(`/locations?start=${startIndex}&end=${endIndex}`).then(
     responseBody => responseBody.locations
   );
 }
 
-export function getLocation(path) {
+export function getLocation(path: string) {
   return get(`/location?path=${encodeURIComponent(path)}`);
 }

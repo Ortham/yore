@@ -1,4 +1,4 @@
-import renderer from 'react-test-renderer';
+import * as renderer from 'react-test-renderer';
 
 jest.mock('react-icons/lib/fa/location-arrow', () => 'FaLocationArrow');
 jest.mock('react-icons/lib/fa/map-marker', () => 'FaMapMarker');

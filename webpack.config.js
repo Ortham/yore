@@ -17,6 +17,7 @@ module.exports = {
     path: paths.DIST,
     filename: 'app.bundle.js'
   },
+  devtool: 'source-map',
   plugins: [
     new HtmlWebpackPlugin({
       template: path.join(paths.SRC, 'index.html')
@@ -30,11 +31,16 @@ module.exports = {
       {
         test: /\.(js|jsx)$/,
         exclude: /node_modules/,
-        use: ['babel-loader']
+        use: ['source-map-loader', 'babel-loader']
+      },
+      {
+        test: /\.(ts|tsx)$/,
+        exclude: /node_modules/,
+        use: ['babel-loader', 'awesome-typescript-loader']
       }
     ]
   },
   resolve: {
-    extensions: ['.js', '.jsx']
+    extensions: ['.js', '.jsx', '.ts', '.tsx']
   }
 };

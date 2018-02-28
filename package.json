@@ -44,5 +44,37 @@
     "build-production": "webpack --optimize-minimize --define process.env.NODE_ENV=\"'production'\"",
     "test": "jest --coverage tests/js",
     "lint": "eslint --ignore-path .gitignore --ext .jsx --ext .js ."
+  },
+  "babel": {
+    "presets": ["env", "react", "es2015-ie"]
+  },
+  "eslintConfig": {
+    "parserOptions": {
+        "ecmaFeatures": {
+            "jsx": true
+        }
+    },
+    "env": {
+        "browser": true,
+        "jest": true
+    },
+    "extends": [
+        "eslint:recommended",
+        "airbnb",
+        "prettier"
+    ],
+    "rules": {
+        "linebreak-style": 0,
+        "prettier/prettier": "error",
+        "curly": ["error", "all"],
+        "no-confusing-arrow": "error",
+        "prefer-destructuring": 0
+    },
+    "plugins": [
+        "prettier"
+    ]
+  },
+  "prettier": {
+    "singleQuote": true
   }
 }

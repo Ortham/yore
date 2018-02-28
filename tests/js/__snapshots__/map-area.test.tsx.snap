@@ -49,10 +49,10 @@ exports[`MapArea renders a map centered at (0,0) if no photo prop is set 1`] = `
 >
   <GoogleMapReact
     center={
-      Array [
-        0,
-        0,
-      ]
+      Object {
+        "lat": 0,
+        "lng": 0,
+      }
     }
     zoom={5}
   />
@@ -71,10 +71,10 @@ exports[`MapArea renders a map centered at (0,0) if the photo has no location 1`
 >
   <GoogleMapReact
     center={
-      Array [
-        0,
-        0,
-      ]
+      Object {
+        "lat": 0,
+        "lng": 0,
+      }
     }
     zoom={5}
   />

@@ -8,9 +8,12 @@
   "license": "MIT",
   "private": true,
   "dependencies": {
+    "@types/google-map-react": "^0.23.2",
     "@types/prop-types": "^15.5.2",
     "@types/react": "^16.0.38",
     "@types/react-dom": "^16.0.4",
+    "@types/react-icons": "^2.2.5",
+    "@types/react-virtualized": "^9.7.12",
     "babel-polyfill": "^6.26.0",
     "google-map-react": "^0.27.0",
     "prop-types": "^15.6.0",
@@ -55,7 +58,8 @@
     "build": "webpack",
     "build-production": "webpack --optimize-minimize --define process.env.NODE_ENV=\"'production'\"",
     "test": "jest --coverage",
-    "lint": "eslint --ignore-path .gitignore --ext .jsx --ext .js . && tslint -c tslint.json 'src/**/*.{ts,tsx}'"
+    "lint": "eslint --ignore-path .gitignore --ext .jsx --ext .js . && tslint -c tslint.json 'src/**/*.{ts,tsx}'",
+    "lint-fix": "eslint --ignore-path .gitignore --ext .jsx --ext .js . --fix && tslint -c tslint.json 'src/**/*.{ts,tsx}' --fix"
   },
   "babel": {
     "presets": [
@@ -90,7 +94,10 @@
         "all"
       ],
       "no-confusing-arrow": "error",
-      "prefer-destructuring": 0
+      "prefer-destructuring": 0,
+      "import/extensions": {
+        "tsx": "never"
+      }
     },
     "plugins": [
       "prettier"

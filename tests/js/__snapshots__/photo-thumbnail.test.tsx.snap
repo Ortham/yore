@@ -12,7 +12,7 @@ exports[`PhotoThumbnail renders a div with an image and an icon 1`] = `
       "top": 5,
     }
   }
-  tabIndex="0"
+  tabIndex={0}
 >
   <img
     alt="thumbnail"

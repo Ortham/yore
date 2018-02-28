@@ -1,9 +1,8 @@
-import React from 'react';
-import FaLocationArrow from 'react-icons/lib/fa/location-arrow';
-import FaMapMarker from 'react-icons/lib/fa/map-marker';
-import FaExclamationCircle from 'react-icons/lib/fa/exclamation-circle';
+import * as React from 'react';
+import {FaExclamationCircle, FaLocationArrow, FaMapMarker} from 'react-icons/lib/fa';
+import {Photo} from './interfaces';
 
-export function locationDescription(photo) {
+export function locationDescription(photo: Photo) {
   if (photo.location && photo.location.Suggested) {
     const accuracy = photo.location.Suggested[1];
     return `Suggested location: accuracy is ${accuracy.meters} meters and ${
@@ -17,11 +16,11 @@ export function locationDescription(photo) {
   return 'No location';
 }
 
-export function hasSuggestion(photo) {
+export function hasSuggestion(photo: Photo) {
   return !!(photo.location && photo.location.Suggested);
 }
 
-export function googleMapsCoordinates(photo) {
+export function googleMapsCoordinates(photo: Photo) {
   if (photo.location) {
     let coordinates;
     if (photo.location.Existing) {
@@ -42,11 +41,12 @@ export function googleMapsCoordinates(photo) {
   };
 }
 
-export function chooseIcon(photo) {
+export function chooseIcon(photo: Photo) {
   let icon;
-  const style = {
+  const style: React.CSSProperties = {
+    left: undefined as string,
     position: 'relative',
-    top: '-2px'
+    top: '-2px',
   };
   if (photo.error) {
     icon = <FaExclamationCircle style={style} />;

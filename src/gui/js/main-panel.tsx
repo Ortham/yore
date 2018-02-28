@@ -1,9 +1,15 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import MapArea from './map-area';
-import { locationDescription, hasSuggestion } from './photo';
+import * as React from 'react';
+import { Photo } from './interfaces';
+import { MapArea } from './map-area';
+import { hasSuggestion, locationDescription } from './photo';
 
-export default function MainPanel(props) {
+export interface MainPanelProps {
+  photo?: Photo;
+  handleSuggestionApply: () => Promise<void>;
+  handleSuggestionDiscard: () => void;
+}
+
+export function MainPanel(props: MainPanelProps) {
   if (props.photo) {
     return (
       <div id="main">
@@ -44,15 +50,3 @@ export default function MainPanel(props) {
     </div>
   );
 }
-
-MainPanel.propTypes = {
-  photo: PropTypes.shape({
-    src: PropTypes.string
-  }),
-  handleSuggestionApply: PropTypes.func.isRequired,
-  handleSuggestionDiscard: PropTypes.func.isRequired
-};
-
-MainPanel.defaultProps = {
-  photo: undefined
-};

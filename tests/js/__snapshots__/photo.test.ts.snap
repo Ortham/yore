@@ -23,6 +23,7 @@ exports[`chooseIcon() returns a map marker element if the photo has an existing 
   <FaMapMarker
     style={
       Object {
+        "left": undefined,
         "position": "relative",
         "top": "-2px",
       }
@@ -38,6 +39,7 @@ exports[`chooseIcon() returns an exclamation circle element if the photo has an 
   <FaExclamationCircle
     style={
       Object {
+        "left": undefined,
         "position": "relative",
         "top": "-2px",
       }

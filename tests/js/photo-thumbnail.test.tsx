@@ -1,6 +1,6 @@
-import React from 'react';
-import renderer from 'react-test-renderer';
-import PhotoThumbnail from '../../src/gui/js/photo-thumbnail';
+import * as React from 'react';
+import * as renderer from 'react-test-renderer';
+import { PhotoThumbnail } from '../../src/gui/js/photo-thumbnail';
 
 describe('PhotoThumbnail', () => {
   let mockHandleSelect;

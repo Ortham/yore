@@ -1,11 +1,4 @@
-interface Coordinates {
-  latitude: number;
-  longitude: number;
-}
-
-interface Photo {
-  path: string;
-}
+import {Coordinates, Photo} from './interfaces';
 
 interface PhotosResponseBody {
   photos: Photo[];

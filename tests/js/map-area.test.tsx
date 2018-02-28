@@ -1,10 +1,19 @@
-import React from 'react';
-import renderer from 'react-test-renderer';
+import * as React from 'react';
+import * as renderer from 'react-test-renderer';
+import { Photo } from '../../src/gui/js/interfaces';
 
-jest.mock('google-map-react', () => 'GoogleMapReact');
-jest.mock('react-icons/lib/fa/map-marker', () => 'FaMapMarker');
+jest.mock('google-map-react', () => {
+  return {
+    'default': 'GoogleMapReact'
+  }
+});
+jest.mock('react-icons/lib/fa', () => {
+  return {
+    'FaMapMarker': 'FaMapMarker'
+  }
+});
 
-import MapArea from '../../src/gui/js/map-area'; // eslint-disable-line import/first
+import { MapArea } from '../../src/gui/js/map-area'; // eslint-disable-line import/first
 
 describe('MapArea', () => {
   test('renders a map centered at (0,0) if no photo prop is set', () => {
@@ -13,7 +22,10 @@ describe('MapArea', () => {
   });
 
   test('renders a map centered at (0,0) if the photo has no location', () => {
-    const photo = {};
+    const photo: Photo = {
+      path: '',
+      src: ''
+    };
     const mapArea = renderer.create(<MapArea photo={photo} />).toJSON();
     expect(mapArea).toMatchSnapshot();
   });
@@ -25,7 +37,9 @@ describe('MapArea', () => {
           latitude: 52.0,
           longitude: 36.2
         }
-      }
+      },
+      path: '',
+      src: ''
     };
     const mapArea = renderer.create(<MapArea photo={photo} />).toJSON();
     expect(mapArea).toMatchSnapshot();

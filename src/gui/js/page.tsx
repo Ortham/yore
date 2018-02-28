@@ -1,20 +1,44 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import MainPanel from './main-panel';
-import Sidebar from './sidebar';
+import * as React from 'react';
+import { Photo } from './interfaces';
+import { MainPanel } from './main-panel';
 import * as requests from './requests';
+import { Sidebar } from './sidebar';
 
-export default class Page extends React.Component {
-  constructor(props) {
+interface CheckboxEvent {
+  target: {
+    checked: boolean;
+  }
+}
+
+export interface PageProps {
+  interpolate: boolean;
+  locationHistoryPath: string;
+  photos: Photo[];
+  rootPath: string;
+}
+
+export interface PageState {
+  currentPhoto: Photo;
+  filterPhotos: boolean;
+  interpolate: boolean;
+  locationHistoryPath: string;
+  photos: Photo[];
+  rootPath: string;
+}
+
+export class Page extends React.Component<PageProps, PageState> {
+  private sidebar: Sidebar;
+
+  constructor(props: PageProps) {
     super(props);
 
     this.state = {
-      rootPath: props.rootPath,
-      locationHistoryPath: props.locationHistoryPath,
-      interpolate: props.interpolate,
-      filterPhotos: false,
       currentPhoto: undefined,
-      photos: props.photos
+      filterPhotos: false,
+      interpolate: props.interpolate,
+      locationHistoryPath: props.locationHistoryPath,
+      photos: props.photos,
+      rootPath: props.rootPath
     };
 
     this.getAndStoreLocations = this.getAndStoreLocations.bind(this);
@@ -27,132 +51,7 @@ export default class Page extends React.Component {
     this.getNewLocationHistory = this.getNewLocationHistory.bind(this);
   }
 
-  getLocationsPromise(startIndex, stopIndex) {
-    if (this.state.filterPhotos) {
-      const promises = [];
-      for (let i = startIndex; i < stopIndex; i += 1) {
-        promises.push(requests.getLocation(this.state.photos[i].path));
-      }
-
-      return Promise.all(promises);
-    }
-
-    return requests.getLocations(startIndex, stopIndex);
-  }
-
-  getAndStoreLocations(startIndex, stopIndex) {
-    return this.getLocationsPromise(startIndex, stopIndex).then(locations => {
-      const photos = this.state.photos.slice();
-
-      for (let i = startIndex; i < stopIndex; i += 1) {
-        // Don't mutate the existing object.
-        photos[i] = Object.assign({}, photos[i]);
-
-        // Assign these here instead of using Object.assign to set any undefined
-        // values.
-        photos[i].location = locations[i - startIndex].location;
-        photos[i].error = locations[i - startIndex].error;
-        photos[i].loaded = true;
-      }
-
-      this.setState(Object.assign({}, this.state, { photos }));
-    });
-  }
-
-  getNewRootPath() {
-    return requests.getNewRootPath().then(responseBody => {
-      const rootPath = responseBody.rootPath;
-      this.setState(Object.assign({}, this.state, { rootPath }));
-
-      return this.handleFilterToggle({
-        target: {
-          checked: this.state.filterPhotos
-        }
-      });
-    });
-  }
-
-  getNewLocationHistory() {
-    return requests.getNewLocationHistory().then(responseBody => {
-      const locationHistoryPath = responseBody.locationHistoryPath;
-      const photos = this.state.photos.map(photo =>
-        Object.assign({}, photo, { loaded: false })
-      );
-
-      this.setState(
-        Object.assign({}, this.state, {
-          locationHistoryPath,
-          photos
-        })
-      );
-
-      this.sidebar.forceUpdate();
-    });
-  }
-
-  handleFilterToggle(event) {
-    const filterPhotos = event.target.checked;
-    let promise;
-    if (filterPhotos) {
-      promise = requests.getFilteredPhotos();
-    } else {
-      promise = requests.getPhotos();
-    }
-    return promise.then(photos => {
-      this.setState(Object.assign({}, this.state, { filterPhotos, photos }));
-    });
-  }
-
-  handleInterpolateToggle(event) {
-    const interpolate = event.target.checked;
-
-    return requests.putInterpolate(interpolate).then(() => {
-      this.setState(Object.assign({}, this.state, { interpolate }));
-    });
-  }
-
-  handlePhotoSelect(photo) {
-    this.setState(Object.assign({}, this.state, { currentPhoto: photo }));
-    this.sidebar.forceUpdate();
-  }
-
-  handleSuggestionApply() {
-    return requests
-      .writeCoordinates(
-        this.state.currentPhoto.path,
-        this.state.currentPhoto.location.Suggested[0]
-      )
-      .then(() => {
-        const currentPhoto = Object.assign({}, this.state.currentPhoto, {
-          location: {
-            Existing: this.state.currentPhoto.location.Suggested[0]
-          }
-        });
-
-        const photos = this.state.photos.slice();
-        const index = photos.findIndex(
-          photo => photo.path === currentPhoto.path
-        );
-        photos[index] = currentPhoto;
-
-        this.setState(Object.assign({}, this.state, { currentPhoto, photos }));
-        this.sidebar.forceUpdate();
-      });
-  }
-
-  handleSuggestionDiscard() {
-    const currentPhoto = Object.assign({}, this.state.currentPhoto);
-    currentPhoto.location = undefined;
-
-    const photos = this.state.photos.slice();
-    const index = photos.findIndex(photo => photo.path === currentPhoto.path);
-    photos[index] = currentPhoto;
-
-    this.setState(Object.assign({}, this.state, { currentPhoto, photos }));
-    this.sidebar.forceUpdate();
-  }
-
-  render() {
+  public render() {
     return (
       <div>
         <header id="titleBar">
@@ -209,19 +108,129 @@ export default class Page extends React.Component {
       </div>
     );
   }
+
+  private getLocationsPromise(startIndex: number, stopIndex: number) {
+    if (this.state.filterPhotos) {
+      const promises = [];
+      for (let i = startIndex; i < stopIndex; i += 1) {
+        promises.push(requests.getLocation(this.state.photos[i].path));
+      }
+
+      return Promise.all(promises);
+    }
+
+    return requests.getLocations(startIndex, stopIndex);
+  }
+
+  private getAndStoreLocations(startIndex: number, stopIndex: number) {
+    return this.getLocationsPromise(startIndex, stopIndex).then(locations => {
+      const photos = this.state.photos.slice();
+
+      for (let i = startIndex; i < stopIndex; i += 1) {
+        // Don't mutate the existing object.
+        photos[i] = Object.assign({}, photos[i]);
+
+        // Assign these here instead of using Object.assign to set any undefined
+        // values.
+        photos[i].location = locations[i - startIndex].location;
+        photos[i].error = locations[i - startIndex].error;
+        photos[i].loaded = true;
+      }
+
+      this.setState(Object.assign({}, this.state, { photos }));
+    });
+  }
+
+  private getNewRootPath() {
+    return requests.getNewRootPath().then(responseBody => {
+      const rootPath = responseBody.rootPath;
+      this.setState(Object.assign({}, this.state, { rootPath }));
+
+      return this.handleFilterToggle({
+        target: {
+          checked: this.state.filterPhotos
+        }
+      });
+    });
+  }
+
+  private getNewLocationHistory() {
+    return requests.getNewLocationHistory().then(responseBody => {
+      const locationHistoryPath = responseBody.locationHistoryPath;
+      const photos = this.state.photos.map(photo =>
+        Object.assign({}, photo, { loaded: false })
+      );
+
+      this.setState(
+        Object.assign({}, this.state, {
+          locationHistoryPath,
+          photos
+        })
+      );
+
+      this.sidebar.forceUpdate();
+    });
+  }
+
+  private handleFilterToggle(event: CheckboxEvent) {
+    const filterPhotos = event.target.checked;
+    let promise;
+    if (filterPhotos) {
+      promise = requests.getFilteredPhotos();
+    } else {
+      promise = requests.getPhotos();
+    }
+    return promise.then(photos => {
+      this.setState(Object.assign({}, this.state, { filterPhotos, photos }));
+    });
+  }
+
+  private handleInterpolateToggle(event: CheckboxEvent) {
+    const interpolate = event.target.checked;
+
+    return requests.putInterpolate(interpolate).then(() => {
+      this.setState(Object.assign({}, this.state, { interpolate }));
+    });
+  }
+
+  private handlePhotoSelect(photo: Photo) {
+    this.setState(Object.assign({}, this.state, { currentPhoto: photo }));
+    this.sidebar.forceUpdate();
+  }
+
+  private handleSuggestionApply() {
+    return requests
+      .writeCoordinates(
+        this.state.currentPhoto.path,
+        this.state.currentPhoto.location.Suggested[0]
+      )
+      .then(() => {
+        const currentPhoto = Object.assign({}, this.state.currentPhoto, {
+          location: {
+            Existing: this.state.currentPhoto.location.Suggested[0]
+          }
+        });
+
+        const photos = this.state.photos.slice();
+        const index = photos.findIndex(
+          photo => photo.path === currentPhoto.path
+        );
+        photos[index] = currentPhoto;
+
+        this.setState(Object.assign({}, this.state, { currentPhoto, photos }));
+        this.sidebar.forceUpdate();
+      });
+  }
+
+  private handleSuggestionDiscard() {
+    const currentPhoto = Object.assign({}, this.state.currentPhoto);
+    currentPhoto.location = undefined;
+
+    const photos = this.state.photos.slice();
+    const index = photos.findIndex(photo => photo.path === currentPhoto.path);
+    photos[index] = currentPhoto;
+
+    this.setState(Object.assign({}, this.state, { currentPhoto, photos }));
+    this.sidebar.forceUpdate();
+  }
 }
-
-const photoType = PropTypes.shape({
-  height: PropTypes.number,
-  width: PropTypes.number,
-  loaded: PropTypes.bool,
-  path: PropTypes.string,
-  src: PropTypes.string
-});
-
-Page.propTypes = {
-  rootPath: PropTypes.string.isRequired,
-  locationHistoryPath: PropTypes.string.isRequired,
-  interpolate: PropTypes.bool.isRequired,
-  photos: PropTypes.arrayOf(photoType).isRequired
-};

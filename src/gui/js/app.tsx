@@ -1,8 +1,9 @@
+
 import 'babel-polyfill';
+import * as React from 'react';
+import * as ReactDOM from 'react-dom';
 import 'whatwg-fetch';
-import React from 'react';
-import ReactDOM from 'react-dom';
-import Page from './page';
+import {Page, PageProps} from './page';
 import {
   getInterpolate,
   getLocationHistoryPath,
@@ -11,11 +12,11 @@ import {
 } from './requests';
 
 function getInitialState() {
-  const state = {
-    rootPath: undefined,
-    filterPhotos: false,
-    currentPhoto: undefined,
-    photos: []
+  const state: PageProps = {
+    interpolate: false,
+    locationHistoryPath: undefined,
+    photos: [],
+    rootPath: undefined
   };
 
   return getRootPath()
@@ -43,12 +44,7 @@ function getInitialState() {
 
 getInitialState().then(state => {
   ReactDOM.render(
-    <Page
-      rootPath={state.rootPath}
-      locationHistoryPath={state.locationHistoryPath}
-      photos={state.photos}
-      interpolate={state.interpolate}
-    />,
+    <Page {...state} />,
     document.getElementById('root')
   );
 });

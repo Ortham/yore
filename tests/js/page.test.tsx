@@ -1,12 +1,16 @@
-import React from 'react';
-import renderer from 'react-test-renderer';
+import * as React from 'react';
+import * as renderer from 'react-test-renderer';
 
-jest.mock('../../src/gui/js/main-panel', () => 'MainPanel');
-jest.mock('../../src/gui/js/sidebar', () => 'Sidebar');
+jest.mock('../../src/gui/js/main-panel', () => ({
+  MainPanel: 'MainPanel'
+}));
+jest.mock('../../src/gui/js/sidebar', () => ({
+  Sidebar: 'Sidebar'
+}));
 jest.unmock('../../src/gui/js/requests');
 
 import * as requests from '../../src/gui/js/requests'; // eslint-disable-line import/first
-import Page from '../../src/gui/js/page'; // eslint-disable-line import/first
+import { Page } from '../../src/gui/js/page'; // eslint-disable-line import/first
 
 describe('Page', () => {
   const photos = [

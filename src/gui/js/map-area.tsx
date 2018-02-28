@@ -31,7 +31,7 @@ export interface MapAreaProps {
 }
 
 export function MapArea(props: MapAreaProps) {
-  let coord = { lat: 0, lng: 0};
+  let coord = { lat: 0, lng: 0 };
   let marker;
   if (props.photo && props.photo.location) {
     coord = googleMapsCoordinates(props.photo);

@@ -1,4 +1,4 @@
-import {Coordinates, Photo} from './interfaces';
+import { Coordinates, Photo } from './interfaces';
 
 interface PhotosResponseBody {
   photos: Photo[];

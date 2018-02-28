@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as renderer from 'react-test-renderer';
-import {Sidebar} from '../../src/gui/js/sidebar';
+import { Sidebar } from '../../src/gui/js/sidebar';
 
 describe('Sidebar', () => {
   let mockGetAndStoreLocations;

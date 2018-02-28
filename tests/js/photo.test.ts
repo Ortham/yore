@@ -1,5 +1,5 @@
 import * as renderer from 'react-test-renderer';
-import { LocationAccuracy } from '../../src/gui/js/interfaces';
+import { Coordinates, LocationAccuracy } from '../../src/gui/js/interfaces';
 
 jest.mock('react-icons/lib/fa/location-arrow', () => 'FaLocationArrow');
 jest.mock('react-icons/lib/fa/map-marker', () => 'FaMapMarker');
@@ -65,7 +65,7 @@ describe('hasSuggestion()', () => {
   test('returns false if photo has no location', () => {
     const photo = {
       path: '',
-      src: '',
+      src: ''
     };
     expect(hasSuggestion(photo)).toBe(false);
   });

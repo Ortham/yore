@@ -1,6 +1,10 @@
 import * as React from 'react';
-import {FaExclamationCircle, FaLocationArrow, FaMapMarker} from 'react-icons/lib/fa';
-import {Photo} from './interfaces';
+import {
+  FaExclamationCircle,
+  FaLocationArrow,
+  FaMapMarker
+} from 'react-icons/lib/fa';
+import { Photo } from './interfaces';
 
 export function locationDescription(photo: Photo) {
   if (photo.location && photo.location.Suggested) {
@@ -46,7 +50,7 @@ export function chooseIcon(photo: Photo) {
   const style: React.CSSProperties = {
     left: undefined as string,
     position: 'relative',
-    top: '-2px',
+    top: '-2px'
   };
   if (photo.error) {
     icon = <FaExclamationCircle style={style} />;

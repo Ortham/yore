@@ -1,9 +1,8 @@
-
 import 'babel-polyfill';
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import 'whatwg-fetch';
-import {Page, PageProps} from './page';
+import { Page, PageProps } from './page';
 import {
   getInterpolate,
   getLocationHistoryPath,
@@ -43,8 +42,5 @@ function getInitialState() {
 }
 
 getInitialState().then(state => {
-  ReactDOM.render(
-    <Page {...state} />,
-    document.getElementById('root')
-  );
+  ReactDOM.render(<Page {...state} />, document.getElementById('root'));
 });

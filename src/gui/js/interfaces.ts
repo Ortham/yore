@@ -5,7 +5,7 @@ export interface Coordinates {
 
 export interface Photo {
   path: string;
-  location?: Location;
+  location?: Location; // eslint-disable-line no-restricted-globals
   error?: string;
   src: string;
   height?: number;
@@ -19,6 +19,6 @@ export interface Location {
 }
 
 export interface LocationAccuracy {
-  meters: number,
-  seconds: number,
+  meters: number;
+  seconds: number;
 }

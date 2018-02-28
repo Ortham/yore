@@ -3,10 +3,10 @@ import { Photo } from './interfaces';
 import { chooseIcon } from './photo';
 
 export interface PhotoThumbnailProps {
-  style: React.CSSProperties,
-  isSelected: boolean,
-  handleSelect: () => void,
-  photo: Photo,
+  isSelected: boolean;
+  photo: Photo;
+  style: React.CSSProperties;
+  handleSelect: () => void;
 }
 
 export function PhotoThumbnail(props: PhotoThumbnailProps) {

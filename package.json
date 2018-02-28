@@ -43,23 +43,22 @@
     "eslint-plugin-jsx-a11y": "^6.0.3",
     "eslint-plugin-prettier": "^2.5.0",
     "eslint-plugin-react": "^7.5.1",
+    "eslint-plugin-typescript": "^0.9.0",
     "html-webpack-plugin": "^2.30.1",
     "jest": "^22.1.4",
     "prettier": "^1.10.2",
     "react-test-renderer": "^16.2.0",
     "source-map-loader": "^0.2.3",
     "ts-jest": "^22.4.0",
-    "tslint": "^5.9.1",
-    "tslint-config-prettier": "^1.9.0",
     "typescript": "^2.7.2",
+    "typescript-eslint-parser": "^14.0.0",
     "webpack": "^3.10.0"
   },
   "scripts": {
     "build": "webpack",
     "build-production": "webpack --optimize-minimize --define process.env.NODE_ENV=\"'production'\"",
     "test": "jest --coverage",
-    "lint": "eslint --ignore-path .gitignore --ext .jsx --ext .js . && tslint -c tslint.json 'src/**/*.{ts,tsx}'",
-    "lint-fix": "eslint --ignore-path .gitignore --ext .jsx --ext .js . --fix && tslint -c tslint.json 'src/**/*.{ts,tsx}' --fix"
+    "lint": "eslint --ignore-path .gitignore --ext .ts --ext .tsx ."
   },
   "babel": {
     "presets": [
@@ -72,6 +71,7 @@
     ]
   },
   "eslintConfig": {
+    "parser": "typescript-eslint-parser",
     "parserOptions": {
       "ecmaFeatures": {
         "jsx": true
@@ -87,6 +87,7 @@
       "prettier"
     ],
     "rules": {
+      "no-undef": 0,
       "linebreak-style": 0,
       "prettier/prettier": "error",
       "curly": [
@@ -97,10 +98,29 @@
       "prefer-destructuring": 0,
       "import/extensions": {
         "tsx": "never"
-      }
+      },
+      "react/jsx-filename-extension": [
+        "error",
+        {
+          "extensions": [
+            ".tsx"
+          ]
+        }
+      ],
+      "react/sort-comp": 0,
+      "typescript/adjacent-overload-signatures": "error",
+      "typescript/class-name-casing": "error",
+      "typescript/explicit-member-accessibility": "error",
+      "typescript/member-delimiter-style": "error",
+      "typescript/member-ordering": "error",
+      "typescript/no-array-constructor": "error",
+      "typescript/no-unused-vars": "error",
+      "typescript/no-use-before-define": "error",
+      "typescript/type-annotation-spacing": "error"
     },
     "plugins": [
-      "prettier"
+      "prettier",
+      "typescript"
     ],
     "settings": {
       "import/resolver": {

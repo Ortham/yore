@@ -1,5 +1,11 @@
 import * as React from 'react';
-import { AutoSizer, Grid, GridCellProps, InfiniteLoader, SectionRenderedParams } from 'react-virtualized';
+import {
+  AutoSizer,
+  Grid,
+  GridCellProps,
+  InfiniteLoader,
+  SectionRenderedParams
+} from 'react-virtualized';
 import { Photo } from './interfaces';
 import { PhotoThumbnail } from './photo-thumbnail';
 
@@ -9,7 +15,10 @@ export interface SidebarProps {
   photos: Photo[];
   currentPhoto?: Photo;
   handlePhotoSelect: (photo: Photo) => void;
-  getAndStoreLocations: (startIndex: number, stopIndex: number) => Promise<void>;
+  getAndStoreLocations: (
+    startIndex: number,
+    stopIndex: number
+  ) => Promise<void>;
 }
 
 interface IndexRange {
@@ -25,11 +34,10 @@ interface RowRendererParameter {
 
 export class Sidebar extends React.Component<SidebarProps, {}> {
   private columnCount: number;
-  private onRowsRendered: (param: IndexRange) => void;
   private grid: Grid;
   private loader: InfiniteLoader;
 
-  constructor(props: SidebarProps) {
+  public constructor(props: SidebarProps) {
     super(props);
 
     this.columnCount = 2;
@@ -89,6 +97,8 @@ export class Sidebar extends React.Component<SidebarProps, {}> {
     );
   }
 
+  private onRowsRendered: (param: IndexRange) => void;
+
   private onSectionRendered({
     columnStartIndex,
     columnStopIndex,
@@ -130,7 +140,7 @@ export class Sidebar extends React.Component<SidebarProps, {}> {
     return photo.height / (photo.width / COLUMN_WIDTH);
   }
 
-  private rowHeight({ index }: { index: number}) {
+  private rowHeight({ index }: { index: number }) {
     const heights = [];
     for (let i = 0; i < this.columnCount; i += 1) {
       heights.push(this.scaledPhotoHeight(index * this.columnCount + i));
@@ -138,7 +148,7 @@ export class Sidebar extends React.Component<SidebarProps, {}> {
     return Math.max(...heights);
   }
 
-  private isRowLoaded({ index }: { index: number}) {
+  private isRowLoaded({ index }: { index: number }) {
     return this.props.photos[index].loaded;
   }
 

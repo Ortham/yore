@@ -2,16 +2,12 @@ import * as React from 'react';
 import * as renderer from 'react-test-renderer';
 import { Photo } from '../../src/gui/js/interfaces';
 
-jest.mock('google-map-react', () => {
-  return {
-    'default': 'GoogleMapReact'
-  }
-});
-jest.mock('react-icons/lib/fa', () => {
-  return {
-    'FaMapMarker': 'FaMapMarker'
-  }
-});
+jest.mock('google-map-react', () => ({
+  default: 'GoogleMapReact'
+}));
+jest.mock('react-icons/lib/fa', () => ({
+  FaMapMarker: 'FaMapMarker'
+}));
 
 import { MapArea } from '../../src/gui/js/map-area'; // eslint-disable-line import/first
 

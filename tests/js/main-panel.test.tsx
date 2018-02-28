@@ -2,11 +2,9 @@ import * as React from 'react';
 import * as renderer from 'react-test-renderer';
 import { LocationAccuracy } from '../../src/gui/js/interfaces';
 
-jest.mock('../../src/gui/js/map-area', () => {
-  return {
-    'MapArea': 'MapArea'
-  }
-});
+jest.mock('../../src/gui/js/map-area', () => ({
+  MapArea: 'MapArea'
+}));
 
 import { MainPanel } from '../../src/gui/js/main-panel'; // eslint-disable-line import/first
 

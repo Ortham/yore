@@ -7,7 +7,7 @@ import { Sidebar } from './sidebar';
 interface CheckboxEvent {
   target: {
     checked: boolean;
-  }
+  };
 }
 
 export interface PageProps {
@@ -29,7 +29,7 @@ export interface PageState {
 export class Page extends React.Component<PageProps, PageState> {
   private sidebar: Sidebar;
 
-  constructor(props: PageProps) {
+  public constructor(props: PageProps) {
     super(props);
 
     this.state = {

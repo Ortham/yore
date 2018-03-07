@@ -24,7 +24,7 @@ To build Yore, install [Rust 1.20+](https://www.rust-lang.org) and
 
 ```
 npm install
-npm run build-production
+npm run build
 cargo build --release
 ```
 

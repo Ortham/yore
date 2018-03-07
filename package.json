@@ -56,7 +56,6 @@
   },
   "scripts": {
     "build": "webpack",
-    "build-production": "webpack --optimize-minimize --define process.env.NODE_ENV=\"'production'\"",
     "test": "jest --coverage",
     "lint": "eslint --ignore-path .gitignore --ext .ts --ext .tsx ."
   },

@@ -11,6 +11,7 @@ const paths = {
 
 // Webpack configuration
 module.exports = {
+  mode: 'production',
   context: path.join(__dirname),
   entry: path.join(paths.JS, 'app.tsx'),
   output: {

@@ -1,6 +1,8 @@
 Yore
 ====
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/WrinklyNinja/yore.svg)](https://greenkeeper.io/)
+
 [![Travis Build Status](https://www.travis-ci.org/WrinklyNinja/yore.svg?branch=master)](https://www.travis-ci.org/WrinklyNinja/yore)
 [![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/WrinklyNinja/yore?branch=master&svg=true)](https://ci.appveyor.com/project/WrinklyNinja/yore)
 [![Coveralls branch](https://img.shields.io/coveralls/WrinklyNinja/yore/master.svg)](https://coveralls.io/github/WrinklyNinja/yore)

@@ -15,7 +15,7 @@
     "@types/react-icons": "^2.2.5",
     "@types/react-virtualized": "^9.7.12",
     "babel-polyfill": "^6.26.0",
-    "google-map-react": "^0.33.0",
+    "google-map-react": "^0.34.0",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
     "react-icons": "^2.2.7",

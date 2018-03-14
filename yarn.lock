@@ -2421,9 +2421,9 @@ eslint-plugin-react@^7.5.1:
     jsx-ast-utils "^2.0.1"
     prop-types "^15.6.0"
 
-eslint-plugin-typescript@^0.9.0:
-  version "0.9.0"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-typescript/-/eslint-plugin-typescript-0.9.0.tgz#9b7075bc1560e879ae3403030564026106a1184d"
+eslint-plugin-typescript@^0.10.0:
+  version "0.10.0"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-typescript/-/eslint-plugin-typescript-0.10.0.tgz#009a8fcaf0ec7bf68f6fb71576df0d84ebd0b114"
   dependencies:
     requireindex "~1.1.0"
 
@@ -3074,9 +3074,9 @@ globby@^7.1.1:
     pify "^3.0.0"
     slash "^1.0.0"
 
-google-map-react@^0.32.0:
-  version "0.32.0"
-  resolved "https://registry.yarnpkg.com/google-map-react/-/google-map-react-0.32.0.tgz#f2c72bb8fa007dafc5fe64f6bfa14b085d812141"
+google-map-react@^0.34.0:
+  version "0.34.0"
+  resolved "https://registry.yarnpkg.com/google-map-react/-/google-map-react-0.34.0.tgz#c645f8b9a7b3b030547dae2964ff79fc00a402b3"
   dependencies:
     "@mapbox/point-geometry" "^0.1.0"
     eventemitter3 "^1.1.0"

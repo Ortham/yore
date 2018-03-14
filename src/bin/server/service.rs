@@ -285,13 +285,10 @@ fn handle_put_location(uri: Uri, body: hyper::Body) -> GuiServiceResponse {
 
 fn handle_request_body<T, F>(body: hyper::Body, body_handler: F) -> GuiServiceResponse
 where
-    F: FnOnce(Vec<u8>) -> Result<T, ServiceError> + Send + 'static,
+    F: FnOnce(&[u8]) -> Result<T, ServiceError> + Send + 'static,
 {
-    let future = body.fold(Vec::new(), |mut vec, chunk| {
-        vec.extend(&chunk[..]);
-        ok::<Vec<u8>, hyper::Error>(vec)
-    }).and_then(move |bytes| {
-        let result = body_handler(bytes).map(|_| Vec::<u8>::new());
+    let future = body.concat2().and_then(move |bytes| {
+        let result = body_handler(&bytes).map(|_| Vec::<u8>::new());
 
         ok(to_response(result, mime::TEXT_PLAIN_UTF_8))
     });

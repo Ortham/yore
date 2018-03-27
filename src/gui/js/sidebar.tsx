@@ -36,6 +36,7 @@ export class Sidebar extends React.Component<SidebarProps, {}> {
   private columnCount: number;
   private grid: Grid;
   private loader: InfiniteLoader;
+  private onRowsRendered: (param: IndexRange) => void;
 
   public constructor(props: SidebarProps) {
     super(props);
@@ -96,8 +97,6 @@ export class Sidebar extends React.Component<SidebarProps, {}> {
       </nav>
     );
   }
-
-  private onRowsRendered: (param: IndexRange) => void;
 
   private onSectionRendered({
     columnStartIndex,

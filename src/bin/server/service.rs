@@ -119,8 +119,7 @@ impl Service for GuiService {
 
             (Method::Put, "/interpolate") => handle_put_interpolate(self.0.clone(), body),
             (Method::Put, "/location") => handle_put_location(uri.clone(), body),
-            _ => Box::new(ok(Response::new()
-                .with_status(StatusCode::MethodNotAllowed))),
+            _ => Box::new(ok(Response::new().with_status(StatusCode::MethodNotAllowed))),
         }
     }
 }

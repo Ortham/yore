@@ -150,7 +150,8 @@ fn interpolate_accuracy(timestamp_ms: i64, before: &Location, after: &Location) 
 #[derive(Clone, Deserialize, PartialEq, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Location {
-    #[serde(deserialize_with = "i64_string::deserialize")] timestamp_ms: i64,
+    #[serde(deserialize_with = "i64_string::deserialize")]
+    timestamp_ms: i64,
     latitude_e7: i64,
     longitude_e7: i64,
     accuracy: u16,

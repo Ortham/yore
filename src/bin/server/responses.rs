@@ -11,7 +11,8 @@ use super::image::ImageDimensions;
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct RootPathResponse {
-    #[serde(skip_serializing_if = "Option::is_none")] root_path: Option<PathBuf>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    root_path: Option<PathBuf>,
 }
 
 impl RootPathResponse {
@@ -25,7 +26,8 @@ impl RootPathResponse {
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct LocationHistoryPathResponse {
-    #[serde(skip_serializing_if = "Option::is_none")] location_history_path: Option<PathBuf>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    location_history_path: Option<PathBuf>,
 }
 
 impl LocationHistoryPathResponse {
@@ -113,9 +115,11 @@ impl LocationsResponse {
 pub struct LocationResponse {
     path: PathBuf,
 
-    #[serde(skip_serializing_if = "Option::is_none")] location: Option<PhotoLocation>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    location: Option<PhotoLocation>,
 
-    #[serde(skip_serializing_if = "Option::is_none")] error: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    error: Option<String>,
 }
 
 impl LocationResponse {

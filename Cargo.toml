@@ -27,8 +27,7 @@ web-view = "0.1.3"
 tempdir = "0.3"
 
 [target.'cfg(windows)'.build-dependencies]
-ico = "0.1.0"
-nsvg = "0.3.2"
+svg_to_ico = "0.1"
 winres = "0.1"
 
 [[bin]]

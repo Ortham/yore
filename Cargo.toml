@@ -24,7 +24,7 @@ walkdir = "2"
 web-view = "0.2.1"
 
 [dev-dependencies]
-tempdir = "0.3"
+tempfile = "3"
 
 [target.'cfg(windows)'.build-dependencies]
 svg_to_ico = "0.1"

@@ -88,13 +88,13 @@ pub fn get_location_suggestion(
 
 #[cfg(test)]
 mod tests {
-    extern crate tempdir;
+    extern crate tempfile;
 
     use super::*;
 
     use std::fs::{copy, create_dir_all, File};
 
-    use self::tempdir::TempDir;
+    use self::tempfile::tempdir;
 
     #[test]
     fn is_jpeg_file_should_return_false_for_a_file_that_does_not_exist() {
@@ -113,7 +113,7 @@ mod tests {
 
     #[test]
     fn is_jpeg_file_should_return_true_for_a_file_with_jpg_file_extension() {
-        let tmp_dir = TempDir::new("yore_test_").unwrap();
+        let tmp_dir = tempdir().unwrap();
 
         assert!(is_jpeg_file(Path::new("tests/assets/photo.jpg")));
 
@@ -125,7 +125,7 @@ mod tests {
 
     #[test]
     fn is_jpeg_file_should_return_true_for_a_file_with_jpeg_file_extension() {
-        let tmp_dir = TempDir::new("yore_test_").unwrap();
+        let tmp_dir = tempdir().unwrap();
 
         let jpeg_file = tmp_dir.path().join("photo.jpeg");
         copy("tests/assets/photo.jpg", &jpeg_file).unwrap();
@@ -140,7 +140,7 @@ mod tests {
 
     #[test]
     fn find_jpegs_should_return_all_jpeg_files_in_directory_recusively() {
-        let tmp_dir = TempDir::new("yore_test_").unwrap();
+        let tmp_dir = tempdir().unwrap();
         let tmp_subdir = tmp_dir.path().join("subdir");
 
         create_dir_all(&tmp_subdir).unwrap();

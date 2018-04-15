@@ -7,7 +7,7 @@ use image;
 use jpeg_decoder;
 use serde_json;
 use url;
-use yore::golo::HistoryError;
+use yore::HistoryError;
 
 #[derive(Debug)]
 pub enum ServiceError {

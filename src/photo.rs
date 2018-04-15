@@ -18,7 +18,7 @@ use coordinates::Coordinates;
 pub struct Photo {
     path: PathBuf,
     timestamp: i64,
-    location: Option<Coordinates>,
+    coordinates: Option<Coordinates>,
 }
 
 #[derive(Debug)]
@@ -102,7 +102,7 @@ impl Photo {
                 }
                 Tag::GPSLatitude => {
                     if let exif::Value::Rational(ref x) = field.value {
-                        latitude = Some(Photo::to_decimal_coordinate(x));
+                        latitude = Some(to_decimal_coordinate(x));
                     }
                 }
                 Tag::GPSLatitudeRef => {
@@ -114,7 +114,7 @@ impl Photo {
                 }
                 Tag::GPSLongitude => {
                     if let exif::Value::Rational(ref x) = field.value {
-                        longitude = Some(Photo::to_decimal_coordinate(x));
+                        longitude = Some(to_decimal_coordinate(x));
                     }
                 }
                 Tag::GPSLongitudeRef => {
@@ -128,15 +128,15 @@ impl Photo {
             }
         }
 
-        let location: Option<Coordinates>;
+        let coordinates: Option<Coordinates>;
         match (longitude, latitude) {
             (Some(longitude), Some(latitude)) => {
-                location = Some(Coordinates::new(
+                coordinates = Some(Coordinates::new(
                     latitude * latitude_sign,
                     longitude * longitude_sign,
                 ));
             }
-            _ => location = None,
+            _ => coordinates = None,
         }
 
         match date_time {
@@ -144,7 +144,7 @@ impl Photo {
             Some(timestamp) => Ok(Photo {
                 path: path.to_path_buf(),
                 timestamp,
-                location,
+                coordinates,
             }),
         }
     }
@@ -157,13 +157,13 @@ impl Photo {
         self.timestamp
     }
 
-    pub fn location(&self) -> Option<&Coordinates> {
-        self.location.as_ref()
+    pub fn gps_coordinates(&self) -> Option<&Coordinates> {
+        self.coordinates.as_ref()
     }
+}
 
-    fn to_decimal_coordinate(dms: &[exif::Rational]) -> f64 {
-        dms[0].to_f64() + dms[1].to_f64() / 60.0 + dms[2].to_f64() / 3600.0
-    }
+fn to_decimal_coordinate(dms: &[exif::Rational]) -> f64 {
+    dms[0].to_f64() + dms[1].to_f64() / 60.0 + dms[2].to_f64() / 3600.0
 }
 
 #[cfg(test)]
@@ -206,13 +206,13 @@ mod tests {
             let photo = Photo::new(Path::new("tests/assets/photo_without_gps.jpg")).unwrap();
 
             assert_eq!(1473158321, photo.timestamp);
-            assert_eq!(None, photo.location);
+            assert_eq!(None, photo.coordinates);
         }
 
         #[test]
         fn should_return_a_photo_object_with_the_image_timestamp_and_gps_from_exif_metadata() {
             let photo = Photo::new(Path::new("tests/assets/photo.jpg")).unwrap();
-            let location = photo.location.unwrap();
+            let location = photo.coordinates.unwrap();
 
             assert_eq!(1473158321, photo.timestamp);
             assert_eq!(38.76544, location.latitude());

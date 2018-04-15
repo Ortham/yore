@@ -72,7 +72,7 @@ impl PhotosResponse {
             .par_iter()
             .filter_map(|path| {
                 Photo::new(path).ok().and_then(|photo| {
-                    if photo.location().is_some() {
+                    if photo.gps_coordinates().is_some() {
                         None
                     } else if state.location_history().contains(photo.timestamp()) {
                         Some(ImageDimensions::new(path))

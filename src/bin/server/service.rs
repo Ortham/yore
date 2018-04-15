@@ -18,7 +18,7 @@ use hyper::{Method, StatusCode, Uri};
 use serde::Serialize;
 use serde_json;
 use tinyfiledialogs::{open_file_dialog, select_folder_dialog};
-use yore::golo::{load_location_history, GoogleLocationHistory, HistoryError};
+use yore::{load_location_history, GoogleLocationHistory, HistoryError};
 
 use super::error::ServiceError;
 use super::image::{oriented_image, thumbnail};

@@ -3,7 +3,7 @@ use std::path::{Path, PathBuf};
 use std::process::{Command, Output, Stdio};
 
 use hyper;
-use yore::golo::HistoryError;
+use yore::HistoryError;
 use yore::{find_jpegs, Coordinates};
 
 pub fn photo_paths(root_path: &Path) -> Vec<PathBuf> {

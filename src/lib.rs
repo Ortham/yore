@@ -9,8 +9,8 @@ extern crate walkdir;
 extern crate serde_derive;
 
 mod coordinates;
-pub mod golo;
-pub mod photo;
+mod golo;
+mod photo;
 mod suggestion_accuracy;
 
 use std::path::Path;
@@ -19,7 +19,7 @@ use std::path::PathBuf;
 use walkdir::WalkDir;
 
 pub use coordinates::Coordinates;
-use golo::GoogleLocationHistory;
+pub use golo::{load_location_history, GoogleLocationHistory, HistoryError, Location};
 pub use photo::Photo;
 pub use photo::PhotoError;
 pub use suggestion_accuracy::SuggestionAccuracy;
@@ -31,7 +31,7 @@ pub enum PhotoLocation {
     None,
 }
 
-pub fn is_jpeg_file(path: &Path) -> bool {
+fn is_jpeg_file(path: &Path) -> bool {
     if !path.is_file() {
         return false;
     }
@@ -59,8 +59,8 @@ pub fn get_location_suggestion(
 ) -> Result<PhotoLocation, PhotoError> {
     let photo = Photo::new(path)?;
 
-    if let Some(location) = photo.location() {
-        return Ok(PhotoLocation::Existing(location.clone()));
+    if let Some(coordinates) = photo.gps_coordinates() {
+        return Ok(PhotoLocation::Existing(coordinates.clone()));
     }
 
     let suggested_location = if interpolate {

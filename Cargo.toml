@@ -32,7 +32,7 @@ winres = "0.1"
 
 [[bin]]
 name = "yore"
-path = "src/bin/main.rs"
+path = "src/bin/cli.rs"
 
 [[bin]]
 name = "yore-webview"

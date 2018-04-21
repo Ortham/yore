@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Sidebar renders a grid of photo thumbnails and a filter checkbox and label 1`] = `
+exports[`PhotosGrid renders a grid of photo thumbnails and a filter checkbox and label 1`] = `
 <nav
   id="photosList"
 >
@@ -40,7 +40,7 @@ exports[`Sidebar renders a grid of photo thumbnails and a filter checkbox and la
 </nav>
 `;
 
-exports[`Sidebar rowRenderer returns a PhotoThumbnail for the photo at the given index 1`] = `
+exports[`PhotosGrid rowRenderer returns a PhotoThumbnail for the photo at the given index 1`] = `
 <PhotoThumbnail
   handleSelect={[Function]}
   isSelected={false}

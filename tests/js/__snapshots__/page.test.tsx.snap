@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Page renders a header, sidebar and main panel 1`] = `
+exports[`Page renders a header, photos grid and main panel 1`] = `
 <div>
   <header
     id="titleBar"
@@ -60,7 +60,7 @@ exports[`Page renders a header, sidebar and main panel 1`] = `
     </div>
   </header>
   <div>
-    <Sidebar
+    <PhotosGrid
       currentPhoto={undefined}
       getAndStoreLocations={[Function]}
       handlePhotoSelect={[Function]}

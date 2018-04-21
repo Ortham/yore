@@ -1,11 +1,11 @@
 import * as React from 'react';
 import * as renderer from 'react-test-renderer';
-import { Sidebar } from '../../src/gui/js/sidebar';
+import { PhotosGrid } from '../../src/gui/js/photos-grid';
 
-describe('Sidebar', () => {
+describe('PhotosGrid', () => {
   let mockGetAndStoreLocations;
   let mockHandlePhotoSelect;
-  let filteredSidebar;
+  let filteredPhotosGrid;
 
   const photos = [
     {
@@ -28,8 +28,8 @@ describe('Sidebar', () => {
     mockGetAndStoreLocations = jest.fn();
     mockHandlePhotoSelect = jest.fn();
 
-    filteredSidebar = renderer.create(
-      <Sidebar
+    filteredPhotosGrid = renderer.create(
+      <PhotosGrid
         photos={photos}
         getAndStoreLocations={mockGetAndStoreLocations}
         handlePhotoSelect={mockHandlePhotoSelect}
@@ -43,68 +43,68 @@ describe('Sidebar', () => {
   });
 
   test('renders a grid of photo thumbnails and a filter checkbox and label', () => {
-    const sidebar = renderer
+    const photosGrid = renderer
       .create(
-        <Sidebar
+        <PhotosGrid
           photos={photos}
           getAndStoreLocations={mockGetAndStoreLocations}
           handlePhotoSelect={mockHandlePhotoSelect}
         />
       )
       .toJSON();
-    expect(sidebar).toMatchSnapshot();
+    expect(photosGrid).toMatchSnapshot();
   });
 
   test('onSectionRendered calls onRowsRendered with the correct indices', () => {
-    const sidebar = filteredSidebar.root.instance;
-    sidebar.columnCount = 5;
+    const photosGrid = filteredPhotosGrid.root.instance;
+    photosGrid.columnCount = 5;
 
-    sidebar.onRowsRendered = jest.fn();
+    photosGrid.onRowsRendered = jest.fn();
 
-    sidebar.onSectionRendered({
+    photosGrid.onSectionRendered({
       columnStartIndex: 1,
       columnStopIndex: 3,
       rowStartIndex: 2,
       rowStopIndex: 4
     });
 
-    expect(sidebar.onRowsRendered.mock.calls.length).toBe(1);
-    expect(sidebar.onRowsRendered.mock.calls[0].length).toBe(1);
-    expect(sidebar.onRowsRendered.mock.calls[0][0]).toEqual({
+    expect(photosGrid.onRowsRendered.mock.calls.length).toBe(1);
+    expect(photosGrid.onRowsRendered.mock.calls[0].length).toBe(1);
+    expect(photosGrid.onRowsRendered.mock.calls[0][0]).toEqual({
       startIndex: 11,
       stopIndex: 23
     });
   });
 
   test('cellRenderer calls rowRenderer with the correct photo index', () => {
-    const sidebar = filteredSidebar.root.instance;
-    sidebar.columnCount = 5;
+    const photosGrid = filteredPhotosGrid.root.instance;
+    photosGrid.columnCount = 5;
 
-    const originalRowRenderer = sidebar.rowRenderer;
-    sidebar.rowRenderer = jest.fn();
+    const originalRowRenderer = photosGrid.rowRenderer;
+    photosGrid.rowRenderer = jest.fn();
 
-    sidebar.cellRenderer({
+    photosGrid.cellRenderer({
       columnIndex: 1,
       key: 5,
       rowIndex: 3,
       style: { height: 'auto' }
     });
 
-    expect(sidebar.rowRenderer.mock.calls.length).toBe(1);
-    expect(sidebar.rowRenderer.mock.calls[0].length).toBe(1);
-    expect(sidebar.rowRenderer.mock.calls[0][0]).toEqual({
+    expect(photosGrid.rowRenderer.mock.calls.length).toBe(1);
+    expect(photosGrid.rowRenderer.mock.calls[0].length).toBe(1);
+    expect(photosGrid.rowRenderer.mock.calls[0][0]).toEqual({
       index: 16,
       key: 5,
       style: { height: 'auto' }
     });
 
-    sidebar.rowRenderer = originalRowRenderer;
+    photosGrid.rowRenderer = originalRowRenderer;
   });
 
   test('rowRenderer returns a PhotoThumbnail for the photo at the given index', () => {
-    const sidebar = filteredSidebar.root.instance;
+    const photosGrid = filteredPhotosGrid.root.instance;
 
-    const photoThumbnail = sidebar.rowRenderer({
+    const photoThumbnail = photosGrid.rowRenderer({
       index: 0,
       key: 1,
       style: { color: 'black' }
@@ -113,9 +113,9 @@ describe('Sidebar', () => {
   });
 
   test('rowRender should set the PhotoThumbnail handleSelect to call the handlePhotoSelect callback', () => {
-    const sidebar = filteredSidebar.root.instance;
+    const photosGrid = filteredPhotosGrid.root.instance;
 
-    const photoThumbnail = sidebar.rowRenderer({
+    const photoThumbnail = photosGrid.rowRenderer({
       index: 0,
       key: 1,
       style: { color: 'black' }
@@ -129,42 +129,44 @@ describe('Sidebar', () => {
   });
 
   test('rowHeight scales the height of the photo at the given index to match a width of 272', () => {
-    const sidebar = filteredSidebar.root.instance;
-    sidebar.columnCount = 2;
+    const photosGrid = filteredPhotosGrid.root.instance;
+    photosGrid.columnCount = 2;
 
-    expect(sidebar.rowHeight({ index: 0 })).toBe(75);
+    expect(photosGrid.rowHeight({ index: 0 })).toBe(75);
   });
 
   test('isRowLoaded returns false if the photo at the given index has loaded = false', () => {
-    const sidebar = filteredSidebar.root.instance;
+    const photosGrid = filteredPhotosGrid.root.instance;
 
-    expect(sidebar.isRowLoaded({ index: 0 })).toBe(false);
+    expect(photosGrid.isRowLoaded({ index: 0 })).toBe(false);
   });
 
   test('isRowLoaded returns true if the photo at the given index has loaded = true', () => {
-    const sidebar = filteredSidebar.root.instance;
+    const photosGrid = filteredPhotosGrid.root.instance;
 
-    expect(sidebar.isRowLoaded({ index: 1 })).toBe(true);
+    expect(photosGrid.isRowLoaded({ index: 1 })).toBe(true);
   });
 
   test('loadMoreRows should call the getAndStoreLocations callback', () => {
-    const sidebar = filteredSidebar.root.instance;
+    const photosGrid = filteredPhotosGrid.root.instance;
 
-    sidebar.loadMoreRows({ startIndex: 0, stopIndex: 1 });
+    photosGrid.loadMoreRows({ startIndex: 0, stopIndex: 1 });
     expect(mockGetAndStoreLocations.mock.calls.length).toBe(1);
     expect(mockGetAndStoreLocations.mock.calls[0]).toEqual([0, 1]);
   });
 
   test('forceUpdate should force the grid to update and reset the loaded rows cache', () => {
-    const sidebar = filteredSidebar.root.instance;
+    const photosGrid = filteredPhotosGrid.root.instance;
 
-    sidebar.grid.recomputeGridSize = jest.fn();
-    sidebar.loader.resetLoadMoreRowsCache = jest.fn();
+    photosGrid.grid.recomputeGridSize = jest.fn();
+    photosGrid.loader.resetLoadMoreRowsCache = jest.fn();
 
-    sidebar.forceUpdate();
+    photosGrid.forceUpdate();
 
-    expect(sidebar.grid.recomputeGridSize.mock.calls.length).toBe(1);
-    expect(sidebar.loader.resetLoadMoreRowsCache.mock.calls.length).toBe(1);
-    expect(sidebar.loader.resetLoadMoreRowsCache.mock.calls[0]).toEqual([true]);
+    expect(photosGrid.grid.recomputeGridSize.mock.calls.length).toBe(1);
+    expect(photosGrid.loader.resetLoadMoreRowsCache.mock.calls.length).toBe(1);
+    expect(photosGrid.loader.resetLoadMoreRowsCache.mock.calls[0]).toEqual([
+      true
+    ]);
   });
 });

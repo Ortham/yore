@@ -11,7 +11,7 @@ import { PhotoThumbnail } from './photo-thumbnail';
 
 const COLUMN_WIDTH = 150;
 
-export interface SidebarProps {
+export interface PhotosGridProps {
   photos: Photo[];
   currentPhoto?: Photo;
   handlePhotoSelect: (photo: Photo) => void;
@@ -32,13 +32,13 @@ interface RowRendererParameter {
   style: React.CSSProperties;
 }
 
-export class Sidebar extends React.Component<SidebarProps, {}> {
+export class PhotosGrid extends React.Component<PhotosGridProps, {}> {
   private columnCount: number;
   private grid: Grid;
   private loader: InfiniteLoader;
   private onRowsRendered: (param: IndexRange) => void;
 
-  public constructor(props: SidebarProps) {
+  public constructor(props: PhotosGridProps) {
     super(props);
 
     this.columnCount = 2;

@@ -4,8 +4,8 @@ import * as renderer from 'react-test-renderer';
 jest.mock('../../src/gui/js/main-panel', () => ({
   MainPanel: 'MainPanel'
 }));
-jest.mock('../../src/gui/js/sidebar', () => ({
-  Sidebar: 'Sidebar'
+jest.mock('../../src/gui/js/photos-grid', () => ({
+  PhotosGrid: 'PhotosGrid'
 }));
 jest.unmock('../../src/gui/js/requests');
 
@@ -82,7 +82,7 @@ describe('Page', () => {
       />,
       {
         createNodeMock: element => {
-          if (element.type === 'Sidebar') {
+          if (element.type === 'PhotosGrid') {
             return {
               forceUpdate: jest.fn()
             };
@@ -112,7 +112,7 @@ describe('Page', () => {
     });
   });
 
-  test('renders a header, sidebar and main panel', () => {
+  test('renders a header, photos grid and main panel', () => {
     expect(page.toJSON()).toMatchSnapshot();
   });
 
@@ -124,7 +124,7 @@ describe('Page', () => {
     pageInstance.handlePhotoSelect(pageInstance.state.photos[1]);
 
     expect(pageInstance.state.currentPhoto).toBe(pageInstance.state.photos[1]);
-    expect(pageInstance.sidebar.forceUpdate.mock.calls.length).toBe(1);
+    expect(pageInstance.photosGrid.forceUpdate.mock.calls.length).toBe(1);
   });
 
   test('handleSuggestionApply calls writeCoordinates then moves suggested location to existing', () => {
@@ -141,7 +141,7 @@ describe('Page', () => {
       expect(requests.writeCoordinates.mock.calls[0].length).toBe(2);
       expect(requests.writeCoordinates.mock.calls[0][0]).toBe(path);
       expect(requests.writeCoordinates.mock.calls[0][1]).toBe(coordinates);
-      expect(pageInstance.sidebar.forceUpdate.mock.calls.length).toBe(1);
+      expect(pageInstance.photosGrid.forceUpdate.mock.calls.length).toBe(1);
 
       expect(pageInstance.state.currentPhoto).not.toBe(currentPhoto);
       expect(pageInstance.state.photos).not.toBe(photos);
@@ -175,7 +175,7 @@ describe('Page', () => {
     expect(pageInstance.state.photos[0]).toBe(photos[0]);
     expect(pageInstance.state.photos[1]).toBe(pageInstance.state.currentPhoto);
 
-    expect(pageInstance.sidebar.forceUpdate.mock.calls.length).toBe(1);
+    expect(pageInstance.photosGrid.forceUpdate.mock.calls.length).toBe(1);
   });
 
   test('handleFilterToggle should call getFilteredPhotos if the filter is enabled', () => {
@@ -264,7 +264,7 @@ describe('Page', () => {
     });
   });
 
-  test('getNewLocationHistory should make a request and update sidebar state', () => {
+  test('getNewLocationHistory should make a request and update photos grid state', () => {
     const pageInstance = page.root.instance;
     const initialPhotos = pageInstance.state.photos;
 
@@ -277,7 +277,7 @@ describe('Page', () => {
       expect(pageInstance.state.photos[1].path).toBe(initialPhotos[1].path);
       expect(pageInstance.state.photos[1].loaded).toBe(false);
 
-      expect(pageInstance.sidebar.forceUpdate.mock.calls.length).toBe(1);
+      expect(pageInstance.photosGrid.forceUpdate.mock.calls.length).toBe(1);
     });
   });
 

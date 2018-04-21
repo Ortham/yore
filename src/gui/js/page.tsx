@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Photo } from './interfaces';
 import { MainPanel } from './main-panel';
 import * as requests from './requests';
-import { Sidebar } from './sidebar';
+import { PhotosGrid } from './photos-grid';
 
 interface CheckboxEvent {
   target: {
@@ -27,7 +27,7 @@ export interface PageState {
 }
 
 export class Page extends React.Component<PageProps, PageState> {
-  private sidebar: Sidebar;
+  private photosGrid: PhotosGrid;
 
   public constructor(props: PageProps) {
     super(props);
@@ -90,9 +90,9 @@ export class Page extends React.Component<PageProps, PageState> {
           </div>
         </header>
         <div>
-          <Sidebar
-            ref={sidebar => {
-              this.sidebar = sidebar;
+          <PhotosGrid
+            ref={photosGrid => {
+              this.photosGrid = photosGrid;
             }}
             photos={this.state.photos}
             currentPhoto={this.state.currentPhoto}
@@ -168,7 +168,7 @@ export class Page extends React.Component<PageProps, PageState> {
         })
       );
 
-      this.sidebar.forceUpdate();
+      this.photosGrid.forceUpdate();
     });
   }
 
@@ -195,7 +195,7 @@ export class Page extends React.Component<PageProps, PageState> {
 
   private handlePhotoSelect(photo: Photo) {
     this.setState(Object.assign({}, this.state, { currentPhoto: photo }));
-    this.sidebar.forceUpdate();
+    this.photosGrid.forceUpdate();
   }
 
   private handleSuggestionApply() {
@@ -218,7 +218,7 @@ export class Page extends React.Component<PageProps, PageState> {
         photos[index] = currentPhoto;
 
         this.setState(Object.assign({}, this.state, { currentPhoto, photos }));
-        this.sidebar.forceUpdate();
+        this.photosGrid.forceUpdate();
       });
   }
 
@@ -231,6 +231,6 @@ export class Page extends React.Component<PageProps, PageState> {
     photos[index] = currentPhoto;
 
     this.setState(Object.assign({}, this.state, { currentPhoto, photos }));
-    this.sidebar.forceUpdate();
+    this.photosGrid.forceUpdate();
   }
 }

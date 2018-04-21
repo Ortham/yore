@@ -6,7 +6,7 @@ jest.mock('../../src/gui/js/map-area', () => ({
   MapArea: 'MapArea'
 }));
 
-import { MainPanel } from '../../src/gui/js/main-panel'; // eslint-disable-line import/first
+import { PhotoLocationViewer } from '../../src/gui/js/photo-location-viewer'; // eslint-disable-line import/first
 
 function apply() {
   return Promise.resolve();
@@ -14,7 +14,7 @@ function apply() {
 
 function discard() {}
 
-describe('MainPanel', () => {
+describe('PhotoLocationViewer', () => {
   test('renders an image, map, location description and disabled buttons if photo location is not suggested', () => {
     const photo = {
       src: 'path',
@@ -26,16 +26,16 @@ describe('MainPanel', () => {
         }
       }
     };
-    const mainPanel = renderer
+    const photoLocationViewer = renderer
       .create(
-        <MainPanel
+        <PhotoLocationViewer
           photo={photo}
           handleSuggestionApply={apply}
           handleSuggestionDiscard={discard}
         />
       )
       .toJSON();
-    expect(mainPanel).toMatchSnapshot();
+    expect(photoLocationViewer).toMatchSnapshot();
   });
 
   test('renders an image, map, text and disabled buttons if photo has no location', () => {
@@ -43,16 +43,16 @@ describe('MainPanel', () => {
       src: 'path',
       path: ''
     };
-    const mainPanel = renderer
+    const photoLocationViewer = renderer
       .create(
-        <MainPanel
+        <PhotoLocationViewer
           photo={photo}
           handleSuggestionApply={apply}
           handleSuggestionDiscard={discard}
         />
       )
       .toJSON();
-    expect(mainPanel).toMatchSnapshot();
+    expect(photoLocationViewer).toMatchSnapshot();
   });
 
   test('renders an image, map, location description and enabled buttons if photo location is suggested', () => {
@@ -72,27 +72,27 @@ describe('MainPanel', () => {
         ] as [Coordinates, LocationAccuracy]
       }
     };
-    const mainPanel = renderer
+    const photoLocationViewer = renderer
       .create(
-        <MainPanel
+        <PhotoLocationViewer
           photo={photo}
           handleSuggestionApply={apply}
           handleSuggestionDiscard={discard}
         />
       )
       .toJSON();
-    expect(mainPanel).toMatchSnapshot();
+    expect(photoLocationViewer).toMatchSnapshot();
   });
 
   test('renders text and disabled buttons if photo is undefined', () => {
-    const mainPanel = renderer
+    const photoLocationViewer = renderer
       .create(
-        <MainPanel
+        <PhotoLocationViewer
           handleSuggestionApply={apply}
           handleSuggestionDiscard={discard}
         />
       )
       .toJSON();
-    expect(mainPanel).toMatchSnapshot();
+    expect(photoLocationViewer).toMatchSnapshot();
   });
 });

@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`MainPanel renders an image, map, location description and disabled buttons if photo location is not suggested 1`] = `
+exports[`PhotoLocationViewer renders an image, map, location description and disabled buttons if photo location is not suggested 1`] = `
 <div
   id="main"
 >
@@ -46,7 +46,7 @@ exports[`MainPanel renders an image, map, location description and disabled butt
 </div>
 `;
 
-exports[`MainPanel renders an image, map, location description and enabled buttons if photo location is suggested 1`] = `
+exports[`PhotoLocationViewer renders an image, map, location description and enabled buttons if photo location is suggested 1`] = `
 <div
   id="main"
 >
@@ -98,7 +98,7 @@ exports[`MainPanel renders an image, map, location description and enabled butto
 </div>
 `;
 
-exports[`MainPanel renders an image, map, text and disabled buttons if photo has no location 1`] = `
+exports[`PhotoLocationViewer renders an image, map, text and disabled buttons if photo has no location 1`] = `
 <div
   id="main"
 >
@@ -138,7 +138,7 @@ exports[`MainPanel renders an image, map, text and disabled buttons if photo has
 </div>
 `;
 
-exports[`MainPanel renders text and disabled buttons if photo is undefined 1`] = `
+exports[`PhotoLocationViewer renders text and disabled buttons if photo is undefined 1`] = `
 <div
   id="main"
 >

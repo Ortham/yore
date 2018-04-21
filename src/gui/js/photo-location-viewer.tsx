@@ -3,13 +3,13 @@ import { Photo } from './interfaces';
 import { MapArea } from './map-area';
 import { hasSuggestion, locationDescription } from './photo';
 
-export interface MainPanelProps {
+export interface PhotoLocationViewerProps {
   photo?: Photo;
   handleSuggestionApply: () => Promise<void>;
   handleSuggestionDiscard: () => void;
 }
 
-export function MainPanel(props: MainPanelProps) {
+export function PhotoLocationViewer(props: PhotoLocationViewerProps) {
   if (props.photo) {
     return (
       <div id="main">

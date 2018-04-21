@@ -1,8 +1,8 @@
 import * as React from 'react';
 import * as renderer from 'react-test-renderer';
 
-jest.mock('../../src/gui/js/main-panel', () => ({
-  MainPanel: 'MainPanel'
+jest.mock('../../src/gui/js/photo-location-viewer', () => ({
+  PhotoLocationViewer: 'PhotoLocationViewer'
 }));
 jest.mock('../../src/gui/js/photos-grid', () => ({
   PhotosGrid: 'PhotosGrid'

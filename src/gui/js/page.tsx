@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Photo } from './interfaces';
-import { MainPanel } from './main-panel';
+import { PhotoLocationViewer } from './photo-location-viewer';
 import * as requests from './requests';
 import { PhotosGrid } from './photos-grid';
 
@@ -99,7 +99,7 @@ export class Page extends React.Component<PageProps, PageState> {
             handlePhotoSelect={this.handlePhotoSelect}
             getAndStoreLocations={this.getAndStoreLocations}
           />
-          <MainPanel
+          <PhotoLocationViewer
             photo={this.state.currentPhoto}
             handleSuggestionApply={this.handleSuggestionApply}
             handleSuggestionDiscard={this.handleSuggestionDiscard}

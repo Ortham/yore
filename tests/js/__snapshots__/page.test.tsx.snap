@@ -95,7 +95,7 @@ exports[`Page renders a header, photos grid and main panel 1`] = `
         ]
       }
     />
-    <MainPanel
+    <PhotoLocationViewer
       handleSuggestionApply={[Function]}
       handleSuggestionDiscard={[Function]}
       photo={undefined}

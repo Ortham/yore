@@ -77,6 +77,8 @@ body {
     width: 150px;
     position: relative;
     overflow-y: hidden;
+    box-sizing: border-box;
+    padding: 2px;
 }
 
 #photosList .photo img {
@@ -101,10 +103,10 @@ body {
     box-shadow: inset 0px 0px 0px 4px lightblue;
     content: '';
     display: block;
-    height: 100%;
+    height: calc(100% - 4px);
     position: absolute;
     top: 0;
-    width: 100%;
+    width: calc(100% - 4px);
 }
 
 #main > section {

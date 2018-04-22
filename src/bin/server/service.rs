@@ -355,6 +355,18 @@ fn resolve_path(path: &str) -> &Path {
     }
 }
 
+#[cfg(feature = "filesystem-serve")]
+fn read_file_bytes(path: &Path) -> Result<Vec<u8>, ServiceError> {
+    use std::io::Read;
+    let mut file = File::open(&format!("dist/{}", path.display()))?;
+
+    let mut content: Vec<u8> = Vec::new();
+    file.read_to_end(&mut content)?;
+
+    Ok(content)
+}
+
+#[cfg(not(feature = "filesystem-serve"))]
 fn read_file_bytes(path: &Path) -> Result<&'static [u8], ServiceError> {
     match path.to_str() {
         Some("style.css") => Ok(include_bytes!("../../../dist/style.css")),

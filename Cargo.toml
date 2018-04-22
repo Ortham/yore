@@ -30,6 +30,10 @@ tempfile = "3"
 svg_to_ico = "1.0"
 winres = "0.1"
 
+[features]
+default = []
+filesystem-serve = []
+
 [[bin]]
 name = "yore"
 path = "src/bin/cli.rs"

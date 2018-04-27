@@ -44,7 +44,7 @@ pub fn thumbnail(path: &Path, max_width: u32, max_height: u32) -> Result<Vec<u8>
     let mut thumbnail = image.resize(max_width, max_height, image::FilterType::Lanczos3);
     thumbnail = fix_image_orientation(thumbnail, orientation);
 
-    thumbnail.save(&mut content, image::ImageFormat::JPEG)?;
+    thumbnail.write_to(&mut content, image::ImageFormat::JPEG)?;
 
     Ok(content)
 }
@@ -55,7 +55,7 @@ pub fn oriented_image(path: &Path) -> Result<Vec<u8>, ServiceError> {
     let image = fix_image_orientation(image, orientation);
 
     let mut content: Vec<u8> = Vec::new();
-    image.save(&mut content, image::ImageFormat::JPEG)?;
+    image.write_to(&mut content, image::ImageFormat::JPEG)?;
 
     Ok(content)
 }

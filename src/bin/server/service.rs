@@ -7,8 +7,8 @@ use std::path::{Path, PathBuf};
 use std::sync::{Arc, RwLock};
 use std::thread;
 
-use futures::future::{ok, Future};
 use futures::Stream;
+use futures::future::{ok, Future};
 use futures::sync::oneshot;
 use hyper;
 use hyper::header::{CacheControl, CacheDirective, ContentType};
@@ -20,12 +20,12 @@ use serde_json;
 use tinyfiledialogs::{open_file_dialog, select_folder_dialog};
 use yore::golo::{load_location_history, GoogleLocationHistory, HistoryError};
 
-use common::{photo_paths, exiv2_write_coordinates};
 use super::error::ServiceError;
 use super::image::{oriented_image, thumbnail};
 use super::responses::{InterpolateResponse, LocationHistoryPathResponse, LocationResponse,
                        LocationsResponse, PhotosResponse, RootPathResponse};
 use super::uri::{has_filter_parameter, queried_dimensions, queried_indices, queried_path};
+use common::{photo_paths, exiv2_write_coordinates};
 
 pub struct GuiServiceState {
     root_path: Option<PathBuf>,

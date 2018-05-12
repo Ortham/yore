@@ -1,5 +1,5 @@
-use std::io;
 use std::fs::File;
+use std::io;
 
 use memmap::Mmap;
 use serde_json;
@@ -175,10 +175,10 @@ impl Location {
 }
 
 mod locations_sequence {
+    use super::Location;
+    use serde::{Deserialize, Deserializer};
     use std::collections::BTreeMap;
     use std::iter::FromIterator;
-    use serde::{Deserialize, Deserializer};
-    use super::Location;
 
     pub fn deserialize<'de, D>(deserializer: D) -> Result<BTreeMap<i64, Location>, D::Error>
     where

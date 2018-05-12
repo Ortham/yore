@@ -5,9 +5,9 @@ use std::fs;
 use std::io;
 use std::path::{Path, PathBuf};
 
+use chrono::format::ParseError;
 use chrono::offset::TimeZone;
 use chrono::offset::Utc;
-use chrono::format::ParseError;
 
 use exif;
 use exif::Tag;

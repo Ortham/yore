@@ -2,8 +2,8 @@ use std::fs::File;
 use std::io::stdin;
 use std::path::Path;
 
-use yore::{get_location_suggestion, PhotoError, PhotoLocation};
 use yore::golo::{load_location_history, GoogleLocationHistory};
+use yore::{get_location_suggestion, PhotoError, PhotoLocation};
 
 use common::{photo_paths, ApplicationError, exiv2_write_coordinates};
 

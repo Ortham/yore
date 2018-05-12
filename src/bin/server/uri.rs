@@ -1,7 +1,7 @@
 use std::borrow::Cow;
-use std::str::FromStr;
 use std::num::ParseIntError;
 use std::path::PathBuf;
+use std::str::FromStr;
 
 use hyper::Uri;
 use url::Url;

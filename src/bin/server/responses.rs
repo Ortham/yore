@@ -5,8 +5,8 @@ use yore::get_location_suggestion;
 use yore::{Photo, PhotoLocation};
 
 use super::error::ServiceError;
-use super::service::GuiServiceState;
 use super::image::ImageDimensions;
+use super::service::GuiServiceState;
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]

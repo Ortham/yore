@@ -8,9 +8,9 @@ extern crate walkdir;
 #[macro_use]
 extern crate serde_derive;
 
+mod coordinates;
 pub mod golo;
 pub mod photo;
-mod coordinates;
 mod suggestion_accuracy;
 
 use std::path::Path;

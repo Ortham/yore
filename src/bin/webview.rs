@@ -81,10 +81,9 @@ fn run_webview(server: Server) {
     let init_cb = |_| {};
     let userdata = ();
 
-    use web_view::run;
-    run(
+    web_view::run(
         "Yore",
-        &format!("http://{}", address),
+        web_view::Content::Url(format!("http://{}", address)),
         Some(size),
         resizable,
         debug,

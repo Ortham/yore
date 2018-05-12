@@ -41,7 +41,7 @@ pub fn thumbnail(path: &Path, max_width: u32, max_height: u32) -> Result<Vec<u8>
     let mut content: Vec<u8> = Vec::new();
 
     let image = image::open(&path)?;
-    let mut thumbnail = image.resize(max_width, max_height, image::FilterType::Lanczos3);
+    let mut thumbnail = image.resize(max_width, max_height, image::FilterType::Triangle);
     thumbnail = fix_image_orientation(thumbnail, orientation);
 
     thumbnail.write_to(&mut content, image::ImageFormat::JPEG)?;

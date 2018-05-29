@@ -2,7 +2,7 @@ use std::fs::File;
 use std::io::BufReader;
 use std::path::{Path, PathBuf};
 
-use image;
+use image::{self, GenericImage};
 use jpeg_decoder;
 
 use super::error::ServiceError;
@@ -41,7 +41,12 @@ pub fn thumbnail(path: &Path, max_width: u32, max_height: u32) -> Result<Vec<u8>
     let mut content: Vec<u8> = Vec::new();
 
     let image = image::open(&path)?;
-    let mut thumbnail = image.resize(max_width, max_height, image::FilterType::Triangle);
+    //TODO: Once image#767 is fixed, just use thumbnail()
+    let mut thumbnail = if max_width > image.width() || max_height > image.height() {
+        image.resize(max_width, max_height, image::FilterType::Triangle)
+    } else {
+        image.thumbnail(max_width, max_height)
+    };
     thumbnail = fix_image_orientation(thumbnail, orientation);
 
     thumbnail.write_to(&mut content, image::ImageFormat::JPEG)?;

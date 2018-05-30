@@ -7,9 +7,9 @@ use std::path::{Path, PathBuf};
 use std::sync::{Arc, RwLock};
 use std::thread;
 
-use futures::Stream;
 use futures::future::{ok, Future};
 use futures::sync::oneshot;
+use futures::Stream;
 use hyper;
 use hyper::header::{CacheControl, CacheDirective, ContentType};
 use hyper::mime;
@@ -25,7 +25,7 @@ use super::image::{oriented_image, thumbnail};
 use super::responses::{InterpolateResponse, LocationHistoryPathResponse, LocationResponse,
                        LocationsResponse, PhotosResponse, RootPathResponse};
 use super::uri::{has_filter_parameter, queried_dimensions, queried_indices, queried_path};
-use common::{photo_paths, exiv2_write_coordinates};
+use common::{exiv2_write_coordinates, photo_paths};
 
 pub struct GuiServiceState {
     root_path: Option<PathBuf>,

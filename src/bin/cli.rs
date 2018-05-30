@@ -25,7 +25,7 @@ use clap::{App, Arg};
 use yore::{get_location_suggestion, load_location_history, GoogleLocationHistory, PhotoError,
            PhotoLocation};
 
-use common::{photo_paths, ApplicationError, exiv2_write_coordinates};
+use common::{exiv2_write_coordinates, photo_paths, ApplicationError};
 use server::Server;
 
 fn main() {

@@ -71,14 +71,8 @@ body {
     flex-direction: row;
     flex-wrap: wrap;
     align-content: flex-start;
-}
-
-#photosList .photo {
-    width: 150px;
-    position: relative;
-    overflow-y: hidden;
-    box-sizing: border-box;
-    padding: 2px;
+    overflow-y: auto;
+    /* padding: 0 24px 0 8px; */
 }
 
 #photosList .photo img {
@@ -106,10 +100,10 @@ body {
     box-shadow: inset 0px 0px 0px 4px lightblue;
     content: '';
     display: block;
-    height: calc(100% - 4px);
+    height: 100%;
     position: absolute;
     top: 0;
-    width: calc(100% - 4px);
+    width: 100%;
 }
 
 #main > section {

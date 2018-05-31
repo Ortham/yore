@@ -7,8 +7,10 @@ import {
   getInterpolate,
   getLocationHistoryPath,
   getPhotos,
-  getRootPath
+  getRootPath,
+  getLocations
 } from './requests';
+import { updatePhotoLocations } from './photo';
 
 function getInitialState() {
   const state: PageProps = {
@@ -24,6 +26,11 @@ function getInitialState() {
 
       return getPhotos();
     })
+    .then(photos =>
+      getLocations(0, photos.length).then(locations =>
+        updatePhotoLocations(photos, locations)
+      )
+    )
     .then(photos => {
       state.photos = photos;
 

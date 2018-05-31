@@ -19,8 +19,7 @@ describe('MapArea', () => {
 
   test('renders a map centered at (0,0) if the photo has no location', () => {
     const photo: Photo = {
-      path: '',
-      src: ''
+      path: ''
     };
     const mapArea = renderer.create(<MapArea photo={photo} />).toJSON();
     expect(mapArea).toMatchSnapshot();
@@ -34,8 +33,7 @@ describe('MapArea', () => {
           longitude: 36.2
         }
       },
-      path: '',
-      src: ''
+      path: ''
     };
     const mapArea = renderer.create(<MapArea photo={photo} />).toJSON();
     expect(mapArea).toMatchSnapshot();

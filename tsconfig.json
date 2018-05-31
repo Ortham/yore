@@ -2,6 +2,7 @@
     "compilerOptions": {
         "outDir": "./dist",
         "allowJs": true,
+        "allowSyntheticDefaultImports": true,
         "sourceMap": true,
         "moduleResolution": "node",
         "module": "es6",
@@ -13,7 +14,11 @@
         "noImplicitThis": true,
         "noFallthroughCasesInSwitch": true,
         "noUnusedLocals": true,
-        "noUnusedParameters": true
+        "noUnusedParameters": true,
+        "baseUrl": ".",
+        "paths": {
+            "pig.js/src/pig.js": ["node_modules/pig.js/src/pig.js"]
+        }
     },
     "include": [
         "./src/**/*"

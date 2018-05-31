@@ -3,6 +3,7 @@ import { Photo } from './interfaces';
 import { PhotoLocationViewer } from './photo-location-viewer';
 import * as requests from './requests';
 import { PhotosGrid } from './photos-grid';
+import { updatePhotoLocations } from './photo';
 
 interface CheckboxEvent {
   target: {
@@ -26,9 +27,26 @@ export interface PageState {
   rootPath: string;
 }
 
-export class Page extends React.Component<PageProps, PageState> {
-  private photosGrid: PhotosGrid;
+function getLocationsPromise(photos: Photo[], arePhotosFiltered: boolean) {
+  if (arePhotosFiltered) {
+    const promises = [];
+    for (let i = 0; i < photos.length; i += 1) {
+      promises.push(requests.getLocation(photos[i].path));
+    }
 
+    return Promise.all(promises);
+  }
+
+  return requests.getLocations(0, photos.length);
+}
+
+function getAndStoreLocations(photos: Photo[], arePhotosFiltered: boolean) {
+  return getLocationsPromise(photos, arePhotosFiltered).then(locations =>
+    updatePhotoLocations(photos, locations)
+  );
+}
+
+export class Page extends React.Component<PageProps, PageState> {
   public constructor(props: PageProps) {
     super(props);
 
@@ -41,7 +59,6 @@ export class Page extends React.Component<PageProps, PageState> {
       rootPath: props.rootPath
     };
 
-    this.getAndStoreLocations = this.getAndStoreLocations.bind(this);
     this.handleFilterToggle = this.handleFilterToggle.bind(this);
     this.handleInterpolateToggle = this.handleInterpolateToggle.bind(this);
     this.handlePhotoSelect = this.handlePhotoSelect.bind(this);
@@ -99,13 +116,9 @@ export class Page extends React.Component<PageProps, PageState> {
         </header>
         <div>
           <PhotosGrid
-            ref={photosGrid => {
-              this.photosGrid = photosGrid;
-            }}
             photos={this.state.photos}
             currentPhoto={this.state.currentPhoto}
             handlePhotoSelect={this.handlePhotoSelect}
-            getAndStoreLocations={this.getAndStoreLocations}
           />
           <PhotoLocationViewer
             photo={this.state.currentPhoto}
@@ -115,40 +128,6 @@ export class Page extends React.Component<PageProps, PageState> {
         </div>
       </div>
     );
-  }
-
-  private getLocationsPromise(startIndex: number, stopIndex: number) {
-    if (this.state.filterPhotos) {
-      const promises = [];
-      for (let i = startIndex; i < stopIndex; i += 1) {
-        promises.push(requests.getLocation(this.state.photos[i].path));
-      }
-
-      return Promise.all(promises);
-    }
-
-    return requests.getLocations(startIndex, stopIndex);
-  }
-
-  private getAndStoreLocations(startIndex: number, stopIndex: number) {
-    return this.getLocationsPromise(startIndex, stopIndex).then(locations => {
-      this.setState(previousState => {
-        const photos = previousState.photos.slice();
-
-        for (let i = startIndex; i < stopIndex; i += 1) {
-          // Don't mutate the existing object.
-          photos[i] = Object.assign({}, photos[i]);
-
-          // Assign these here instead of using Object.assign to set any undefined
-          // values.
-          photos[i].location = locations[i - startIndex].location;
-          photos[i].error = locations[i - startIndex].error;
-          photos[i].loaded = true;
-        }
-
-        return { photos };
-      });
-    });
   }
 
   private getNewRootPath() {
@@ -164,23 +143,17 @@ export class Page extends React.Component<PageProps, PageState> {
     });
   }
 
-  private getNewLocationHistory() {
-    return requests.getNewLocationHistory().then(responseBody => {
-      const locationHistoryPath = responseBody.locationHistoryPath;
+  private async getNewLocationHistory() {
+    const { locationHistoryPath } = await requests.getNewLocationHistory();
 
-      this.setState(previousState => {
-        const photos = previousState.photos.map(photo =>
-          Object.assign({}, photo, { loaded: false })
-        );
-
-        return {
+    await getAndStoreLocations(this.state.photos, this.state.filterPhotos).then(
+      photos => {
+        this.setState({
           locationHistoryPath,
           photos
-        };
-      });
-
-      this.photosGrid.forceUpdate();
-    });
+        });
+      }
+    );
   }
 
   private handleFilterToggle(event: CheckboxEvent) {
@@ -191,9 +164,11 @@ export class Page extends React.Component<PageProps, PageState> {
     } else {
       promise = requests.getPhotos();
     }
-    return promise.then(photos => {
-      this.setState({ filterPhotos, photos });
-    });
+    return promise
+      .then(photos => getAndStoreLocations(photos, filterPhotos))
+      .then(photos => {
+        this.setState({ filterPhotos, photos });
+      });
   }
 
   private handleInterpolateToggle(event: CheckboxEvent) {
@@ -206,7 +181,6 @@ export class Page extends React.Component<PageProps, PageState> {
 
   private handlePhotoSelect(photo: Photo) {
     this.setState({ currentPhoto: photo });
-    this.photosGrid.forceUpdate();
   }
 
   private handleSuggestionApply() {
@@ -231,8 +205,6 @@ export class Page extends React.Component<PageProps, PageState> {
 
           return { currentPhoto, photos };
         });
-
-        this.photosGrid.forceUpdate();
       });
   }
 
@@ -247,7 +219,5 @@ export class Page extends React.Component<PageProps, PageState> {
 
       return { currentPhoto, photos };
     });
-
-    this.photosGrid.forceUpdate();
   }
 }

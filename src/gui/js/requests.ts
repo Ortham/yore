@@ -1,8 +1,4 @@
-import { Coordinates, Photo } from './interfaces';
-
-interface PhotosResponseBody {
-  photos: Photo[];
-}
+import { Coordinates } from './interfaces';
 
 function get(url: string) {
   return fetch(url).then(response => {
@@ -27,18 +23,6 @@ function put(url: string, body: any) {
       throw new Error(`Failed to ${init.method} ${url} with body ${init.body}`);
     }
   });
-}
-
-function setPhotoSrc(photo: Photo) {
-  return Object.assign(photo, {
-    src: `/thumbnail?path=${encodeURIComponent(
-      photo.path
-    )}&maxWidth=300&maxHeight=300`
-  });
-}
-
-function mapPhotos(responseBody: PhotosResponseBody) {
-  return responseBody.photos.map(setPhotoSrc);
 }
 
 export function getRootPath() {
@@ -66,11 +50,11 @@ export function putInterpolate(interpolate: boolean) {
 }
 
 export function getPhotos() {
-  return get('/photos').then(mapPhotos);
+  return get('/photos').then(body => body.photos);
 }
 
 export function getFilteredPhotos() {
-  return get('/photos?filter=true').then(mapPhotos);
+  return get('/photos?filter=true').then(body => body.photos);
 }
 
 export function writeCoordinates(path: string, coordinates: Coordinates) {

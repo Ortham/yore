@@ -3,6 +3,12 @@ import { Photo } from './interfaces';
 import { MapArea } from './map-area';
 import { hasSuggestion, locationDescription } from './photo';
 
+function getPhotoSrc(photo: Photo) {
+  return `/thumbnail?path=${encodeURIComponent(
+    photo.path
+  )}&maxWidth=300&maxHeight=300`;
+}
+
 export interface PhotoLocationViewerProps {
   photo?: Photo;
   handleSuggestionApply: () => Promise<void>;
@@ -14,7 +20,7 @@ export function PhotoLocationViewer(props: PhotoLocationViewerProps) {
     return (
       <div id="main">
         <section>
-          <img src={props.photo.src} alt="Selected" />
+          <img src={getPhotoSrc(props.photo)} alt="Selected" />
           <MapArea photo={props.photo} />
         </section>
         <footer>

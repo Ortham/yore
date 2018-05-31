@@ -7,7 +7,7 @@ exports[`PhotoLocationViewer renders an image, map, location description and dis
   <section>
     <img
       alt="Selected"
-      src="path"
+      src="/thumbnail?path=path&maxWidth=300&maxHeight=300"
     />
     <MapArea
       photo={
@@ -18,8 +18,7 @@ exports[`PhotoLocationViewer renders an image, map, location description and dis
               "longitude": 36.2,
             },
           },
-          "path": "",
-          "src": "path",
+          "path": "path",
         }
       }
     />
@@ -55,7 +54,7 @@ exports[`PhotoLocationViewer renders an image, map, location description and ena
   <section>
     <img
       alt="Selected"
-      src="path"
+      src="/thumbnail?path=path&maxWidth=300&maxHeight=300"
     />
     <MapArea
       photo={
@@ -72,8 +71,7 @@ exports[`PhotoLocationViewer renders an image, map, location description and ena
               },
             ],
           },
-          "path": "",
-          "src": "path",
+          "path": "path",
         }
       }
     />
@@ -109,13 +107,12 @@ exports[`PhotoLocationViewer renders an image, map, text and disabled buttons if
   <section>
     <img
       alt="Selected"
-      src="path"
+      src="/thumbnail?path=path&maxWidth=300&maxHeight=300"
     />
     <MapArea
       photo={
         Object {
-          "path": "",
-          "src": "path",
+          "path": "path",
         }
       }
     />

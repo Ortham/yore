@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as renderer from 'react-test-renderer';
-import { LocationAccuracy } from '../../src/gui/js/interfaces';
+import { Photo, LocationAccuracy } from '../../src/gui/js/interfaces';
 
 jest.mock('../../src/gui/js/map-area', () => ({
   MapArea: 'MapArea'
@@ -16,9 +16,8 @@ function discard() {}
 
 describe('PhotoLocationViewer', () => {
   test('renders an image, map, location description and disabled buttons if photo location is not suggested', () => {
-    const photo = {
-      src: 'path',
-      path: '',
+    const photo: Photo = {
+      path: 'path',
       location: {
         Existing: {
           latitude: 52.0,
@@ -40,8 +39,7 @@ describe('PhotoLocationViewer', () => {
 
   test('renders an image, map, text and disabled buttons if photo has no location', () => {
     const photo = {
-      src: 'path',
-      path: ''
+      path: 'path'
     };
     const photoLocationViewer = renderer
       .create(
@@ -57,8 +55,7 @@ describe('PhotoLocationViewer', () => {
 
   test('renders an image, map, location description and enabled buttons if photo location is suggested', () => {
     const photo = {
-      src: 'path',
-      path: '',
+      path: 'path',
       location: {
         Suggested: [
           {

@@ -63,7 +63,6 @@ exports[`Page renders a header, photos grid and main panel 1`] = `
   </header>
   <div>
     <PhotosGrid
-      getAndStoreLocations={[Function]}
       handlePhotoSelect={[Function]}
       photos={
         Array [
@@ -71,7 +70,6 @@ exports[`Page renders a header, photos grid and main panel 1`] = `
             "height": 5,
             "loaded": false,
             "path": "path 1",
-            "src": "source 1",
             "width": 10,
           },
           Object {
@@ -90,7 +88,6 @@ exports[`Page renders a header, photos grid and main panel 1`] = `
               ],
             },
             "path": "path 2",
-            "src": "source 2",
             "width": 10,
           },
         ]

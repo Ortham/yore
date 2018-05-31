@@ -12,14 +12,14 @@ describe('PhotoThumbnail', () => {
     thumbnail = renderer
       .create(
         <PhotoThumbnail
-          key={0}
-          style={{ top: 5 }}
+          key="path"
           isSelected={false}
           handleSelect={mockHandleSelect}
           photo={{
-            path: 'path',
-            src: 'source'
+            path: 'path'
           }}
+          loadedClassName="pig-loaded"
+          src="/thumbnail?path=path&maxWidth=300&maxHeight=300"
         />
       )
       .toJSON();

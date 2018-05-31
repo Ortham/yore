@@ -5,14 +5,14 @@ import { chooseIcon } from './photo';
 export interface PhotoThumbnailProps {
   isSelected: boolean;
   photo: Photo;
-  style: React.CSSProperties;
+  src: string;
+  loadedClassName: string;
   handleSelect: () => void;
 }
 
 export function PhotoThumbnail(props: PhotoThumbnailProps) {
   return (
     <div
-      style={props.style}
       className="photo"
       onClick={props.handleSelect}
       onKeyUp={props.handleSelect}
@@ -20,7 +20,16 @@ export function PhotoThumbnail(props: PhotoThumbnailProps) {
       aria-selected={props.isSelected}
       tabIndex={0}
     >
-      <img src={props.photo.src} title={props.photo.path} alt="thumbnail" />
+      <img
+        src={props.src}
+        title={props.photo.path}
+        alt="thumbnail"
+        onLoad={evt => {
+          if (evt.target instanceof HTMLElement) {
+            evt.target.parentElement.classList.add(props.loadedClassName);
+          }
+        }}
+      />
       {chooseIcon(props.photo)}
     </div>
   );

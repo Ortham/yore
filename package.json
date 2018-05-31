@@ -13,13 +13,12 @@
     "@types/prop-types": "^15.5.2",
     "@types/react": "^16.0.38",
     "@types/react-dom": "^16.0.4",
-    "@types/react-virtualized": "^9.7.12",
     "google-map-react": "^1.0.0",
+    "pig.js": "https://github.com/WrinklyNinja/pig.js#300b065f0ff7427bce2d6ebe7b5547788cf2c226",
     "prop-types": "^15.6.1",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
     "react-icons": "^3.0.5",
-    "react-virtualized": "^9.17.3",
     "whatwg-fetch": "^3.0.0"
   },
   "devDependencies": {

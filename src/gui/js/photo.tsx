@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { FiAlertCircle, FiNavigation, FiMapPin } from 'react-icons/fi';
-import { Photo } from './interfaces';
+import { LocationResponse, Photo } from './interfaces';
 
 export function locationDescription(photo: Photo) {
   if (photo.location && photo.location.Suggested) {
@@ -66,4 +66,27 @@ export function chooseIcon(photo: Photo) {
   }
 
   return <div className="icon">{icon}</div>;
+}
+
+export function updatePhotoLocations(
+  photos: Photo[],
+  locations: LocationResponse[]
+) {
+  if (photos.length !== locations.length) {
+    throw new Error('photos and locations array lengths are not equal');
+  }
+
+  const updatedPhotos = photos.slice();
+  for (let i = 0; i < updatedPhotos.length; i += 1) {
+    // Don't mutate the existing object.
+    updatedPhotos[i] = Object.assign({}, updatedPhotos[i]);
+
+    // Assign these here instead of using Object.assign to set any undefined
+    // values.
+    updatedPhotos[i].location = locations[i].location;
+    updatedPhotos[i].error = locations[i].error;
+    updatedPhotos[i].loaded = true;
+  }
+
+  return updatedPhotos;
 }

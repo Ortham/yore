@@ -1,160 +1,64 @@
 import * as React from 'react';
-import {
-  AutoSizer,
-  Grid,
-  GridCellProps,
-  InfiniteLoader,
-  SectionRenderedParams
-} from 'react-virtualized';
+import Pig from 'pig.js/src/pig.js';
 import { Photo } from './interfaces';
-import { PhotoThumbnail } from './photo-thumbnail';
-
-const COLUMN_WIDTH = 150;
+import PigPhotoThumbnail from './pig-photo-thumbnail';
 
 export interface PhotosGridProps {
   photos: Photo[];
   currentPhoto?: Photo;
   handlePhotoSelect: (photo: Photo) => void;
-  getAndStoreLocations: (
-    startIndex: number,
-    stopIndex: number
-  ) => Promise<void>;
-}
-
-interface IndexRange {
-  startIndex: number;
-  stopIndex: number;
-}
-
-interface RowRendererParameter {
-  index: number;
-  key: string;
-  style: React.CSSProperties;
 }
 
 export class PhotosGrid extends React.Component<PhotosGridProps, {}> {
-  private columnCount: number;
+  private pig: any;
 
-  private grid: Grid;
+  public componentDidMount() {
+    const imageData = this.getPigImageData();
 
-  private loader: InfiniteLoader;
+    const photosList = document.getElementById('photosList');
 
-  private onRowsRendered: (param: IndexRange) => void;
+    const options = {
+      containerId: 'pig',
+      scroller: photosList,
+      imageType: PigPhotoThumbnail,
 
-  public constructor(props: PhotosGridProps) {
-    super(props);
+      // Width is 10*height to avoid getting a thumbnail constrained by its
+      // width.
+      urlForSize: (filename: string, height: number) =>
+        `/thumbnail?path=${encodeURIComponent(filename)}&maxWidth=${10 *
+          height}&maxHeight=${height}`
+    };
 
-    this.columnCount = 2;
-
-    this.rowRenderer = this.rowRenderer.bind(this);
-    this.rowHeight = this.rowHeight.bind(this);
-    this.isRowLoaded = this.isRowLoaded.bind(this);
-    this.loadMoreRows = this.loadMoreRows.bind(this);
-    this.cellRenderer = this.cellRenderer.bind(this);
-    this.onSectionRendered = this.onSectionRendered.bind(this);
-    this.onRowsRendered = undefined;
+    this.pig = new Pig(imageData, options).enable();
+    // Immediately call update adjust layout to account for scroll bar.
+    this.pig.update(imageData);
   }
 
-  public forceUpdate() {
-    super.forceUpdate();
-    this.grid.recomputeGridSize();
-    this.loader.resetLoadMoreRowsCache(true);
+  public componentWillUnmount() {
+    this.pig.disable();
+  }
+
+  public componentDidUpdate(/* prevProps, prevState, snapshot */) {
+    if (this.pig) {
+      this.pig.update(this.getPigImageData());
+    }
   }
 
   public render() {
     return (
       <nav id="photosList">
-        <AutoSizer>
-          {({ height, width }) => (
-            <InfiniteLoader
-              ref={loader => {
-                this.loader = loader;
-              }}
-              isRowLoaded={this.isRowLoaded}
-              loadMoreRows={this.loadMoreRows}
-              rowCount={this.props.photos.length}
-            >
-              {({ onRowsRendered, registerChild }) => {
-                this.columnCount = Math.floor(width / COLUMN_WIDTH);
-                this.onRowsRendered = onRowsRendered;
-                return (
-                  <Grid
-                    height={height}
-                    width={width}
-                    onSectionRendered={this.onSectionRendered}
-                    ref={grid => {
-                      this.grid = grid;
-                      registerChild(grid);
-                    }}
-                    columnCount={this.columnCount}
-                    columnWidth={COLUMN_WIDTH}
-                    rowCount={this.props.photos.length / this.columnCount}
-                    rowHeight={this.rowHeight}
-                    cellRenderer={this.cellRenderer}
-                  />
-                );
-              }}
-            </InfiniteLoader>
-          )}
-        </AutoSizer>
+        <div id="pig" style={{ width: '100%' }} />
       </nav>
     );
   }
 
-  private onSectionRendered({
-    columnStartIndex,
-    columnStopIndex,
-    rowStartIndex,
-    rowStopIndex
-  }: SectionRenderedParams) {
-    const startIndex = rowStartIndex * this.columnCount + columnStartIndex;
-    const stopIndex = rowStopIndex * this.columnCount + columnStopIndex;
-
-    this.onRowsRendered({
-      startIndex,
-      stopIndex
-    });
-  }
-
-  private cellRenderer({ columnIndex, key, rowIndex, style }: GridCellProps) {
-    return this.rowRenderer({
-      index: rowIndex * this.columnCount + columnIndex,
-      key,
-      style
-    });
-  }
-
-  private rowRenderer({ index, key, style }: RowRendererParameter) {
-    const photo = this.props.photos[index];
-    return (
-      <PhotoThumbnail
-        key={key}
-        style={style}
-        isSelected={photo === this.props.currentPhoto}
-        photo={photo}
-        handleSelect={() => this.props.handlePhotoSelect(photo)}
-      />
-    );
-  }
-
-  private scaledPhotoHeight(index: number) {
-    const photo = this.props.photos[index];
-    return photo.height / (photo.width / COLUMN_WIDTH);
-  }
-
-  private rowHeight({ index }: { index: number }) {
-    const heights = [];
-    for (let i = 0; i < this.columnCount; i += 1) {
-      heights.push(this.scaledPhotoHeight(index * this.columnCount + i));
-    }
-    return Math.max(...heights);
-  }
-
-  private isRowLoaded({ index }: { index: number }) {
-    return this.props.photos[index].loaded;
-  }
-
-  private loadMoreRows({ startIndex, stopIndex }: IndexRange) {
-    return this.props.getAndStoreLocations(startIndex, stopIndex);
+  private getPigImageData() {
+    return this.props.photos.map(photo => ({
+      filename: photo.path,
+      aspectRatio: photo.width / photo.height,
+      photo,
+      isSelected: photo === this.props.currentPhoto,
+      handlePhotoSelect: this.props.handlePhotoSelect
+    }));
   }
 }

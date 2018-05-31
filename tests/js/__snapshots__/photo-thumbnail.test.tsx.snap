@@ -7,16 +7,12 @@ exports[`PhotoThumbnail renders a div with an image and an icon 1`] = `
   onClick={[MockFunction]}
   onKeyUp={[MockFunction]}
   role="option"
-  style={
-    Object {
-      "top": 5,
-    }
-  }
   tabIndex={0}
 >
   <img
     alt="thumbnail"
-    src="source"
+    onLoad={[Function]}
+    src="/thumbnail?path=path&maxWidth=300&maxHeight=300"
     title="path"
   />
 </div>

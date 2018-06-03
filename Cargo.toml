@@ -6,10 +6,10 @@ license = "MIT"
 build = "build.rs"
 
 [dependencies]
+actix-web = { version = "0.6", default-features = false, features = [] }
 chrono = "0.4"
 clap = "2"
 futures = "0.1.14"
-hyper = "0.11"
 image = "0.19.0"
 jpeg-decoder = "0.1.13"
 memmap = "0.6"
@@ -19,7 +19,6 @@ serde = "1.0"
 serde_derive = "1.0"
 serde_json = "1.0"
 tinyfiledialogs = "3.3.5"
-url = "1.6"
 walkdir = "2"
 web-view = "0.2.1"
 

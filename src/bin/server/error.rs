@@ -1,28 +1,95 @@
+use std::error;
+use std::fmt;
 use std::io;
-use std::num::ParseIntError;
 use std::sync::PoisonError;
 
+use actix_web::error::ResponseError;
+use actix_web::{self, http, HttpResponse};
 use exif;
 use image;
 use jpeg_decoder;
-use serde_json;
-use url;
 use yore::HistoryError;
 
 #[derive(Debug)]
 pub enum ServiceError {
     IoError(io::Error),
-    UrlParseError(url::ParseError),
     ImageError(image::ImageError),
     ImageSizeError,
     ImageFormatError(String),
     ImageUnsupportedError(jpeg_decoder::UnsupportedFeature),
-    MissingQueryParameter(&'static str),
-    QueryParameterParseError(ParseIntError),
-    JsonError(serde_json::Error),
     ExifError(exif::Error),
     HistoryError(HistoryError),
     PoisonError,
+    ActixError(actix_web::Error),
+}
+
+impl fmt::Display for ServiceError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            ServiceError::IoError(e) => e.fmt(f),
+            ServiceError::ImageError(e) => e.fmt(f),
+            ServiceError::ImageSizeError => write!(f, "An internal error occurred while decoding the image."),
+            ServiceError::ImageFormatError(e) => write!(f, "The image is not formatted properly: {}", e),
+            ServiceError::ImageUnsupportedError(x) => write!(f, "The image makes use of a JPEG feature not (currently) supported by this library: {:?}", x),
+            ServiceError::ExifError(e) => e.fmt(f),
+            ServiceError::HistoryError(_) => write!(f, "Couldn't load location history"),
+            ServiceError::PoisonError => write!(f, "Poisoned mutex"),
+            ServiceError::ActixError(e) => e.fmt(f),
+        }
+    }
+}
+
+impl error::Error for ServiceError {
+    fn description(&self) -> &str {
+        match self {
+            ServiceError::IoError(e) => e.description(),
+            ServiceError::ImageError(e) => e.description(),
+            ServiceError::ImageSizeError => "An internal error occurred while decoding the image.",
+            ServiceError::ImageFormatError(_) => "The image is not formatted properly.",
+            ServiceError::ImageUnsupportedError(_) => {
+                "The image makes use of a JPEG feature not (currently) supported by this library."
+            }
+            ServiceError::ExifError(e) => e.description(),
+            ServiceError::HistoryError(_) => "Couldn't load location history",
+            ServiceError::PoisonError => "Poisoned mutex",
+            ServiceError::ActixError(_) => "Unknown actix error",
+        }
+    }
+
+    fn cause(&self) -> Option<&error::Error> {
+        match self {
+            ServiceError::IoError(e) => Some(e),
+            ServiceError::ImageError(e) => Some(e),
+            ServiceError::ImageSizeError => None,
+            ServiceError::ImageFormatError(_) => None,
+            ServiceError::ImageUnsupportedError(_) => None,
+            ServiceError::ExifError(e) => Some(e),
+            ServiceError::HistoryError(_) => None,
+            ServiceError::PoisonError => None,
+            ServiceError::ActixError(_) => None,
+        }
+    }
+}
+
+impl ResponseError for ServiceError {
+    fn error_response(&self) -> HttpResponse {
+        println!("Error handling request: {:?}", self);
+        match self {
+            ServiceError::IoError(e) if e.kind() == io::ErrorKind::NotFound => {
+                HttpResponse::NotFound().finish()
+            }
+            ServiceError::ActixError(e) => e.cause().error_response(),
+            e => {
+                HttpResponse::with_body(http::StatusCode::INTERNAL_SERVER_ERROR, format!("{:?}", e))
+            }
+        }
+    }
+}
+
+impl From<actix_web::Error> for ServiceError {
+    fn from(error: actix_web::Error) -> Self {
+        ServiceError::ActixError(error)
+    }
 }
 
 impl From<exif::Error> for ServiceError {
@@ -40,12 +107,6 @@ impl From<io::Error> for ServiceError {
 impl From<HistoryError> for ServiceError {
     fn from(error: HistoryError) -> Self {
         ServiceError::HistoryError(error)
-    }
-}
-
-impl From<url::ParseError> for ServiceError {
-    fn from(error: url::ParseError) -> Self {
-        ServiceError::UrlParseError(error)
     }
 }
 
@@ -70,17 +131,5 @@ impl From<jpeg_decoder::Error> for ServiceError {
             Error::Io(x) => ServiceError::IoError(x),
             Error::Internal(_) => ServiceError::ImageSizeError,
         }
-    }
-}
-
-impl From<ParseIntError> for ServiceError {
-    fn from(error: ParseIntError) -> Self {
-        ServiceError::QueryParameterParseError(error)
-    }
-}
-
-impl From<serde_json::Error> for ServiceError {
-    fn from(error: serde_json::Error) -> Self {
-        ServiceError::JsonError(error)
     }
 }

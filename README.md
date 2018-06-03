@@ -19,7 +19,7 @@ Yore relies on [Exiv2](http://www.exiv2.org/) to write GPS metadata.
 
 ## Build
 
-To build Yore, install [Rust 1.20+](https://www.rust-lang.org) and
+To build Yore, install [Rust 1.24+](https://www.rust-lang.org) and
 [Node 8+](http://nodejs.org/) then run
 
 ```

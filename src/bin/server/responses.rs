@@ -6,7 +6,7 @@ use yore::{Photo, PhotoLocation};
 
 use super::error::ServiceError;
 use super::image::ImageDimensions;
-use super::service::GuiServiceState;
+use super::state::GuiState;
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -16,7 +16,7 @@ pub struct RootPathResponse {
 }
 
 impl RootPathResponse {
-    pub fn new(state: &GuiServiceState) -> RootPathResponse {
+    pub fn new(state: &GuiState) -> RootPathResponse {
         RootPathResponse {
             root_path: state.root_path().cloned(),
         }
@@ -31,7 +31,7 @@ pub struct LocationHistoryPathResponse {
 }
 
 impl LocationHistoryPathResponse {
-    pub fn new(state: &GuiServiceState) -> LocationHistoryPathResponse {
+    pub fn new(state: &GuiState) -> LocationHistoryPathResponse {
         LocationHistoryPathResponse {
             location_history_path: state.location_history_path().cloned(),
         }
@@ -44,7 +44,7 @@ pub struct InterpolateResponse {
 }
 
 impl InterpolateResponse {
-    pub fn new(state: &GuiServiceState) -> InterpolateResponse {
+    pub fn new(state: &GuiState) -> InterpolateResponse {
         InterpolateResponse {
             interpolate: state.interpolate(),
         }
@@ -57,7 +57,7 @@ pub struct PhotosResponse {
 }
 
 impl PhotosResponse {
-    pub fn new(state: &GuiServiceState) -> Result<PhotosResponse, ServiceError> {
+    pub fn new(state: &GuiState) -> Result<PhotosResponse, ServiceError> {
         state
             .photo_paths()
             .par_iter()
@@ -66,7 +66,7 @@ impl PhotosResponse {
             .map(|photos| PhotosResponse { photos })
     }
 
-    pub fn filtered(state: &GuiServiceState) -> Result<PhotosResponse, ServiceError> {
+    pub fn filtered(state: &GuiState) -> Result<PhotosResponse, ServiceError> {
         state
             .photo_paths()
             .par_iter()
@@ -95,7 +95,7 @@ pub struct LocationsResponse {
 
 impl LocationsResponse {
     pub fn new(
-        state: &GuiServiceState,
+        state: &GuiState,
         start_index: usize,
         stop_index: usize,
     ) -> Result<LocationsResponse, ServiceError> {
@@ -123,7 +123,7 @@ pub struct LocationResponse {
 }
 
 impl LocationResponse {
-    pub fn new(path: &Path, state: &GuiServiceState) -> Result<LocationResponse, ServiceError> {
+    pub fn new(path: &Path, state: &GuiState) -> Result<LocationResponse, ServiceError> {
         let result = get_location_suggestion(path, &state.location_history(), state.interpolate())
             .map_err(|e| format!("{}", e));
 
@@ -141,19 +141,46 @@ impl LocationResponse {
     }
 }
 
+#[cfg(feature = "filesystem-serve")]
+pub fn read_file_bytes(path: &Path) -> Result<Vec<u8>, ServiceError> {
+    use std::fs::File;
+    use std::io::Read;
+    let mut file = File::open(&format!("dist/{}", path.display()))?;
+
+    let mut content: Vec<u8> = Vec::new();
+    file.read_to_end(&mut content)?;
+
+    Ok(content)
+}
+
+#[cfg(not(feature = "filesystem-serve"))]
+pub fn read_file_bytes(path: &Path) -> Result<&'static [u8], ServiceError> {
+    use std::io;
+
+    match path.to_str() {
+        Some("style.css") => Ok(include_bytes!("../../../dist/style.css")),
+        Some("index.html") => Ok(include_bytes!("../../../dist/index.html")),
+        Some("app.bundle.js") => Ok(include_bytes!("../../../dist/app.bundle.js")),
+        _ => Err(ServiceError::IoError(io::Error::new(
+            io::ErrorKind::NotFound,
+            "unrecognised resource",
+        ))),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
     use serde_json::to_string;
 
-    fn state_with_root_path(root_path: &Path) -> GuiServiceState {
-        let mut state = GuiServiceState::with_interpolate(false);
+    fn state_with_root_path(root_path: &Path) -> GuiState {
+        let mut state = GuiState::with_interpolate(false);
         state.search_new_root_path(root_path.to_path_buf());
         state
     }
 
-    fn state_with_paths(root_path: &Path, location_history_path: &Path) -> GuiServiceState {
+    fn state_with_paths(root_path: &Path, location_history_path: &Path) -> GuiState {
         let mut state = state_with_root_path(root_path);
         state
             .load_location_history(location_history_path.to_path_buf())
@@ -185,7 +212,7 @@ mod tests {
 
     #[test]
     fn interpolate_response_new_should_get_the_root_path() {
-        let state = GuiServiceState::with_interpolate(false);
+        let state = GuiState::with_interpolate(false);
         let response = InterpolateResponse::new(&state);
 
         assert_eq!(state.interpolate(), response.interpolate);
@@ -276,5 +303,17 @@ mod tests {
         assert_eq!(path, response.path);
         assert!(response.location.is_some());
         assert!(response.error.is_none());
+    }
+
+    #[test]
+    fn read_file_bytes_should_error_for_an_unrecognised_path() {
+        assert!(read_file_bytes(Path::new("README.md")).is_err());
+    }
+
+    #[test]
+    fn read_file_bytes_should_ok_for_a_recognised_path() {
+        assert!(read_file_bytes(Path::new("index.html")).is_ok());
+        assert!(read_file_bytes(Path::new("style.css")).is_ok());
+        assert!(read_file_bytes(Path::new("app.bundle.js")).is_ok());
     }
 }

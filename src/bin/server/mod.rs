@@ -3,28 +3,29 @@ use std::path::Path;
 use std::sync::{mpsc, Arc, RwLock};
 use std::thread;
 
-use hyper::server::Http;
+use actix_web::server;
 
 use common::ApplicationError;
 
+mod actix;
 mod error;
 mod image;
 mod orientation;
 mod responses;
-mod service;
-mod uri;
+mod state;
 
-use self::service::{GuiService, GuiServiceState};
+use self::actix::GuiApplication;
+use self::state::GuiState;
 
 pub struct Server {
     address: SocketAddr,
-    state: GuiServiceState,
+    state: GuiState,
 }
 
 impl Server {
     pub fn new(port: u16, interpolate: bool) -> Server {
         let address = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), port);
-        let state = GuiServiceState::with_interpolate(interpolate);
+        let state = GuiState::with_interpolate(interpolate);
 
         Server { address, state }
     }
@@ -42,12 +43,12 @@ impl Server {
     pub fn run(self) -> Result<(), ApplicationError> {
         let shared_state = Arc::new(RwLock::new(self.state));
 
-        let server = Http::new().bind(&self.address, move || {
-            Ok(GuiService::new(shared_state.clone()))
-        })?;
+        let server =
+            server::new(move || GuiApplication::new(shared_state.clone())).bind(&self.address)?;
 
-        println!("Listening on http://{}", server.local_addr()?);
-        server.run().map_err(ApplicationError::from)
+        println!("Listening on http://{}", server.addrs()[0]);
+
+        Ok(server.run())
     }
 
     pub fn spawn(self) -> Result<SocketAddr, ApplicationError> {
@@ -56,20 +57,14 @@ impl Server {
         thread::spawn(move || {
             let shared_state = Arc::new(RwLock::new(self.state));
 
-            let server = Http::new()
-                .bind(&self.address, move || {
-                    Ok(GuiService::new(shared_state.clone()))
-                })
+            let server = server::new(move || GuiApplication::new(shared_state.clone()))
+                .bind(&self.address)
                 .expect(&format!("Failed to bind HTTP server to {}", self.address));
 
-            let address = server
-                .local_addr()
-                .expect("Failed to get server's listen address");
-
-            tx.send(address)
+            tx.send(server.addrs()[0])
                 .expect("Failed to send the server's listen address to the main thread");
 
-            server.run().expect("Failed to run the server");
+            server.run();
         });
 
         let address = rx.recv()

@@ -16,7 +16,10 @@ function get(url: string) {
 function put(url: string, body: any) {
   const init = {
     body: JSON.stringify(body),
-    method: 'PUT'
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json'
+    }
   };
 
   return fetch(url, init).then(response => {
@@ -67,7 +70,7 @@ export function getPhotos() {
 }
 
 export function getFilteredPhotos() {
-  return get('/photos?filter').then(mapPhotos);
+  return get('/photos?filter=true').then(mapPhotos);
 }
 
 export function writeCoordinates(path: string, coordinates: Coordinates) {

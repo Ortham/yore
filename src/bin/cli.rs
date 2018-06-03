@@ -1,14 +1,13 @@
+extern crate actix_web;
 extern crate clap;
 extern crate exif;
 extern crate futures;
-extern crate hyper;
 extern crate image;
 extern crate jpeg_decoder;
 extern crate rayon;
 extern crate serde;
 extern crate serde_json;
 extern crate tinyfiledialogs;
-extern crate url;
 extern crate yore;
 
 #[macro_use]

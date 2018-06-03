@@ -2,7 +2,6 @@ use std::io;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output, Stdio};
 
-use hyper;
 use yore::HistoryError;
 use yore::{find_jpegs, Coordinates};
 
@@ -20,7 +19,6 @@ pub fn photo_paths(root_path: &Path) -> Vec<PathBuf> {
 pub enum ApplicationError {
     HistoryError(HistoryError),
     IoError(io::Error),
-    ServerError(hyper::Error),
 }
 
 impl From<HistoryError> for ApplicationError {
@@ -32,12 +30,6 @@ impl From<HistoryError> for ApplicationError {
 impl From<io::Error> for ApplicationError {
     fn from(error: io::Error) -> Self {
         ApplicationError::IoError(error)
-    }
-}
-
-impl From<hyper::Error> for ApplicationError {
-    fn from(error: hyper::Error) -> Self {
-        ApplicationError::ServerError(error)
     }
 }
 

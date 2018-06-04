@@ -41,6 +41,8 @@ impl Server {
     }
 
     pub fn run(self) -> Result<(), ApplicationError> {
+        self.state.clear_cache()?;
+
         let shared_state = Arc::new(RwLock::new(self.state));
 
         let server =
@@ -52,6 +54,8 @@ impl Server {
     }
 
     pub fn spawn(self) -> Result<SocketAddr, ApplicationError> {
+        self.state.clear_cache()?;
+
         let (tx, rx) = mpsc::channel();
 
         thread::spawn(move || {

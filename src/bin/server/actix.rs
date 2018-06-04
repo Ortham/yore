@@ -155,14 +155,37 @@ fn get_photo(req: Request) -> HttpResult {
 
 fn get_thumbnail(req: Request) -> HttpResult {
     let query_params = Query::<ThumbnailQueryParams>::extract(&req)?;
+    let state = req.state().read()?;
 
-    let body = thumbnail(
+    let cached_path = state.cached_image_path(
         &query_params.path,
         query_params.max_width,
         query_params.max_height,
-    ).map(Body::from)?;
+    );
 
-    Ok(HttpResponse::Ok().content_type(IMAGE_JPEG).body(body))
+    use std::fs::{create_dir_all, read, write};
+
+    let image = if cached_path.exists() {
+        read(cached_path)?
+    } else {
+        let image = thumbnail(
+            &query_params.path,
+            query_params.max_width,
+            query_params.max_height,
+        )?;
+
+        if let Some(path) = cached_path.parent() {
+            create_dir_all(path)?;
+        }
+
+        write(cached_path, &image)?;
+
+        image
+    };
+
+    Ok(HttpResponse::Ok()
+        .content_type(IMAGE_JPEG)
+        .body(Body::from(image)))
 }
 
 fn get_static_file(file: PathExtractor<PathBuf>) -> HttpResult {

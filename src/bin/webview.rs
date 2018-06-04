@@ -2,6 +2,7 @@
 
 extern crate actix_web;
 extern crate clap;
+extern crate directories;
 extern crate exif;
 extern crate futures;
 extern crate image;

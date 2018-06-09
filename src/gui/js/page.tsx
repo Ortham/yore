@@ -137,14 +137,14 @@ export class Page extends React.Component<PageProps, PageState> {
         photos[i].loaded = true;
       }
 
-      this.setState(Object.assign({}, this.state, { photos }));
+      this.setState({ photos });
     });
   }
 
   private getNewRootPath() {
     return requests.getNewRootPath().then(responseBody => {
       const rootPath = responseBody.rootPath;
-      this.setState(Object.assign({}, this.state, { rootPath }));
+      this.setState({ rootPath });
 
       return this.handleFilterToggle({
         target: {
@@ -161,12 +161,10 @@ export class Page extends React.Component<PageProps, PageState> {
         Object.assign({}, photo, { loaded: false })
       );
 
-      this.setState(
-        Object.assign({}, this.state, {
-          locationHistoryPath,
-          photos
-        })
-      );
+      this.setState({
+        locationHistoryPath,
+        photos
+      });
 
       this.photosGrid.forceUpdate();
     });
@@ -181,7 +179,7 @@ export class Page extends React.Component<PageProps, PageState> {
       promise = requests.getPhotos();
     }
     return promise.then(photos => {
-      this.setState(Object.assign({}, this.state, { filterPhotos, photos }));
+      this.setState({ filterPhotos, photos });
     });
   }
 
@@ -189,12 +187,12 @@ export class Page extends React.Component<PageProps, PageState> {
     const interpolate = event.target.checked;
 
     return requests.putInterpolate(interpolate).then(() => {
-      this.setState(Object.assign({}, this.state, { interpolate }));
+      this.setState({ interpolate });
     });
   }
 
   private handlePhotoSelect(photo: Photo) {
-    this.setState(Object.assign({}, this.state, { currentPhoto: photo }));
+    this.setState({ currentPhoto: photo });
     this.photosGrid.forceUpdate();
   }
 
@@ -217,7 +215,7 @@ export class Page extends React.Component<PageProps, PageState> {
         );
         photos[index] = currentPhoto;
 
-        this.setState(Object.assign({}, this.state, { currentPhoto, photos }));
+        this.setState({ currentPhoto, photos });
         this.photosGrid.forceUpdate();
       });
   }
@@ -230,7 +228,7 @@ export class Page extends React.Component<PageProps, PageState> {
     const index = photos.findIndex(photo => photo.path === currentPhoto.path);
     photos[index] = currentPhoto;
 
-    this.setState(Object.assign({}, this.state, { currentPhoto, photos }));
+    this.setState({ currentPhoto, photos });
     this.photosGrid.forceUpdate();
   }
 }

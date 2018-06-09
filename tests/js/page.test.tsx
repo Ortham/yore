@@ -246,9 +246,7 @@ describe('Page', () => {
       .fn()
       .mockReturnValueOnce(Promise.resolve());
 
-    pageInstance.setState(
-      Object.assign({}, pageInstance.state, { filterPhotos: true })
-    );
+    pageInstance.setState({ filterPhotos: true });
 
     return pageInstance.getNewRootPath().then(() => {
       expect(requests.getNewRootPath.mock.calls.length).toBe(1);
@@ -284,9 +282,7 @@ describe('Page', () => {
   test('getLocationsPromise calls getLocation for each photo if filterPhotos is true', () => {
     const pageInstance = page.root.instance;
 
-    pageInstance.setState(
-      Object.assign({}, pageInstance.state, { filterPhotos: true })
-    );
+    pageInstance.setState({ filterPhotos: true });
 
     return pageInstance.getLocationsPromise(0, 2).then(() => {
       expect(requests.getLocation.mock.calls.length).toBe(2);
@@ -298,9 +294,7 @@ describe('Page', () => {
   test('getLocationsPromise calls getLocations for range if filterPhotos is false', () => {
     const pageInstance = page.root.instance;
 
-    pageInstance.setState(
-      Object.assign({}, pageInstance.state, { filterPhotos: false })
-    );
+    pageInstance.setState({ filterPhotos: false });
 
     return pageInstance.getLocationsPromise(0, 2).then(() => {
       expect(requests.getLocations.mock.calls.length).toBe(1);

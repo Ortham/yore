@@ -126,7 +126,7 @@ impl GoogleLocationHistory {
 /// between interpolated locations, according to the time difference between the given timestamp
 /// the nearest location timestamp. If the half-distance is smaller than both location accuracies,
 /// ignore it and linearly scale between the two accuracies instead.
-fn interpolate_accuracy(timestamp_ms: i64, before: &Location, after: &Location) -> u16 {
+fn interpolate_accuracy(timestamp_ms: i64, before: &Location, after: &Location) -> u32 {
     let time_offset = timestamp_ms - before.timestamp_ms;
     let time_difference = after.timestamp_ms - before.timestamp_ms;
 
@@ -144,7 +144,7 @@ fn interpolate_accuracy(timestamp_ms: i64, before: &Location, after: &Location) 
                 / time_difference
     };
 
-    accuracy as u16
+    accuracy as u32
 }
 
 #[derive(Clone, Deserialize, PartialEq, Debug)]
@@ -154,7 +154,7 @@ pub struct Location {
     timestamp_ms: i64,
     latitude_e7: i64,
     longitude_e7: i64,
-    accuracy: u16,
+    accuracy: u32,
 }
 
 impl Location {
@@ -165,7 +165,7 @@ impl Location {
         )
     }
 
-    pub fn accuracy(&self) -> u16 {
+    pub fn accuracy(&self) -> u32 {
         self.accuracy
     }
 

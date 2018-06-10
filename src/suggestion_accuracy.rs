@@ -4,16 +4,16 @@ use chrono::Duration;
 
 #[derive(Debug, PartialEq, Serialize)]
 pub struct SuggestionAccuracy {
-    meters: u16,
+    meters: u32,
     seconds: i64,
 }
 
 impl SuggestionAccuracy {
-    pub fn new(meters: u16, seconds: i64) -> SuggestionAccuracy {
+    pub fn new(meters: u32, seconds: i64) -> SuggestionAccuracy {
         SuggestionAccuracy { meters, seconds }
     }
 
-    pub fn meters(&self) -> u16 {
+    pub fn meters(&self) -> u32 {
         self.meters
     }
 

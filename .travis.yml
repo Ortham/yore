@@ -21,7 +21,11 @@ before_install:
 install:
   - rustup component add rustfmt-preview
   - rustfmt --version
-  - cargo install cargo-tarpaulin || true
+  - |
+    if [[ $(cargo tarpaulin --version) != *0.6.1 ]]
+    then
+      bash <(curl https://raw.githubusercontent.com/xd009642/tarpaulin/0.6.1/travis-install.sh)
+    fi
   - yarn install
 
 script:
@@ -31,4 +35,3 @@ script:
   - cargo fmt -- --write-mode=diff
   - cargo test
   - cargo tarpaulin --ciserver travis-ci --coveralls $TRAVIS_JOB_ID
-

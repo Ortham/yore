@@ -13,8 +13,8 @@ pub struct Coordinates {
 impl Coordinates {
     pub fn new(latitude: f64, longitude: f64) -> Coordinates {
         Coordinates {
-            latitude: latitude,
-            longitude: longitude,
+            latitude,
+            longitude,
         }
     }
 
@@ -49,7 +49,7 @@ impl Coordinates {
         )
     }
 
-    pub fn distance_in_km(&self, other: Coordinates) -> f64 {
+    pub fn distance_in_km(&self, other: &Coordinates) -> f64 {
         const RADIUS_OF_EARTH_IN_KM: f64 = 6371.0;
 
         let delta_lat = (self.latitude.to_radians() - other.latitude.to_radians()).abs();
@@ -92,7 +92,7 @@ mod tests {
         let louvre = Coordinates::new(48.861022222222, 2.335825);
         let machu_picchu = Coordinates::new(-13.163333, -72.545556);
 
-        let distance = louvre.distance_in_km(machu_picchu);
+        let distance = louvre.distance_in_km(&machu_picchu);
 
         assert_eq!(10036.0, distance.round());
     }

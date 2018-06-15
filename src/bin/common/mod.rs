@@ -5,6 +5,8 @@ use std::process::{Command, Output, Stdio};
 use yore::HistoryError;
 use yore::{find_jpegs, Coordinates};
 
+pub mod server;
+
 pub fn photo_paths(root_path: &Path) -> Vec<PathBuf> {
     if root_path.is_file() {
         vec![root_path.to_path_buf()]

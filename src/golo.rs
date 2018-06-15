@@ -103,7 +103,7 @@ impl GoogleLocationHistory {
         }
     }
 
-    fn location_at_time<'a>(&'a self, timestamp: i64) -> Option<LocationMatch<'a>> {
+    fn location_at_time(&self, timestamp: i64) -> Option<LocationMatch> {
         let timestamp_ms = timestamp * 1000;
 
         if let Some(location) = self.locations.get(&timestamp_ms) {
@@ -130,9 +130,9 @@ fn interpolate_accuracy(timestamp_ms: i64, before: &Location, after: &Location) 
     let time_offset = timestamp_ms - before.timestamp_ms;
     let time_difference = after.timestamp_ms - before.timestamp_ms;
 
-    let half_distance = before.coordinates().distance_in_km(after.coordinates()) as i64 * 1000 / 2;
-    let before_accuracy = before.accuracy as i64;
-    let after_accuracy = after.accuracy as i64;
+    let half_distance = before.coordinates().distance_in_km(&after.coordinates()) as i64 * 1000 / 2;
+    let before_accuracy = i64::from(before.accuracy);
+    let after_accuracy = i64::from(after.accuracy);
 
     let accuracy = if half_distance < before_accuracy && half_distance < after_accuracy {
         before_accuracy + (after_accuracy - before_accuracy) * time_offset / time_difference

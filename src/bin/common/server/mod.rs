@@ -14,7 +14,7 @@ mod orientation;
 mod responses;
 mod state;
 
-use self::actix::GuiApplication;
+use self::actix::build_server_app;
 use self::state::GuiState;
 
 pub struct Server {
@@ -40,19 +40,22 @@ impl Server {
             .map_err(ApplicationError::from)
     }
 
+    #[allow(dead_code)]
     pub fn run(self) -> Result<(), ApplicationError> {
         self.state.clear_cache()?;
 
         let shared_state = Arc::new(RwLock::new(self.state));
 
         let server =
-            server::new(move || GuiApplication::new(shared_state.clone())).bind(&self.address)?;
+            server::new(move || build_server_app(shared_state.clone())).bind(&self.address)?;
 
         println!("Listening on http://{}", server.addrs()[0]);
 
-        Ok(server.run())
+        server.run();
+        Ok(())
     }
 
+    #[allow(dead_code)]
     pub fn spawn(self) -> Result<SocketAddr, ApplicationError> {
         self.state.clear_cache()?;
 
@@ -61,7 +64,7 @@ impl Server {
         thread::spawn(move || {
             let shared_state = Arc::new(RwLock::new(self.state));
 
-            let server = server::new(move || GuiApplication::new(shared_state.clone()))
+            let server = server::new(move || build_server_app(shared_state.clone()))
                 .bind(&self.address)
                 .expect(&format!("Failed to bind HTTP server to {}", self.address));
 

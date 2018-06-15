@@ -107,9 +107,8 @@ impl Photo {
                 }
                 Tag::GPSLatitudeRef => {
                     let string_value = format!("{}", field.value.display_as(field.tag));
-                    match string_value.as_str() {
-                        "S" => latitude_sign = -1.0,
-                        _ => {}
+                    if let "S" = string_value.as_str() {
+                        latitude_sign = -1.0
                     }
                 }
                 Tag::GPSLongitude => {
@@ -119,9 +118,8 @@ impl Photo {
                 }
                 Tag::GPSLongitudeRef => {
                     let string_value = format!("{}", field.value.display_as(field.tag));
-                    match string_value.as_str() {
-                        "W" => longitude_sign = -1.0,
-                        _ => {}
+                    if let "W" = string_value.as_str() {
+                        longitude_sign = -1.0
                     }
                 }
                 _ => {}

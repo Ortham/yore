@@ -57,37 +57,35 @@ type Request = HttpRequest<SharedGuiState>;
 type JsonResult<T> = Result<Json<T>, ServiceError>;
 type HttpResult = Result<HttpResponse, ServiceError>;
 
-pub struct GuiApplication(SharedGuiState);
-
-impl GuiApplication {
-    pub fn new(state: SharedGuiState) -> App<SharedGuiState> {
-        App::with_state(state)
-            .route("/rootPath", Method::GET, get_root_path)
-            .route("/rootPath/new", Method::GET, get_new_root_path)
-            .route("/locationHistoryPath", Method::GET, get_location_history)
-            .route(
-                "/locationHistory/new",
-                Method::GET,
-                get_new_location_history,
-            )
-            .route("/interpolate", Method::GET, get_interpolate)
-            .route("/locations", Method::GET, get_locations)
-            .route("/location", Method::GET, get_location)
-            .route("/photos", Method::GET, get_photos)
-            .route("/photo", Method::GET, get_photo)
-            .route("/thumbnail", Method::GET, get_thumbnail)
-            .resource("/{file}", |r| r.method(Method::GET).with(get_static_file))
-            .route("/", Method::GET, get_index)
-            .route("/interpolate", Method::PUT, put_interpolate)
-            .route("/location", Method::PUT, put_location)
-    }
+pub fn build_server_app(state: SharedGuiState) -> App<SharedGuiState> {
+    App::with_state(state)
+        .route("/rootPath", Method::GET, get_root_path)
+        .route("/rootPath/new", Method::GET, get_new_root_path)
+        .route("/locationHistoryPath", Method::GET, get_location_history)
+        .route(
+            "/locationHistory/new",
+            Method::GET,
+            get_new_location_history,
+        )
+        .route("/interpolate", Method::GET, get_interpolate)
+        .route("/locations", Method::GET, get_locations)
+        .route("/location", Method::GET, get_location)
+        .route("/photos", Method::GET, get_photos)
+        .route("/photo", Method::GET, get_photo)
+        .route("/thumbnail", Method::GET, get_thumbnail)
+        .resource("/{file}", |r| r.method(Method::GET).with(get_static_file))
+        .route("/", Method::GET, get_index)
+        .route("/interpolate", Method::PUT, put_interpolate)
+        .route("/location", Method::PUT, put_location)
 }
 
+#[allow(unknown_lints, needless_pass_by_value)]
 fn get_root_path(req: Request) -> JsonResult<RootPathResponse> {
     let state = req.state().read()?;
     Ok(Json(RootPathResponse::new(&state)))
 }
 
+#[allow(unknown_lints, needless_pass_by_value)]
 fn get_new_root_path(req: Request) -> JsonResult<RootPathResponse> {
     if let Some(path) = select_folder_dialog("", "") {
         req.state()
@@ -99,11 +97,13 @@ fn get_new_root_path(req: Request) -> JsonResult<RootPathResponse> {
     Ok(Json(RootPathResponse::new(&state)))
 }
 
+#[allow(unknown_lints, needless_pass_by_value)]
 fn get_location_history(req: Request) -> JsonResult<LocationHistoryPathResponse> {
     let state = req.state().read()?;
     Ok(Json(LocationHistoryPathResponse::new(&state)))
 }
 
+#[allow(unknown_lints, needless_pass_by_value)]
 fn get_new_location_history(req: Request) -> JsonResult<LocationHistoryPathResponse> {
     if let Some(path) = open_file_dialog("", "", None) {
         req.state()
@@ -114,11 +114,13 @@ fn get_new_location_history(req: Request) -> JsonResult<LocationHistoryPathRespo
     Ok(Json(LocationHistoryPathResponse::new(&state)))
 }
 
+#[allow(unknown_lints, needless_pass_by_value)]
 fn get_interpolate(req: Request) -> JsonResult<InterpolateResponse> {
     let state = req.state().read()?;
     Ok(Json(InterpolateResponse::new(&state)))
 }
 
+#[allow(unknown_lints, needless_pass_by_value)]
 fn get_locations(req: Request) -> JsonResult<LocationsResponse> {
     let indices = Query::<Indices>::extract(&req)?;
 
@@ -126,6 +128,7 @@ fn get_locations(req: Request) -> JsonResult<LocationsResponse> {
     LocationsResponse::new(&state, indices.start, indices.end).map(Json)
 }
 
+#[allow(unknown_lints, needless_pass_by_value)]
 fn get_location(req: Request) -> JsonResult<LocationResponse> {
     let query_params = Query::<QueriedPath>::extract(&req)?;
 
@@ -133,6 +136,7 @@ fn get_location(req: Request) -> JsonResult<LocationResponse> {
     LocationResponse::new(&query_params.path, &state).map(Json)
 }
 
+#[allow(unknown_lints, needless_pass_by_value)]
 fn get_photos(req: Request) -> JsonResult<PhotosResponse> {
     let query_params = Query::<GetPhotosQueryParams>::extract(&req)?;
 
@@ -145,6 +149,7 @@ fn get_photos(req: Request) -> JsonResult<PhotosResponse> {
     }
 }
 
+#[allow(unknown_lints, needless_pass_by_value)]
 fn get_photo(req: Request) -> HttpResult {
     let query_params = Query::<QueriedPath>::extract(&req)?;
 
@@ -153,6 +158,7 @@ fn get_photo(req: Request) -> HttpResult {
     Ok(HttpResponse::Ok().content_type(IMAGE_JPEG).body(body))
 }
 
+#[allow(unknown_lints, needless_pass_by_value)]
 fn get_thumbnail(req: Request) -> HttpResult {
     let query_params = Query::<ThumbnailQueryParams>::extract(&req)?;
     let state = req.state().read()?;
@@ -188,6 +194,7 @@ fn get_thumbnail(req: Request) -> HttpResult {
         .body(Body::from(image)))
 }
 
+#[allow(unknown_lints, needless_pass_by_value)]
 fn get_static_file(file: PathExtractor<PathBuf>) -> HttpResult {
     let body = read_file_bytes(&file).map(Body::from)?;
     let mime = file_mime_type(&file);
@@ -195,6 +202,7 @@ fn get_static_file(file: PathExtractor<PathBuf>) -> HttpResult {
     Ok(HttpResponse::Ok().content_type(mime).body(body))
 }
 
+#[allow(unknown_lints, needless_pass_by_value)]
 fn get_index(_req: Request) -> HttpResult {
     let file = Path::new("index.html");
     let body = read_file_bytes(&file).map(Body::from)?;

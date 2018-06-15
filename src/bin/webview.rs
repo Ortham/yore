@@ -18,13 +18,12 @@ extern crate yore;
 extern crate serde_derive;
 
 mod common;
-mod server;
 
 use std::path::Path;
 
 use clap::{App, Arg};
 
-use server::Server;
+use common::server::Server;
 
 fn main() {
     let matches = App::new("yore")
@@ -79,7 +78,6 @@ fn run_webview(server: Server) {
     let resizable = true;
     let debug = true;
     let init_cb = |_| {};
-    let userdata = ();
 
     web_view::run(
         "Yore",
@@ -90,6 +88,6 @@ fn run_webview(server: Server) {
         init_cb,
         /* frontend_cb: */
         |_, _, _| {},
-        userdata,
+        (),
     );
 }

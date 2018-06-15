@@ -61,7 +61,7 @@ impl SuggestionAccuracy {
             ));
         }
 
-        return periods.join(", ");
+        periods.join(", ")
     }
 }
 
@@ -72,7 +72,7 @@ impl fmt::Display for SuggestionAccuracy {
 }
 
 fn should_print_period(period: i64, max: u8) -> bool {
-    period != 0 && period.wrapping_rem(max as i64) != 0
+    period != 0 && period.wrapping_rem(i64::from(max)) != 0
 }
 
 fn print_period(period: i64, singular: &str, plural: &str) -> String {

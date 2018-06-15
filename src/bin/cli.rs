@@ -15,7 +15,6 @@ extern crate yore;
 extern crate serde_derive;
 
 mod common;
-mod server;
 
 use std::fs::File;
 use std::io::stdin;
@@ -25,8 +24,7 @@ use clap::{App, Arg};
 use yore::{get_location_suggestion, load_location_history, GoogleLocationHistory, PhotoError,
            PhotoLocation};
 
-use common::{exiv2_write_coordinates, photo_paths, ApplicationError};
-use server::Server;
+use common::{exiv2_write_coordinates, photo_paths, server::Server, ApplicationError};
 
 fn main() {
     let matches = App::new("yore")
@@ -153,30 +151,30 @@ fn process_photo(
 }
 
 fn print_location_result(path: &Path, location: &Result<PhotoLocation, PhotoError>) {
-    println!("");
+    println!();
     match location {
-        &Err(ref e) => {
+        Err(ref e) => {
             eprintln!("{:?}:", path);
             eprintln!("\tError loading photo: {:?}", e);
         }
-        &Ok(PhotoLocation::Existing(ref location)) => {
+        Ok(PhotoLocation::Existing(ref location)) => {
             println!("{:?}:", path);
             println!("\tAlready has a location: {}", location);
         }
-        &Ok(PhotoLocation::Suggested(ref location, ref accuracy)) => {
+        Ok(PhotoLocation::Suggested(ref location, ref accuracy)) => {
             println!("{:?}:", path);
             println!("\tSuggested location: {}", location);
             println!("\tSuggestion accuracy: {}", accuracy);
             println!("\tView on map: {}", location.map_url());
         }
-        &Ok(PhotoLocation::None) => {
+        Ok(PhotoLocation::None) => {
             println!("{:?}:\n\tNo suggested location found", path);
         }
     }
 }
 
 fn should_write() -> bool {
-    println!("");
+    println!();
     println!("Save the suggested location to this image? (y/n)");
 
     loop {

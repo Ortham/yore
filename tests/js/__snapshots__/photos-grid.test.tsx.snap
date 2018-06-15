@@ -5,7 +5,6 @@ exports[`PhotosGrid renders a grid of photo thumbnails and a filter checkbox and
   id="photosList"
 >
   <div
-    className={undefined}
     style={
       Object {
         "height": 0,
@@ -18,7 +17,6 @@ exports[`PhotosGrid renders a grid of photo thumbnails and a filter checkbox and
       aria-label="grid"
       aria-readonly={true}
       className="ReactVirtualized__Grid"
-      id={undefined}
       onScroll={[Function]}
       role="grid"
       style={

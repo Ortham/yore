@@ -30,7 +30,6 @@ export function googleMapsCoordinates(photo: Photo) {
     if (photo.location.Existing) {
       coordinates = photo.location.Existing;
     } else {
-      ({ location: { Suggested: [coordinates] } } = photo);
       coordinates = photo.location.Suggested[0];
     }
 

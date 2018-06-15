@@ -61,7 +61,6 @@ exports[`Page renders a header, photos grid and main panel 1`] = `
   </header>
   <div>
     <PhotosGrid
-      currentPhoto={undefined}
       getAndStoreLocations={[Function]}
       handlePhotoSelect={[Function]}
       photos={
@@ -98,7 +97,6 @@ exports[`Page renders a header, photos grid and main panel 1`] = `
     <PhotoLocationViewer
       handleSuggestionApply={[Function]}
       handleSuggestionDiscard={[Function]}
-      photo={undefined}
     />
   </div>
 </div>

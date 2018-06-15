@@ -80,7 +80,11 @@ impl GuiState {
     }
 
     pub fn clear_cache(&self) -> io::Result<()> {
-        remove_dir_all(self.project_dirs.cache_dir())
+        if self.project_dirs.cache_dir().exists() {
+            remove_dir_all(self.project_dirs.cache_dir())
+        } else {
+            Ok(())
+        }
     }
 }
 

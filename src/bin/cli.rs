@@ -1,5 +1,4 @@
 extern crate actix_web;
-extern crate clap;
 extern crate directories;
 extern crate exif;
 extern crate futures;
@@ -13,95 +12,87 @@ extern crate yore;
 
 #[macro_use]
 extern crate serde_derive;
+#[macro_use]
+extern crate structopt;
 
 mod common;
 
 use std::fs::File;
 use std::io::stdin;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
-use clap::{App, Arg};
+use structopt::StructOpt;
 use yore::{get_location_suggestion, load_location_history, GoogleLocationHistory, PhotoError,
            PhotoLocation};
 
 use common::{exiv2_write_coordinates, photo_paths, server::Server, ApplicationError};
 
+#[derive(StructOpt)]
+#[structopt(
+    name = "yore",
+    about = "Yore uses an exported Google Location History JSON file to suggest locations for
+            images"
+)]
+struct Options {
+    #[structopt(
+        short = "l",
+        long = "locations",
+        parse(from_os_str),
+        required_unless = "use_gui",
+        help = "The path to a Google Location History JSON file"
+    )]
+    location_history_path: Option<PathBuf>,
+
+    #[structopt(
+        short = "i",
+        long = "interpolate",
+        help = "Interpolate between locations if an exact match is not found"
+    )]
+    interpolate: bool,
+
+    #[structopt(short = "r", long = "read-only", help = "Don't offer to save suggested locations")]
+    read_only: bool,
+
+    #[structopt(short = "g", long = "gui", help = "Start a server for the browser-based GUI")]
+    use_gui: bool,
+
+    #[structopt(
+        short = "p",
+        long = "port",
+        default_value = "8080",
+        help = "The port that the GUI server should listen on"
+    )]
+    port: u16,
+
+    #[structopt(
+        parse(from_os_str),
+        required_unless = "use_gui",
+        help = "The image or a directory of images to suggest a location for"
+    )]
+    photo_path: Option<PathBuf>,
+}
+
 fn main() {
-    let matches = App::new("yore")
-        .version(env!("CARGO_PKG_VERSION"))
-        .about(
-            "Yore uses an exported Google Location History JSON file to suggest locations for
-            images",
-        )
-        .author("Oliver Hamlet")
-        .arg(
-            Arg::with_name("location_history")
-                .long("locations")
-                .short("l")
-                .value_name("FILE")
-                .takes_value(true)
-                .required_unless("gui")
-                .help("The path to a Google Location History JSON file"),
-        )
-        .arg(
-            Arg::with_name("interpolate")
-                .long("interpolate")
-                .short("i")
-                .help("Interpolate between locations if an exact match is not found"),
-        )
-        .arg(
-            Arg::with_name("read-only")
-                .long("read-only")
-                .short("r")
-                .help("Don't offer to save suggested locations"),
-        )
-        .arg(
-            Arg::with_name("gui")
-                .long("gui")
-                .short("g")
-                .help("Start a server for the browser-based GUI"),
-        )
-        .arg(
-            Arg::with_name("port")
-                .long("port")
-                .short("p")
-                .takes_value(true)
-                .default_value("8080")
-                .help("The port that the GUI server should listen on"),
-        )
-        .arg(
-            Arg::with_name("INPUT")
-                .required_unless("gui")
-                .index(1)
-                .help("The image or a directory of images to suggest a location for"),
-        )
-        .get_matches();
+    let options = Options::from_args();
 
-    let photo_path = matches.value_of("INPUT").map(Path::new);
-    let location_history_path = matches.value_of("location_history").map(Path::new);
-    let interpolate = matches.is_present("interpolate");
-    let read_only = matches.is_present("read-only");
-    let use_gui = matches.is_present("gui");
-    let gui_port = matches.value_of("port").unwrap().parse::<u16>().unwrap();
+    if options.use_gui {
+        let mut server = Server::new(options.port, options.interpolate);
 
-    if use_gui {
-        let mut server = Server::new(gui_port, interpolate);
-
-        if let Some(path) = photo_path {
-            server.search_photos_path(path);
+        if let Some(path) = options.photo_path {
+            server.search_photos_path(&path);
         }
 
-        if let Some(path) = location_history_path {
-            server.load_location_history(path).unwrap();
+        if let Some(path) = options.location_history_path {
+            server.load_location_history(&path).unwrap();
         }
 
         server.run().unwrap();
     } else {
         run_cli(
-            photo_path.unwrap(),
-            location_history_path.unwrap(),
-            interpolate,
-            read_only,
+            &options.photo_path.unwrap(),
+            &options.location_history_path.unwrap(),
+            options.interpolate,
+            options.read_only,
         ).unwrap();
     }
 }

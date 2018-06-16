@@ -1,7 +1,6 @@
 #![windows_subsystem = "windows"]
 
 extern crate actix_web;
-extern crate clap;
 extern crate directories;
 extern crate exif;
 extern crate futures;
@@ -16,56 +15,56 @@ extern crate yore;
 
 #[macro_use]
 extern crate serde_derive;
+#[macro_use]
+extern crate structopt;
 
 mod common;
 
-use std::path::Path;
+use std::path::PathBuf;
 
-use clap::{App, Arg};
+use structopt::StructOpt;
 
 use common::server::Server;
 
+#[derive(StructOpt)]
+#[structopt(
+    name = "yore",
+    about = "Yore uses an exported Google Location History JSON file to suggest locations for
+            images"
+)]
+struct Options {
+    #[structopt(
+        short = "l",
+        long = "locations",
+        parse(from_os_str),
+        help = "The path to a Google Location History JSON file"
+    )]
+    location_history_path: Option<PathBuf>,
+
+    #[structopt(
+        short = "i",
+        long = "interpolate",
+        help = "Interpolate between locations if an exact match is not found"
+    )]
+    interpolate: bool,
+
+    #[structopt(
+        parse(from_os_str), help = "The image or a directory of images to suggest a location for"
+    )]
+    photo_path: Option<PathBuf>,
+}
+
 fn main() {
-    let matches = App::new("yore")
-        .version(env!("CARGO_PKG_VERSION"))
-        .about(
-            "Yore uses an exported Google Location History JSON file to suggest locations for
-            images",
-        )
-        .author("Oliver Hamlet")
-        .arg(
-            Arg::with_name("location_history")
-                .long("locations")
-                .short("l")
-                .value_name("FILE")
-                .takes_value(true)
-                .help("The path to a Google Location History JSON file"),
-        )
-        .arg(
-            Arg::with_name("interpolate")
-                .long("interpolate")
-                .short("i")
-                .help("Interpolate between locations if an exact match is not found"),
-        )
-        .arg(
-            Arg::with_name("INPUT")
-                .index(1)
-                .help("The image or a directory of images to suggest a location for"),
-        )
-        .get_matches();
+    let options = Options::from_args();
 
-    let photo_path = matches.value_of("INPUT").map(Path::new);
-    let location_history_path = matches.value_of("location_history").map(Path::new);
-    let interpolate = matches.is_present("interpolate");
+    let mut server = Server::new(0, options.interpolate);
 
-    let mut server = Server::new(0, interpolate);
-
-    if let Some(path) = photo_path {
-        server.search_photos_path(path);
+    if let Some(path) = options.photo_path {
+        server.search_photos_path(&path);
     }
 
-    if let Some(path) = location_history_path {
-        server.load_location_history(path).unwrap();
+    if let Some(path) = options.location_history_path {
+        server.load_location_history(&path).unwrap();
     }
 
     run_webview(server);

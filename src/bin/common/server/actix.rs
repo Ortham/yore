@@ -61,7 +61,11 @@ pub fn build_server_app(state: SharedGuiState) -> App<SharedGuiState> {
     App::with_state(state)
         .route("/rootPath", Method::GET, get_root_path)
         .route("/rootPath/new", Method::GET, get_new_root_path)
-        .route("/locationHistoryPath", Method::GET, get_location_history)
+        .route(
+            "/locationHistoryPath",
+            Method::GET,
+            get_location_history_path,
+        )
         .route(
             "/locationHistory/new",
             Method::GET,
@@ -98,7 +102,7 @@ fn get_new_root_path(req: Request) -> JsonResult<RootPathResponse> {
 }
 
 #[allow(unknown_lints, needless_pass_by_value)]
-fn get_location_history(req: Request) -> JsonResult<LocationHistoryPathResponse> {
+fn get_location_history_path(req: Request) -> JsonResult<LocationHistoryPathResponse> {
     let state = req.state().read()?;
     Ok(Json(LocationHistoryPathResponse::new(&state)))
 }
@@ -252,7 +256,346 @@ fn file_mime_type(path: &Path) -> &'static str {
 
 #[cfg(test)]
 mod tests {
+    extern crate tempfile;
+
     use super::*;
+
+    use std::fs::read;
+    use std::process::Command;
+    use std::str::from_utf8;
+
+    use self::tempfile::tempdir;
+    use actix_web::test::{self, TestServer};
+    use actix_web::{http::StatusCode, Binary, Body, Error, HttpMessage};
+
+    fn test_state(cache_path: &Path) -> SharedGuiState {
+        let mut state = GuiState::new(cache_path);
+        state.search_new_root_path(PathBuf::from("tests/assets"));
+        state
+            .load_location_history(PathBuf::from("tests/assets/location_history.json"))
+            .unwrap();
+
+        Arc::new(RwLock::new(state))
+    }
+
+    fn response_body(response: &HttpResponse) -> &Binary {
+        if let Body::Binary(binary) = response.body() {
+            binary
+        } else {
+            panic!("Response body is not binary");
+        }
+    }
+
+    fn response_json(response: &HttpResponse) -> String {
+        let body = response_body(&response);
+        from_utf8(body.as_ref()).unwrap().replace("\\\\", "/")
+    }
+
+    #[test]
+    fn get_root_path_should_respond_with_the_current_photos_root_path() {
+        let tmp_dir = tempdir().unwrap();
+        let state = test_state(tmp_dir.path());
+
+        let response = test::TestRequest::with_state(state.clone())
+            .uri("/rootPath")
+            .run(get_root_path)
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+        assert_eq!(
+            response.headers().get("Content-Type").unwrap(),
+            "application/json"
+        );
+        assert_eq!(&response_json(&response), "{\"rootPath\":\"tests/assets\"}");
+    }
+
+    #[test]
+    fn get_location_history_path_should_respond_with_the_current_location_history_path() {
+        let tmp_dir = tempdir().unwrap();
+        let state = test_state(tmp_dir.path());
+
+        let response = test::TestRequest::with_state(state.clone())
+            .uri("/locationHistoryPath")
+            .run(get_location_history_path)
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+        assert_eq!(
+            response.headers().get("Content-Type").unwrap(),
+            "application/json"
+        );
+
+        let expected_json = "{\"locationHistoryPath\":\"tests/assets/location_history.json\"}";
+
+        assert_eq!(&response_json(&response), expected_json);
+    }
+
+    #[test]
+    fn get_interpolate_should_respond_with_the_current_interpolation_state() {
+        let tmp_dir = tempdir().unwrap();
+        let state = test_state(tmp_dir.path());
+
+        let response = test::TestRequest::with_state(state.clone())
+            .uri("/interpolate")
+            .run(get_interpolate)
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+        assert_eq!(
+            response.headers().get("Content-Type").unwrap(),
+            "application/json"
+        );
+        assert_eq!(&response_json(&response), "{\"interpolate\":false}");
+    }
+
+    #[test]
+    fn get_locations_should_respond_with_the_locations_of_the_queried_range_of_photos() {
+        let tmp_dir = tempdir().unwrap();
+        let state = test_state(tmp_dir.path());
+
+        let response = test::TestRequest::with_state(state.clone())
+            .uri("/locations?start=0&end=1")
+            .run(get_locations)
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+        assert_eq!(
+            response.headers().get("Content-Type").unwrap(),
+            "application/json"
+        );
+
+        let expected_json = "{\"locations\":[{\"path\":\"tests/assets/photo.jpg\",\"location\":{\"Existing\":{\"latitude\":38.76544,\"longitude\":-9.094802222222223}}}],\"start_index\":0,\"stop_index\":1}";
+
+        assert_eq!(&response_json(&response), expected_json);
+    }
+
+    #[test]
+    fn get_location_should_respond_with_the_location_for_the_queried_path() {
+        let tmp_dir = tempdir().unwrap();
+        let state = test_state(tmp_dir.path());
+
+        let response = test::TestRequest::with_state(state.clone())
+            .uri("/location?path=tests/assets/photo.jpg")
+            .run(get_location)
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+        assert_eq!(
+            response.headers().get("Content-Type").unwrap(),
+            "application/json"
+        );
+
+        let expected_json = "{\"path\":\"tests/assets/photo.jpg\",\"location\":{\"Existing\":{\"latitude\":38.76544,\"longitude\":-9.094802222222223}}}";
+
+        assert_eq!(&response_json(&response), expected_json);
+    }
+
+    #[test]
+    fn get_photos_should_respond_with_all_photos_if_filter_is_not_set() {
+        let tmp_dir = tempdir().unwrap();
+        let state = test_state(tmp_dir.path());
+
+        let response = test::TestRequest::with_state(state.clone())
+            .uri("/photos")
+            .run(get_photos)
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+        assert_eq!(
+            response.headers().get("Content-Type").unwrap(),
+            "application/json"
+        );
+
+        let expected_json = "{\"photos\":[{\"path\":\"tests/assets/photo.jpg\",\"height\":37,\"width\":55},{\"path\":\"tests/assets/photo_rotated.jpg\",\"height\":50,\"width\":33},{\"path\":\"tests/assets/photo_without_exif.jpg\",\"height\":37,\"width\":55},{\"path\":\"tests/assets/photo_without_gps.jpg\",\"height\":37,\"width\":55},{\"path\":\"tests/assets/photo_without_orientation.jpg\",\"height\":33,\"width\":50},{\"path\":\"tests/assets/photo_without_timestamp.jpg\",\"height\":37,\"width\":55}]}";
+
+        assert_eq!(&response_json(&response), expected_json);
+    }
+
+    #[test]
+    fn get_photos_should_respond_with_all_photos_if_filter_is_false() {
+        let tmp_dir = tempdir().unwrap();
+        let state = test_state(tmp_dir.path());
+
+        let response = test::TestRequest::with_state(state.clone())
+            .uri("/photos?filter=false")
+            .run(get_photos)
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+        assert_eq!(
+            response.headers().get("Content-Type").unwrap(),
+            "application/json"
+        );
+
+        let expected_json = "{\"photos\":[{\"path\":\"tests/assets/photo.jpg\",\"height\":37,\"width\":55},{\"path\":\"tests/assets/photo_rotated.jpg\",\"height\":50,\"width\":33},{\"path\":\"tests/assets/photo_without_exif.jpg\",\"height\":37,\"width\":55},{\"path\":\"tests/assets/photo_without_gps.jpg\",\"height\":37,\"width\":55},{\"path\":\"tests/assets/photo_without_orientation.jpg\",\"height\":33,\"width\":50},{\"path\":\"tests/assets/photo_without_timestamp.jpg\",\"height\":37,\"width\":55}]}";
+
+        assert_eq!(&response_json(&response), expected_json);
+    }
+
+    #[test]
+    fn get_photos_should_respond_with_only_photos_with_suggested_locations_if_filter_is_true() {
+        let tmp_dir = tempdir().unwrap();
+        let state = test_state(tmp_dir.path());
+
+        let response = test::TestRequest::with_state(state.clone())
+            .uri("/photos?filter=true")
+            .run(get_photos)
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+        assert_eq!(
+            response.headers().get("Content-Type").unwrap(),
+            "application/json"
+        );
+
+        let expected_json = "{\"photos\":[{\"path\":\"tests/assets/photo_without_gps.jpg\",\"height\":37,\"width\":55}]}";
+
+        assert_eq!(&response_json(&response), expected_json);
+    }
+
+    #[test]
+    fn get_photo_should_respond_with_image_in_body_and_image_jpeg_mime_type() {
+        let tmp_dir = tempdir().unwrap();
+        let state = test_state(tmp_dir.path());
+
+        let response = test::TestRequest::with_state(state.clone())
+            .uri("/photo?path=tests/assets/photo.jpg")
+            .run(get_photo)
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+        assert_eq!(
+            response.headers().get("Content-Type").unwrap(),
+            "image/jpeg"
+        );
+
+        let image = oriented_image(Path::new("tests/assets/photo.jpg")).unwrap();
+
+        let body = response_body(&response);
+        assert_eq!(body.as_ref(), image.as_slice());
+    }
+
+    #[test]
+    fn get_thumbnail_should_respond_with_a_binary_body_and_image_jpeg_mime_type() {
+        let tmp_dir = tempdir().unwrap();
+        let state = test_state(tmp_dir.path());
+
+        let response = test::TestRequest::with_state(state.clone())
+            .uri("/thumbnail?path=tests/assets/photo_rotated.jpg&maxWidth=300&maxHeight=300")
+            .run(get_thumbnail)
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+        assert_eq!(
+            response.headers().get("Content-Type").unwrap(),
+            "image/jpeg"
+        );
+        assert!(response.body().is_binary());
+    }
+
+    #[test]
+    fn get_thumbnail_should_not_respond_with_original_image() {
+        let tmp_dir = tempdir().unwrap();
+        let state = test_state(tmp_dir.path());
+
+        let response = test::TestRequest::with_state(state.clone())
+            .uri("/thumbnail?path=tests/assets/photo_rotated.jpg&maxWidth=300&maxHeight=300")
+            .run(get_thumbnail)
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+        assert_eq!(
+            response.headers().get("Content-Type").unwrap(),
+            "image/jpeg"
+        );
+
+        let image = oriented_image(Path::new("tests/assets/photo_rotated.jpg")).unwrap();
+
+        let body = response_body(&response);
+        assert_ne!(body.as_ref(), image.as_slice());
+    }
+
+    #[test]
+    fn get_thumbnail_should_cache_generated_thumbnails() {
+        let tmp_dir = tempdir().unwrap();
+        let state = test_state(tmp_dir.path());
+
+        let cached_path = state.read().unwrap().cached_image_path(
+            Path::new("tests/assets/photo_rotated.jpg"),
+            300,
+            300,
+        );
+        assert!(!cached_path.exists());
+
+        let response = test::TestRequest::with_state(state.clone())
+            .uri("/thumbnail?path=tests/assets/photo_rotated.jpg&maxWidth=300&maxHeight=300")
+            .run(get_thumbnail)
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+
+        assert!(cached_path.exists());
+        let file_content = read(cached_path).unwrap();
+
+        let body = response_body(&response);
+        assert_eq!(body.as_ref(), file_content.as_slice());
+
+        let response = test::TestRequest::with_state(state.clone())
+            .uri("/thumbnail?path=tests/assets/photo_rotated.jpg&maxWidth=300&maxHeight=300")
+            .run(get_thumbnail)
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+
+        let body = response_body(&response);
+        assert_eq!(body.as_ref(), file_content.as_slice());
+    }
+
+    #[test]
+    fn get_static_file_should_respond_with_a_non_empty_body() {
+        let mut srv = TestServer::new(|app| {
+            app.resource("/{file}", |r| r.method(Method::GET).with(get_static_file));
+        });
+
+        let request = srv.client(Method::GET, "/index.html").finish().unwrap();
+        let response = srv.execute(request.send()).unwrap();
+
+        assert_eq!(response.status(), StatusCode::OK);
+
+        let body = response.body().limit(1024).wait().unwrap();
+
+        assert!(!body.is_empty());
+    }
+
+    #[test]
+    fn get_index_should_respond_with_a_binary_body() {
+        let tmp_dir = tempdir().unwrap();
+        let state = test_state(tmp_dir.path());
+        let response = test::TestRequest::with_state(state.clone())
+            .run(get_index)
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+        assert!(response.body().is_binary());
+    }
+
+    #[test]
+    fn put_interpolate_should_set_interpolate_state_to_the_given_value() {
+        let tmp_dir = tempdir().unwrap();
+        let state = test_state(tmp_dir.path());
+
+        let response = test::TestRequest::with_state(state.clone())
+            .set_payload("{\"interpolate\":true}")
+            .header("Content-Type", "application/json")
+            .run_async(|r| put_interpolate(r).map_err(Error::from))
+            .unwrap();
+
+        assert_eq!(response.status(), StatusCode::OK);
+        assert!(state.read().unwrap().interpolate());
+    }
+
+    #[test]
+    fn put_location_should_fail_if_exiv2_is_not_available_and_succeed_otherwise() {
+        let tmp_dir = tempdir().unwrap();
+        let state = test_state(tmp_dir.path());
+
+        let response = test::TestRequest::with_state(state.clone())
+            .set_payload("{\"latitude\":0,\"longitude\":0}")
+            .header("Content-Type", "application/json")
+            .run_async(|r| put_location(r).map_err(Error::from));
+
+        if Command::new("exiv2").status().is_err() {
+            assert!(response.is_err());
+        } else {
+            assert!(response.is_ok());
+        }
+    }
 
     #[test]
     fn file_mime_type_should_return_text_css_for_a_path_ending_in_dot_css() {

@@ -181,10 +181,12 @@ pub fn read_file_bytes(path: &Path) -> Result<&'static [u8], ServiceError> {
 mod tests {
     use super::*;
 
+    use std::env::temp_dir;
+
     use serde_json::to_string;
 
     fn state_with_root_path(root_path: &Path) -> GuiState {
-        let mut state = GuiState::with_interpolate(false);
+        let mut state = GuiState::new(&temp_dir());
         state.search_new_root_path(root_path.to_path_buf());
         state
     }
@@ -221,7 +223,7 @@ mod tests {
 
     #[test]
     fn interpolate_response_new_should_get_the_root_path() {
-        let state = GuiState::with_interpolate(false);
+        let state = GuiState::new(&temp_dir());
         let response = InterpolateResponse::new(&state);
 
         assert_eq!(state.interpolate(), response.interpolate);

@@ -4,6 +4,7 @@ use std::sync::{mpsc, Arc, RwLock};
 use std::thread;
 
 use actix_web::server;
+use directories::ProjectDirs;
 
 use common::ApplicationError;
 
@@ -25,7 +26,8 @@ pub struct Server {
 impl Server {
     pub fn new(port: u16, interpolate: bool) -> Server {
         let address = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), port);
-        let state = GuiState::with_interpolate(interpolate);
+        let mut state = GuiState::new(ProjectDirs::from("", "", "Yore").cache_dir());
+        state.set_interpolate(interpolate);
 
         Server { address, state }
     }

@@ -5,7 +5,6 @@ use std::hash::{Hash, Hasher};
 use std::io;
 use std::path::{Path, PathBuf};
 
-use directories::ProjectDirs;
 use yore::{load_location_history, GoogleLocationHistory, HistoryError};
 
 use common::photo_paths;
@@ -16,18 +15,18 @@ pub struct GuiState {
     location_history_path: Option<PathBuf>,
     location_history: GoogleLocationHistory,
     interpolate: bool,
-    project_dirs: ProjectDirs,
+    cache_path: PathBuf,
 }
 
 impl GuiState {
-    pub fn with_interpolate(interpolate: bool) -> GuiState {
+    pub fn new(cache_path: &Path) -> GuiState {
         GuiState {
             root_path: None,
             photo_paths: Vec::default(),
             location_history_path: None,
             location_history: GoogleLocationHistory::default(),
-            interpolate,
-            project_dirs: ProjectDirs::from("", "", "Yore"),
+            interpolate: false,
+            cache_path: cache_path.to_path_buf(),
         }
     }
 
@@ -57,8 +56,7 @@ impl GuiState {
         width: u32,
         height: u32,
     ) -> PathBuf {
-        self.project_dirs
-            .cache_dir()
+        self.cache_path
             .join(&cached_filename(original_image_path, width, height))
     }
 
@@ -80,8 +78,8 @@ impl GuiState {
     }
 
     pub fn clear_cache(&self) -> io::Result<()> {
-        if self.project_dirs.cache_dir().exists() {
-            remove_dir_all(self.project_dirs.cache_dir())
+        if self.cache_path.exists() {
+            remove_dir_all(&self.cache_path)
         } else {
             Ok(())
         }

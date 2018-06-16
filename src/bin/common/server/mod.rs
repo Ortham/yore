@@ -84,3 +84,25 @@ impl Server {
         Ok(address)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    use std::net::TcpStream;
+
+    #[test]
+    fn spawn_should_start_a_server_in_the_background() {
+        let mut server = Server::new(8080, true);
+
+        server.search_photos_path(Path::new("tests/assets"));
+        server
+            .load_location_history(Path::new("tests/assets/location_history.json"))
+            .unwrap();
+        let address = server.spawn().unwrap();
+
+        assert_eq!(address.ip(), IpAddr::from([127, 0, 0, 1]));
+        assert_eq!(address.port(), 8080);
+        assert!(TcpStream::connect(address).is_ok());
+    }
+}

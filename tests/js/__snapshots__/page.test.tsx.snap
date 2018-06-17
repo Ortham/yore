@@ -28,6 +28,18 @@ exports[`Page renders a header, photos grid and main panel 1`] = `
         >
           Select Root Path
         </button>
+      </div>
+      <div>
+        <button
+          onClick={[Function]}
+          type="button"
+        >
+          Select Location History
+        </button>
+      </div>
+    </div>
+    <div>
+      <div>
         <label
           htmlFor="suggestionsCheckbox"
         >
@@ -41,12 +53,6 @@ exports[`Page renders a header, photos grid and main panel 1`] = `
         </label>
       </div>
       <div>
-        <button
-          onClick={[Function]}
-          type="button"
-        >
-          Select Location History
-        </button>
         <label
           htmlFor="interpolateCheckbox"
         >

@@ -4,9 +4,14 @@ import { MapArea } from './map-area';
 import { hasSuggestion, locationDescription } from './photo';
 
 function getPhotoSrc(photo: Photo) {
+  // Could get width from element width, but use a large value to allow for
+  // resizing - 900 is > the width of the container in a fullscreen window on
+  // a 2560x1440 screen.
+  const maxWidth = 900;
+  const maxHeight = Math.ceil((photo.height / photo.width) * maxWidth);
   return `/thumbnail?path=${encodeURIComponent(
     photo.path
-  )}&maxWidth=300&maxHeight=300`;
+  )}&maxWidth=${maxWidth}&maxHeight=${maxHeight}`;
 }
 
 export interface PhotoLocationViewerProps {

@@ -13,6 +13,7 @@ body {
     bottom: 0;
     left: 0;
     right: 0;
+    padding: 0 16px;
 }
 
 #titleBar {
@@ -61,7 +62,8 @@ body {
     display: flex;
     flex-direction: column;
     flex: 1 1 auto;
-    max-width: 360px;
+    max-width: 33%;
+    padding-left: 16px;
 }
 
 #photosList {

@@ -88,6 +88,15 @@ export class Page extends React.Component<PageProps, PageState> {
               <button type="button" onClick={this.getNewRootPath}>
                 Select Root Path
               </button>
+            </div>
+            <div>
+              <button type="button" onClick={this.getNewLocationHistory}>
+                Select Location History
+              </button>
+            </div>
+          </div>
+          <div>
+            <div>
               <label htmlFor="suggestionsCheckbox">
                 <input
                   type="checkbox"
@@ -99,9 +108,6 @@ export class Page extends React.Component<PageProps, PageState> {
               </label>
             </div>
             <div>
-              <button type="button" onClick={this.getNewLocationHistory}>
-                Select Location History
-              </button>
               <label htmlFor="interpolateCheckbox">
                 <input
                   type="checkbox"

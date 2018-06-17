@@ -18,6 +18,8 @@ describe('PhotoLocationViewer', () => {
   test('renders an image, map, location description and disabled buttons if photo location is not suggested', () => {
     const photo: Photo = {
       path: 'path',
+      height: 400,
+      width: 500,
       location: {
         Existing: {
           latitude: 52.0,
@@ -39,7 +41,9 @@ describe('PhotoLocationViewer', () => {
 
   test('renders an image, map, text and disabled buttons if photo has no location', () => {
     const photo = {
-      path: 'path'
+      path: 'path',
+      height: 400,
+      width: 500
     };
     const photoLocationViewer = renderer
       .create(
@@ -56,6 +60,8 @@ describe('PhotoLocationViewer', () => {
   test('renders an image, map, location description and enabled buttons if photo location is suggested', () => {
     const photo = {
       path: 'path',
+      height: 400,
+      width: 500,
       location: {
         Suggested: [
           {

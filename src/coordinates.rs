@@ -56,7 +56,8 @@ impl Coordinates {
         let delta_long = (self.longitude.to_radians() - other.longitude.to_radians()).abs();
 
         let a = haversine(delta_lat)
-            + self.latitude.to_radians().cos() * other.latitude.to_radians().cos()
+            + self.latitude.to_radians().cos()
+                * other.latitude.to_radians().cos()
                 * haversine(delta_long);
 
         2.0 * RADIUS_OF_EARTH_IN_KM * a.sqrt().asin()

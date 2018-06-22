@@ -22,8 +22,10 @@ use std::io::stdin;
 use std::path::{Path, PathBuf};
 
 use structopt::StructOpt;
-use yore::{get_location_suggestion, load_location_history, GoogleLocationHistory, PhotoError,
-           PhotoLocation};
+use yore::{
+    get_location_suggestion, load_location_history, GoogleLocationHistory, PhotoError,
+    PhotoLocation,
+};
 
 use common::{exiv2_write_coordinates, photo_paths, server::Server, ApplicationError};
 

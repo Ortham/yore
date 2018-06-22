@@ -3,8 +3,9 @@ use std::path::{Path, PathBuf};
 use std::sync::{Arc, RwLock};
 
 use actix_web::http::Method;
-use actix_web::{App, Body, FromRequest, HttpRequest, HttpResponse, Json, Path as PathExtractor,
-                Query, Result};
+use actix_web::{
+    App, Body, FromRequest, HttpRequest, HttpResponse, Json, Path as PathExtractor, Query, Result,
+};
 use futures::future::result;
 use futures::Future;
 use tinyfiledialogs::{open_file_dialog, select_folder_dialog};
@@ -12,8 +13,10 @@ use yore::Coordinates;
 
 use super::error::ServiceError;
 use super::image::{oriented_image, thumbnail};
-use super::responses::{read_file_bytes, InterpolateResponse, LocationHistoryPathResponse,
-                       LocationResponse, LocationsResponse, PhotosResponse, RootPathResponse};
+use super::responses::{
+    read_file_bytes, InterpolateResponse, LocationHistoryPathResponse, LocationResponse,
+    LocationsResponse, PhotosResponse, RootPathResponse,
+};
 use super::state::GuiState;
 use common::exiv2_write_coordinates;
 

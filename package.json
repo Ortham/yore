@@ -48,7 +48,7 @@
     "prettier": "^1.10.2",
     "react-test-renderer": "^16.2.0",
     "source-map-loader": "^0.2.3",
-    "ts-jest": "^22.4.0",
+    "ts-jest": "^23.0.0",
     "typescript": "^2.7.2",
     "typescript-eslint-parser": "^16.0.0",
     "webpack": "^4.1.0",

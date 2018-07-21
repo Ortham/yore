@@ -8,7 +8,7 @@ build = "build.rs"
 [dependencies]
 actix-web = { version = "0.6", default-features = false, features = [] }
 chrono = "0.4"
-directories = "0.10.0"
+directories = "1.0"
 futures = "0.1.14"
 image = "0.19.0"
 jpeg-decoder = "0.1.13"

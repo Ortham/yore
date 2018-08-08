@@ -26,7 +26,8 @@ pub struct Server {
 impl Server {
     pub fn new(port: u16, interpolate: bool) -> Server {
         let address = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), port);
-        let project_dir = ProjectDirs::from("", "", "Yore").expect("project directory to be calculable");
+        let project_dir =
+            ProjectDirs::from("", "", "Yore").expect("project directory to be calculable");
         let mut state = GuiState::new(project_dir.cache_dir());
         state.set_interpolate(interpolate);
 
@@ -77,7 +78,8 @@ impl Server {
             server.run();
         });
 
-        let address = rx.recv()
+        let address = rx
+            .recv()
             .expect("Failed to receive the server's listen address from its main thread");
 
         println!("Listening on http://{}", address);

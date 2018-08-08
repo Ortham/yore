@@ -78,7 +78,7 @@ impl ResponseError for ServiceError {
             ServiceError::IoError(e) if e.kind() == io::ErrorKind::NotFound => {
                 HttpResponse::NotFound().finish()
             }
-            ServiceError::ActixError(e) => e.cause().error_response(),
+            ServiceError::ActixError(e) => e.as_response_error().error_response(),
             e => {
                 HttpResponse::with_body(http::StatusCode::INTERNAL_SERVER_ERROR, format!("{:?}", e))
             }

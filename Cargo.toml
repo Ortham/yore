@@ -6,7 +6,7 @@ license = "MIT"
 build = "build.rs"
 
 [dependencies]
-actix-web = { version = "0.6", default-features = false, features = [] }
+actix-web = "0.7"
 chrono = "0.4"
 directories = "1.0"
 futures = "0.1.14"

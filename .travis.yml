@@ -33,6 +33,6 @@ script:
   - yarn lint
   - yarn build
   - yarn test --ci
-  - cargo fmt -- --write-mode=diff
+  - cargo fmt -- --check
   - cargo test
   - cargo tarpaulin --ciserver travis-ci --coveralls $TRAVIS_JOB_ID

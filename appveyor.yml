@@ -27,7 +27,7 @@ test_script:
   - yarn lint
   - yarn test --ci
   - yarn build
-  - cargo fmt -- --write-mode=diff
+  - cargo fmt -- --check
   - cargo test --release
   - cargo build --release
 

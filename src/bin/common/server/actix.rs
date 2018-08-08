@@ -62,38 +62,34 @@ type HttpResult = Result<HttpResponse, ServiceError>;
 
 pub fn build_server_app(state: SharedGuiState) -> App<SharedGuiState> {
     App::with_state(state)
-        .route("/rootPath", Method::GET, get_root_path)
-        .route("/rootPath/new", Method::GET, get_new_root_path)
-        .route(
-            "/locationHistoryPath",
-            Method::GET,
-            get_location_history_path,
-        )
-        .route(
-            "/locationHistory/new",
-            Method::GET,
-            get_new_location_history,
-        )
-        .route("/interpolate", Method::GET, get_interpolate)
-        .route("/locations", Method::GET, get_locations)
-        .route("/location", Method::GET, get_location)
-        .route("/photos", Method::GET, get_photos)
-        .route("/photo", Method::GET, get_photo)
-        .route("/thumbnail", Method::GET, get_thumbnail)
-        .resource("/{file}", |r| r.method(Method::GET).with(get_static_file))
-        .route("/", Method::GET, get_index)
+        .resource("/rootPath", |r| r.get().f(get_root_path))
+        .resource("/rootPath/new", |r| r.get().f(get_new_root_path))
+        .resource("/locationHistoryPath", |r| {
+            r.get().f(get_location_history_path)
+        })
+        .resource("/locationHistory/new", |r| {
+            r.get().f(get_new_location_history)
+        })
+        .resource("/interpolate", |r| r.get().f(get_interpolate))
+        .resource("/locations", |r| r.get().f(get_locations))
+        .resource("/location", |r| r.get().f(get_location))
+        .resource("/photos", |r| r.get().f(get_photos))
+        .resource("/photo", |r| r.get().f(get_photo))
+        .resource("/thumbnail", |r| r.get().f(get_thumbnail))
+        .resource("/{file}", |r| r.get().with(get_static_file))
+        .resource("/", |r| r.get().f(get_index))
         .route("/interpolate", Method::PUT, put_interpolate)
         .route("/location", Method::PUT, put_location)
 }
 
 #[allow(unknown_lints, needless_pass_by_value)]
-fn get_root_path(req: Request) -> JsonResult<RootPathResponse> {
+fn get_root_path(req: &Request) -> JsonResult<RootPathResponse> {
     let state = req.state().read()?;
     Ok(Json(RootPathResponse::new(&state)))
 }
 
 #[allow(unknown_lints, needless_pass_by_value)]
-fn get_new_root_path(req: Request) -> JsonResult<RootPathResponse> {
+fn get_new_root_path(req: &Request) -> JsonResult<RootPathResponse> {
     if let Some(path) = select_folder_dialog("", "") {
         req.state()
             .write()?
@@ -105,13 +101,13 @@ fn get_new_root_path(req: Request) -> JsonResult<RootPathResponse> {
 }
 
 #[allow(unknown_lints, needless_pass_by_value)]
-fn get_location_history_path(req: Request) -> JsonResult<LocationHistoryPathResponse> {
+fn get_location_history_path(req: &Request) -> JsonResult<LocationHistoryPathResponse> {
     let state = req.state().read()?;
     Ok(Json(LocationHistoryPathResponse::new(&state)))
 }
 
 #[allow(unknown_lints, needless_pass_by_value)]
-fn get_new_location_history(req: Request) -> JsonResult<LocationHistoryPathResponse> {
+fn get_new_location_history(req: &Request) -> JsonResult<LocationHistoryPathResponse> {
     if let Some(path) = open_file_dialog("", "", None) {
         req.state()
             .write()?
@@ -122,13 +118,13 @@ fn get_new_location_history(req: Request) -> JsonResult<LocationHistoryPathRespo
 }
 
 #[allow(unknown_lints, needless_pass_by_value)]
-fn get_interpolate(req: Request) -> JsonResult<InterpolateResponse> {
+fn get_interpolate(req: &Request) -> JsonResult<InterpolateResponse> {
     let state = req.state().read()?;
     Ok(Json(InterpolateResponse::new(&state)))
 }
 
 #[allow(unknown_lints, needless_pass_by_value)]
-fn get_locations(req: Request) -> JsonResult<LocationsResponse> {
+fn get_locations(req: &Request) -> JsonResult<LocationsResponse> {
     let indices = Query::<Indices>::extract(&req)?;
 
     let state = req.state().read()?;
@@ -136,7 +132,7 @@ fn get_locations(req: Request) -> JsonResult<LocationsResponse> {
 }
 
 #[allow(unknown_lints, needless_pass_by_value)]
-fn get_location(req: Request) -> JsonResult<LocationResponse> {
+fn get_location(req: &Request) -> JsonResult<LocationResponse> {
     let query_params = Query::<QueriedPath>::extract(&req)?;
 
     let state = req.state().read()?;
@@ -144,7 +140,7 @@ fn get_location(req: Request) -> JsonResult<LocationResponse> {
 }
 
 #[allow(unknown_lints, needless_pass_by_value)]
-fn get_photos(req: Request) -> JsonResult<PhotosResponse> {
+fn get_photos(req: &Request) -> JsonResult<PhotosResponse> {
     let query_params = Query::<GetPhotosQueryParams>::extract(&req)?;
 
     let state = req.state().read()?;
@@ -157,7 +153,7 @@ fn get_photos(req: Request) -> JsonResult<PhotosResponse> {
 }
 
 #[allow(unknown_lints, needless_pass_by_value)]
-fn get_photo(req: Request) -> HttpResult {
+fn get_photo(req: &Request) -> HttpResult {
     let query_params = Query::<QueriedPath>::extract(&req)?;
 
     let body = oriented_image(&query_params.path).map(Body::from)?;
@@ -166,7 +162,7 @@ fn get_photo(req: Request) -> HttpResult {
 }
 
 #[allow(unknown_lints, needless_pass_by_value)]
-fn get_thumbnail(req: Request) -> HttpResult {
+fn get_thumbnail(req: &Request) -> HttpResult {
     let query_params = Query::<ThumbnailQueryParams>::extract(&req)?;
     let state = req.state().read()?;
 
@@ -210,7 +206,7 @@ fn get_static_file(file: PathExtractor<PathBuf>) -> HttpResult {
 }
 
 #[allow(unknown_lints, needless_pass_by_value)]
-fn get_index(_req: Request) -> HttpResult {
+fn get_index(_req: &Request) -> HttpResult {
     let file = Path::new("index.html");
     let body = read_file_bytes(&file).map(Body::from)?;
 
@@ -301,7 +297,7 @@ mod tests {
 
         let response = test::TestRequest::with_state(state.clone())
             .uri("/rootPath")
-            .run(get_root_path)
+            .run(&get_root_path)
             .unwrap();
         assert_eq!(response.status(), StatusCode::OK);
         assert_eq!(
@@ -318,7 +314,7 @@ mod tests {
 
         let response = test::TestRequest::with_state(state.clone())
             .uri("/locationHistoryPath")
-            .run(get_location_history_path)
+            .run(&get_location_history_path)
             .unwrap();
         assert_eq!(response.status(), StatusCode::OK);
         assert_eq!(
@@ -338,7 +334,7 @@ mod tests {
 
         let response = test::TestRequest::with_state(state.clone())
             .uri("/interpolate")
-            .run(get_interpolate)
+            .run(&get_interpolate)
             .unwrap();
         assert_eq!(response.status(), StatusCode::OK);
         assert_eq!(
@@ -355,7 +351,7 @@ mod tests {
 
         let response = test::TestRequest::with_state(state.clone())
             .uri("/locations?start=0&end=1")
-            .run(get_locations)
+            .run(&get_locations)
             .unwrap();
         assert_eq!(response.status(), StatusCode::OK);
         assert_eq!(
@@ -375,7 +371,7 @@ mod tests {
 
         let response = test::TestRequest::with_state(state.clone())
             .uri("/location?path=tests/assets/photo.jpg")
-            .run(get_location)
+            .run(&get_location)
             .unwrap();
         assert_eq!(response.status(), StatusCode::OK);
         assert_eq!(
@@ -395,7 +391,7 @@ mod tests {
 
         let response = test::TestRequest::with_state(state.clone())
             .uri("/photos")
-            .run(get_photos)
+            .run(&get_photos)
             .unwrap();
         assert_eq!(response.status(), StatusCode::OK);
         assert_eq!(
@@ -415,7 +411,7 @@ mod tests {
 
         let response = test::TestRequest::with_state(state.clone())
             .uri("/photos?filter=false")
-            .run(get_photos)
+            .run(&get_photos)
             .unwrap();
         assert_eq!(response.status(), StatusCode::OK);
         assert_eq!(
@@ -435,7 +431,7 @@ mod tests {
 
         let response = test::TestRequest::with_state(state.clone())
             .uri("/photos?filter=true")
-            .run(get_photos)
+            .run(&get_photos)
             .unwrap();
         assert_eq!(response.status(), StatusCode::OK);
         assert_eq!(
@@ -455,7 +451,7 @@ mod tests {
 
         let response = test::TestRequest::with_state(state.clone())
             .uri("/photo?path=tests/assets/photo.jpg")
-            .run(get_photo)
+            .run(&get_photo)
             .unwrap();
         assert_eq!(response.status(), StatusCode::OK);
         assert_eq!(
@@ -476,7 +472,7 @@ mod tests {
 
         let response = test::TestRequest::with_state(state.clone())
             .uri("/thumbnail?path=tests/assets/photo_rotated.jpg&maxWidth=300&maxHeight=300")
-            .run(get_thumbnail)
+            .run(&get_thumbnail)
             .unwrap();
         assert_eq!(response.status(), StatusCode::OK);
         assert_eq!(
@@ -493,7 +489,7 @@ mod tests {
 
         let response = test::TestRequest::with_state(state.clone())
             .uri("/thumbnail?path=tests/assets/photo_rotated.jpg&maxWidth=300&maxHeight=300")
-            .run(get_thumbnail)
+            .run(&get_thumbnail)
             .unwrap();
         assert_eq!(response.status(), StatusCode::OK);
         assert_eq!(
@@ -521,7 +517,7 @@ mod tests {
 
         let response = test::TestRequest::with_state(state.clone())
             .uri("/thumbnail?path=tests/assets/photo_rotated.jpg&maxWidth=300&maxHeight=300")
-            .run(get_thumbnail)
+            .run(&get_thumbnail)
             .unwrap();
         assert_eq!(response.status(), StatusCode::OK);
 
@@ -533,7 +529,7 @@ mod tests {
 
         let response = test::TestRequest::with_state(state.clone())
             .uri("/thumbnail?path=tests/assets/photo_rotated.jpg&maxWidth=300&maxHeight=300")
-            .run(get_thumbnail)
+            .run(&get_thumbnail)
             .unwrap();
         assert_eq!(response.status(), StatusCode::OK);
 
@@ -562,7 +558,7 @@ mod tests {
         let tmp_dir = tempdir().unwrap();
         let state = test_state(tmp_dir.path());
         let response = test::TestRequest::with_state(state.clone())
-            .run(get_index)
+            .run(&get_index)
             .unwrap();
         assert_eq!(response.status(), StatusCode::OK);
         assert!(response.body().is_binary());

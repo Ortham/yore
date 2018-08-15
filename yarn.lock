@@ -21,8 +21,8 @@
   resolved "https://registry.yarnpkg.com/@mapbox/point-geometry/-/point-geometry-0.1.0.tgz#8a83f9335c7860effa2eeeca254332aa0aeed8f2"
 
 "@types/google-map-react@^0.23.2":
-  version "0.23.4"
-  resolved "https://registry.yarnpkg.com/@types/google-map-react/-/google-map-react-0.23.4.tgz#8075727676a5c1cd3fbb298066e847691299f13b"
+  version "0.23.5"
+  resolved "https://registry.yarnpkg.com/@types/google-map-react/-/google-map-react-0.23.5.tgz#9d58eeccf4fbeeadfa083b9478abaf2eb9794252"
   dependencies:
     "@types/react" "*"
 
@@ -2658,8 +2658,8 @@ globby@^7.1.1:
     slash "^1.0.0"
 
 google-map-react@^1.0.0:
-  version "1.0.4"
-  resolved "https://registry.yarnpkg.com/google-map-react/-/google-map-react-1.0.4.tgz#83be7a36621c7583e03b141739cbd92013dfd256"
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/google-map-react/-/google-map-react-1.0.6.tgz#79e4ad0ef442cb8607f479e9cc504d08760287a2"
   dependencies:
     "@mapbox/point-geometry" "^0.1.0"
     eventemitter3 "^1.1.0"

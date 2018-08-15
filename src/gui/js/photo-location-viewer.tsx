@@ -21,12 +21,14 @@ export function PhotoLocationViewer(props: PhotoLocationViewerProps) {
           <div>{locationDescription(props.photo)}</div>
           <div>
             <button
+              type="button"
               disabled={!hasSuggestion(props.photo)}
               onClick={props.handleSuggestionApply}
             >
               Apply
             </button>
             <button
+              type="button"
               disabled={!hasSuggestion(props.photo)}
               onClick={props.handleSuggestionDiscard}
             >
@@ -43,8 +45,12 @@ export function PhotoLocationViewer(props: PhotoLocationViewerProps) {
       <footer>
         <div />
         <div>
-          <button disabled>Apply</button>
-          <button disabled>Discard</button>
+          <button type="button" disabled>
+            Apply
+          </button>
+          <button type="button" disabled>
+            Discard
+          </button>
         </div>
       </footer>
     </div>

@@ -35,7 +35,7 @@
     "babel-preset-react": "^6.24.1",
     "copy-webpack-plugin": "^4.5.0",
     "eslint": "^4.19.1",
-    "eslint-config-airbnb": "^16.1.0",
+    "eslint-config-airbnb": "^17.1.0",
     "eslint-config-prettier": "^3.0.1",
     "eslint-plugin-import": "^2.8.0",
     "eslint-plugin-jsx-a11y": "^6.0.3",
@@ -96,6 +96,7 @@
       "import/extensions": {
         "tsx": "never"
       },
+      "react/destructuring-assignment": 0,
       "react/jsx-filename-extension": [
         "error",
         {
@@ -104,6 +105,7 @@
           ]
         }
       ],
+      "react/jsx-one-expression-per-line": 0,
       "react/sort-comp": 0,
       "typescript/adjacent-overload-signatures": "error",
       "typescript/class-name-casing": "error",

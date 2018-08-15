@@ -57,12 +57,20 @@ export class Page extends React.Component<PageProps, PageState> {
         <header id="titleBar">
           <h1>Yore</h1>
           <div id="paths">
-            <div>Photos path: {this.state.rootPath}</div>
-            <div>Location history path: {this.state.locationHistoryPath}</div>
+            <div>
+              Photos path:
+              {this.state.rootPath}
+            </div>
+            <div>
+              Location history path:
+              {this.state.locationHistoryPath}
+            </div>
           </div>
           <div>
             <div>
-              <button onClick={this.getNewRootPath}>Select Root Path</button>
+              <button type="button" onClick={this.getNewRootPath}>
+                Select Root Path
+              </button>
               <label htmlFor="suggestionsCheckbox">
                 <input
                   type="checkbox"
@@ -74,7 +82,7 @@ export class Page extends React.Component<PageProps, PageState> {
               </label>
             </div>
             <div>
-              <button onClick={this.getNewLocationHistory}>
+              <button type="button" onClick={this.getNewLocationHistory}>
                 Select Location History
               </button>
               <label htmlFor="interpolateCheckbox">
@@ -124,20 +132,22 @@ export class Page extends React.Component<PageProps, PageState> {
 
   private getAndStoreLocations(startIndex: number, stopIndex: number) {
     return this.getLocationsPromise(startIndex, stopIndex).then(locations => {
-      const photos = this.state.photos.slice();
+      this.setState(previousState => {
+        const photos = previousState.photos.slice();
 
-      for (let i = startIndex; i < stopIndex; i += 1) {
-        // Don't mutate the existing object.
-        photos[i] = Object.assign({}, photos[i]);
+        for (let i = startIndex; i < stopIndex; i += 1) {
+          // Don't mutate the existing object.
+          photos[i] = Object.assign({}, photos[i]);
 
-        // Assign these here instead of using Object.assign to set any undefined
-        // values.
-        photos[i].location = locations[i - startIndex].location;
-        photos[i].error = locations[i - startIndex].error;
-        photos[i].loaded = true;
-      }
+          // Assign these here instead of using Object.assign to set any undefined
+          // values.
+          photos[i].location = locations[i - startIndex].location;
+          photos[i].error = locations[i - startIndex].error;
+          photos[i].loaded = true;
+        }
 
-      this.setState({ photos });
+        return { photos };
+      });
     });
   }
 
@@ -157,13 +167,16 @@ export class Page extends React.Component<PageProps, PageState> {
   private getNewLocationHistory() {
     return requests.getNewLocationHistory().then(responseBody => {
       const locationHistoryPath = responseBody.locationHistoryPath;
-      const photos = this.state.photos.map(photo =>
-        Object.assign({}, photo, { loaded: false })
-      );
 
-      this.setState({
-        locationHistoryPath,
-        photos
+      this.setState(previousState => {
+        const photos = previousState.photos.map(photo =>
+          Object.assign({}, photo, { loaded: false })
+        );
+
+        return {
+          locationHistoryPath,
+          photos
+        };
       });
 
       this.photosGrid.forceUpdate();
@@ -203,32 +216,38 @@ export class Page extends React.Component<PageProps, PageState> {
         this.state.currentPhoto.location.Suggested[0]
       )
       .then(() => {
-        const currentPhoto = Object.assign({}, this.state.currentPhoto, {
-          location: {
-            Existing: this.state.currentPhoto.location.Suggested[0]
-          }
+        this.setState(previousState => {
+          const currentPhoto = Object.assign({}, previousState.currentPhoto, {
+            location: {
+              Existing: previousState.currentPhoto.location.Suggested[0]
+            }
+          });
+
+          const photos = previousState.photos.slice();
+          const index = photos.findIndex(
+            photo => photo.path === currentPhoto.path
+          );
+          photos[index] = currentPhoto;
+
+          return { currentPhoto, photos };
         });
 
-        const photos = this.state.photos.slice();
-        const index = photos.findIndex(
-          photo => photo.path === currentPhoto.path
-        );
-        photos[index] = currentPhoto;
-
-        this.setState({ currentPhoto, photos });
         this.photosGrid.forceUpdate();
       });
   }
 
   private handleSuggestionDiscard() {
-    const currentPhoto = Object.assign({}, this.state.currentPhoto);
-    currentPhoto.location = undefined;
+    this.setState(previousState => {
+      const currentPhoto = Object.assign({}, previousState.currentPhoto);
+      currentPhoto.location = undefined;
 
-    const photos = this.state.photos.slice();
-    const index = photos.findIndex(photo => photo.path === currentPhoto.path);
-    photos[index] = currentPhoto;
+      const photos = previousState.photos.slice();
+      const index = photos.findIndex(photo => photo.path === currentPhoto.path);
+      photos[index] = currentPhoto;
 
-    this.setState({ currentPhoto, photos });
+      return { currentPhoto, photos };
+    });
+
     this.photosGrid.forceUpdate();
   }
 }

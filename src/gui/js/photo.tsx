@@ -12,9 +12,11 @@ export function locationDescription(photo: Photo) {
     return `Suggested location: accuracy is ${accuracy.meters} meters and ${
       accuracy.seconds
     } seconds`;
-  } else if (photo.location) {
+  }
+  if (photo.location) {
     return 'Existing location';
-  } else if (photo.error) {
+  }
+  if (photo.error) {
     return photo.error;
   }
   return 'No location';

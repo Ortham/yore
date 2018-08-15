@@ -12,11 +12,11 @@ exports[`Page renders a header, photos grid and main panel 1`] = `
       id="paths"
     >
       <div>
-        Photos path: 
+        Photos path:
         
       </div>
       <div>
-        Location history path: 
+        Location history path:
         
       </div>
     </div>
@@ -24,6 +24,7 @@ exports[`Page renders a header, photos grid and main panel 1`] = `
       <div>
         <button
           onClick={[Function]}
+          type="button"
         >
           Select Root Path
         </button>
@@ -42,6 +43,7 @@ exports[`Page renders a header, photos grid and main panel 1`] = `
       <div>
         <button
           onClick={[Function]}
+          type="button"
         >
           Select Location History
         </button>

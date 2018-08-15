@@ -34,8 +34,11 @@ interface RowRendererParameter {
 
 export class PhotosGrid extends React.Component<PhotosGridProps, {}> {
   private columnCount: number;
+
   private grid: Grid;
+
   private loader: InfiniteLoader;
+
   private onRowsRendered: (param: IndexRange) => void;
 
   public constructor(props: PhotosGridProps) {

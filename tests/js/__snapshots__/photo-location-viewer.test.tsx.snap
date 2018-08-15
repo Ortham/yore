@@ -32,12 +32,14 @@ exports[`PhotoLocationViewer renders an image, map, location description and dis
       <button
         disabled={true}
         onClick={[Function]}
+        type="button"
       >
         Apply
       </button>
       <button
         disabled={true}
         onClick={[Function]}
+        type="button"
       >
         Discard
       </button>
@@ -84,12 +86,14 @@ exports[`PhotoLocationViewer renders an image, map, location description and ena
       <button
         disabled={false}
         onClick={[Function]}
+        type="button"
       >
         Apply
       </button>
       <button
         disabled={false}
         onClick={[Function]}
+        type="button"
       >
         Discard
       </button>
@@ -124,12 +128,14 @@ exports[`PhotoLocationViewer renders an image, map, text and disabled buttons if
       <button
         disabled={true}
         onClick={[Function]}
+        type="button"
       >
         Apply
       </button>
       <button
         disabled={true}
         onClick={[Function]}
+        type="button"
       >
         Discard
       </button>
@@ -150,11 +156,13 @@ exports[`PhotoLocationViewer renders text and disabled buttons if photo is undef
     <div>
       <button
         disabled={true}
+        type="button"
       >
         Apply
       </button>
       <button
         disabled={true}
+        type="button"
       >
         Discard
       </button>

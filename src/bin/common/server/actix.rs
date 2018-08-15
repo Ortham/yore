@@ -359,7 +359,7 @@ mod tests {
             "application/json"
         );
 
-        let expected_json = "{\"locations\":[{\"path\":\"tests/assets/photo.jpg\",\"location\":{\"Existing\":{\"latitude\":38.76544,\"longitude\":-9.094802222222223}}}],\"start_index\":0,\"stop_index\":1}";
+        let expected_json = "{\"locations\":[{\"path\":\"tests/assets/photo.jpg\",\"location\":{\"Existing\":{\"latitude\":38.76544,\"longitude\":-9.094802222222222}}}],\"start_index\":0,\"stop_index\":1}";
 
         assert_eq!(&response_json(&response), expected_json);
     }
@@ -379,7 +379,7 @@ mod tests {
             "application/json"
         );
 
-        let expected_json = "{\"path\":\"tests/assets/photo.jpg\",\"location\":{\"Existing\":{\"latitude\":38.76544,\"longitude\":-9.094802222222223}}}";
+        let expected_json = "{\"path\":\"tests/assets/photo.jpg\",\"location\":{\"Existing\":{\"latitude\":38.76544,\"longitude\":-9.094802222222222}}}";
 
         assert_eq!(&response_json(&response), expected_json);
     }

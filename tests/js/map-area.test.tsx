@@ -5,8 +5,8 @@ import { Photo } from '../../src/gui/js/interfaces';
 jest.mock('google-map-react', () => ({
   default: 'GoogleMapReact'
 }));
-jest.mock('react-icons/lib/fa', () => ({
-  FaMapMarker: 'FaMapMarker'
+jest.mock('react-icons/fi', () => ({
+  FiMapPin: 'FiMapPin'
 }));
 
 import { MapArea } from '../../src/gui/js/map-area'; // eslint-disable-line import/first

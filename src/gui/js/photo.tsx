@@ -1,9 +1,5 @@
 import * as React from 'react';
-import {
-  FaExclamationCircle,
-  FaLocationArrow,
-  FaMapMarker
-} from 'react-icons/lib/fa';
+import { FiAlertCircle, FiNavigation, FiMapPin } from 'react-icons/fi';
 import { Photo } from './interfaces';
 
 export function locationDescription(photo: Photo) {
@@ -54,13 +50,14 @@ export function chooseIcon(photo: Photo) {
     top: '-2px'
   };
   if (photo.error) {
-    icon = <FaExclamationCircle style={style} />;
+    icon = <FiAlertCircle style={style} />;
   } else if (photo.location) {
     if (photo.location.Existing) {
-      icon = <FaMapMarker style={style} />;
+      icon = <FiMapPin style={style} />;
     } else if (photo.location.Suggested) {
       style.left = '-1px';
-      icon = <FaLocationArrow style={style} />;
+      style.top = '-1px';
+      icon = <FiNavigation style={style} />;
     } else {
       return null;
     }

@@ -98,6 +98,9 @@ body {
     text-align: center;
     color: black;
 }
+.photo > .icon > svg {
+    vertical-align: middle;
+}
 
 #photosList .photo[aria-selected=true]::after {
     box-shadow: inset 0px 0px 0px 4px lightblue;

@@ -1,6 +1,6 @@
 import GoogleMapReact from 'google-map-react';
 import * as React from 'react';
-import { FaMapMarker } from 'react-icons/lib/fa';
+import { FiMapPin } from 'react-icons/fi';
 
 import { Photo } from './interfaces';
 import { googleMapsCoordinates } from './photo';
@@ -12,7 +12,7 @@ interface MapMarkerProps {
 
 function MapMarker(props: MapMarkerProps) {
   return (
-    <FaMapMarker
+    <FiMapPin
       {...props}
       style={{
         color: 'crimson',

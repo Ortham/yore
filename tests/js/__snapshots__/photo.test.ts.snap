@@ -4,12 +4,12 @@ exports[`chooseIcon() returns a location arrow element if the photo has a sugges
 <div
   className="icon"
 >
-  <FaLocationArrow
+  <FiNavigation
     style={
       Object {
         "left": "-1px",
         "position": "relative",
-        "top": "-2px",
+        "top": "-1px",
       }
     }
   />
@@ -20,7 +20,7 @@ exports[`chooseIcon() returns a map marker element if the photo has an existing 
 <div
   className="icon"
 >
-  <FaMapMarker
+  <FiMapPin
     style={
       Object {
         "left": undefined,
@@ -36,7 +36,7 @@ exports[`chooseIcon() returns an exclamation circle element if the photo has an 
 <div
   className="icon"
 >
-  <FaExclamationCircle
+  <FiAlertCircle
     style={
       Object {
         "left": undefined,

@@ -1,9 +1,11 @@
 import * as renderer from 'react-test-renderer';
 import { Coordinates, LocationAccuracy } from '../../src/gui/js/interfaces';
 
-jest.mock('react-icons/lib/fa/location-arrow', () => 'FaLocationArrow');
-jest.mock('react-icons/lib/fa/map-marker', () => 'FaMapMarker');
-jest.mock('react-icons/lib/fa/exclamation-circle', () => 'FaExclamationCircle');
+jest.mock('react-icons/fi', () => ({
+  FiAlertCircle: 'FiAlertCircle',
+  FiNavigation: 'FiNavigation',
+  FiMapPin: 'FiMapPin'
+}));
 
 /* eslint-disable import/first */
 import {

@@ -19,7 +19,7 @@ exports[`MapArea renders a map centered and with a marker at the photo's locatio
     }
     zoom={5}
   >
-    <FaMapMarker
+    <FiMapPin
       lat={52}
       lng={36.2}
       style={

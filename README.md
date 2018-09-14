@@ -3,7 +3,6 @@ Yore
 
 [![Travis Build Status](https://www.travis-ci.org/WrinklyNinja/yore.svg?branch=master)](https://www.travis-ci.org/WrinklyNinja/yore)
 [![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/WrinklyNinja/yore?branch=master&svg=true)](https://ci.appveyor.com/project/WrinklyNinja/yore)
-[![Coverage Status](https://coveralls.io/repos/github/WrinklyNinja/yore/badge.svg?branch=master)](https://coveralls.io/github/WrinklyNinja/yore?branch=master)
 [![dependency status](https://deps.rs/repo/github/WrinklyNinja/yore/status.svg)](https://deps.rs/repo/github/WrinklyNinja/yore)
 [![Greenkeeper badge](https://badges.greenkeeper.io/WrinklyNinja/yore.svg)](https://greenkeeper.io/)
 

@@ -1,11 +1,10 @@
 sudo: required
 language: rust
 
-# Dependencies of kcov, used by cargo-travis, and of the web-view library.
+# Dependencies of the web-view library.
 addons:
   apt:
     packages:
-      - libssl-dev
       - libwebkit2gtk-4.0-dev
     sources:
       - sourceline: 'ppa:webkit-team/ppa'
@@ -22,11 +21,6 @@ before_install:
 install:
   - rustup component add rustfmt-preview
   - rustfmt --version
-  - |
-    if [[ $(cargo tarpaulin --version) != *0.6.2 ]]
-    then
-      RUSTFLAGS="--cfg procmacro2_semver_exempt" cargo install --force --version 0.6.2 cargo-tarpaulin
-    fi
   - yarn install
 
 script:
@@ -35,4 +29,3 @@ script:
   - yarn test --ci
   - cargo fmt -- --check
   - cargo test
-  - cargo tarpaulin --ciserver travis-ci --coveralls $TRAVIS_JOB_ID

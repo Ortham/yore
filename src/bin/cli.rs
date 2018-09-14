@@ -52,10 +52,18 @@ struct Options {
     )]
     interpolate: bool,
 
-    #[structopt(short = "r", long = "read-only", help = "Don't offer to save suggested locations")]
+    #[structopt(
+        short = "r",
+        long = "read-only",
+        help = "Don't offer to save suggested locations"
+    )]
     read_only: bool,
 
-    #[structopt(short = "g", long = "gui", help = "Start a server for the browser-based GUI")]
+    #[structopt(
+        short = "g",
+        long = "gui",
+        help = "Start a server for the browser-based GUI"
+    )]
     use_gui: bool,
 
     #[structopt(

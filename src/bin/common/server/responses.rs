@@ -80,8 +80,7 @@ impl PhotosResponse {
                         None
                     }
                 })
-            })
-            .collect::<Result<Vec<ImageDimensions>, ServiceError>>()
+            }).collect::<Result<Vec<ImageDimensions>, ServiceError>>()
             .map(|photos| PhotosResponse { photos })
     }
 }

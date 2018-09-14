@@ -49,7 +49,8 @@ struct Options {
     interpolate: bool,
 
     #[structopt(
-        parse(from_os_str), help = "The image or a directory of images to suggest a location for"
+        parse(from_os_str),
+        help = "The image or a directory of images to suggest a location for"
     )]
     photo_path: Option<PathBuf>,
 }

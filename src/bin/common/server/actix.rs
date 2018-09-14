@@ -66,11 +66,9 @@ pub fn build_server_app(state: SharedGuiState) -> App<SharedGuiState> {
         .resource("/rootPath/new", |r| r.get().f(get_new_root_path))
         .resource("/locationHistoryPath", |r| {
             r.get().f(get_location_history_path)
-        })
-        .resource("/locationHistory/new", |r| {
+        }).resource("/locationHistory/new", |r| {
             r.get().f(get_new_location_history)
-        })
-        .resource("/interpolate", |r| r.get().f(get_interpolate))
+        }).resource("/interpolate", |r| r.get().f(get_interpolate))
         .resource("/locations", |r| r.get().f(get_locations))
         .resource("/location", |r| r.get().f(get_location))
         .resource("/photos", |r| r.get().f(get_photos))

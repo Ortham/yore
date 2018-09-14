@@ -44,20 +44,16 @@ pub fn exiv2_write_coordinates(path: &Path, coordinates: &Coordinates) -> io::Re
         .arg(format!(
             "-Mset Exif.GPSInfo.GPSLatitude {}",
             latitude_degrees
-        ))
-        .arg(format!(
+        )).arg(format!(
             "-Mset Exif.GPSInfo.GPSLatitudeRef {}",
             coordinates.latitude_ref()
-        ))
-        .arg(format!(
+        )).arg(format!(
             "-Mset Exif.GPSInfo.GPSLongitude {}",
             longitude_degrees
-        ))
-        .arg(format!(
+        )).arg(format!(
             "-Mset Exif.GPSInfo.GPSLongitudeRef {}",
             coordinates.longitude_ref()
-        ))
-        .arg(path)
+        )).arg(path)
         .stderr(Stdio::inherit())
         .output()
 }

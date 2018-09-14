@@ -34,8 +34,7 @@ impl Orientation {
                 } else {
                     Orientation::Untransformed
                 }
-            })
-            .unwrap_or(Orientation::Untransformed);
+            }).unwrap_or(Orientation::Untransformed);
 
         Ok(orientation)
     }

@@ -2,7 +2,7 @@ use std::fs::File;
 use std::io::BufReader;
 use std::path::{Path, PathBuf};
 
-use image::{self, GenericImage};
+use image::{self, GenericImageView};
 use jpeg_decoder;
 
 use super::error::ServiceError;

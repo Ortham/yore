@@ -28,7 +28,7 @@ dependencies = [
 
 [[package]]
 name = "actix-web"
-version = "0.7.7"
+version = "0.7.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "actix 0.7.3 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1824,7 +1824,7 @@ dependencies = [
 name = "yore"
 version = "1.0.0"
 dependencies = [
- "actix-web 0.7.7 (registry+https://github.com/rust-lang/crates.io-index)",
+ "actix-web 0.7.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "chrono 0.4.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "directories 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "futures 0.1.24 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1847,7 +1847,7 @@ dependencies = [
 
 [metadata]
 "checksum actix 0.7.3 (registry+https://github.com/rust-lang/crates.io-index)" = "0470f5163ac229ed0329f6abbd6f775591b06ec5ecbf2f2589c16ab8bd6f76b8"
-"checksum actix-web 0.7.7 (registry+https://github.com/rust-lang/crates.io-index)" = "86e6a3ffa1c11da1a464d28b0e15a27e8688c38887610bc69efe789f3720ff77"
+"checksum actix-web 0.7.8 (registry+https://github.com/rust-lang/crates.io-index)" = "3a53b29cfcf95a99e9bb8745285e8e1928c3d7d2e9995b8beb6a548b50a70cd3"
 "checksum actix_derive 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)" = "5b9d1525ef45e5e021f0b93dace157dcab5d792acb4cc78f3213787d65e2bb92"
 "checksum adler32 1.0.3 (registry+https://github.com/rust-lang/crates.io-index)" = "7e522997b529f05601e05166c07ed17789691f562762c7f3b987263d2dedee5c"
 "checksum aho-corasick 0.6.6 (registry+https://github.com/rust-lang/crates.io-index)" = "c1c6d463cbe7ed28720b5b489e7c083eeb8f90d08be2a0d6bb9e1ffea9ce1afa"

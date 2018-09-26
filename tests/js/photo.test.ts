@@ -86,7 +86,7 @@ describe('hasSuggestion()', () => {
       path: '',
       src: '',
       location: {
-        Suggested: [] as [Coordinates, LocationAccuracy]
+        Suggested: [{}, {}] as [Coordinates, LocationAccuracy]
       }
     };
     expect(hasSuggestion(photo)).toBe(true);
@@ -171,7 +171,7 @@ describe('chooseIcon()', () => {
       path: '',
       src: '',
       location: {
-        Suggested: [] as [Coordinates, LocationAccuracy]
+        Suggested: [{}, {}] as [Coordinates, LocationAccuracy]
       }
     };
     const icon = renderer.create(chooseIcon(photo)).toJSON();

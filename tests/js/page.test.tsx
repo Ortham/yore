@@ -1,5 +1,6 @@
 import * as React from 'react';
 import * as renderer from 'react-test-renderer';
+import { Photo } from '../../src/gui/js/interfaces';
 
 jest.mock('../../src/gui/js/photo-location-viewer', () => ({
   PhotoLocationViewer: 'PhotoLocationViewer'
@@ -7,72 +8,73 @@ jest.mock('../../src/gui/js/photo-location-viewer', () => ({
 jest.mock('../../src/gui/js/photos-grid', () => ({
   PhotosGrid: 'PhotosGrid'
 }));
-jest.unmock('../../src/gui/js/requests');
 
-import * as requests from '../../src/gui/js/requests'; // eslint-disable-line import/first
+const photos: Photo[] = [
+  {
+    height: 5,
+    width: 10,
+    loaded: false,
+    path: 'path 1',
+    src: 'source 1'
+  },
+  {
+    height: 5,
+    width: 10,
+    loaded: true,
+    path: 'path 2',
+    src: 'source 2',
+    location: {
+      Suggested: [
+        {
+          latitude: 52.0,
+          longitude: 13.2
+        },
+        {
+          meters: 5,
+          seconds: 20
+        }
+      ]
+    }
+  }
+];
+
+const requests = {
+  writeCoordinates: jest.fn().mockReturnValueOnce(Promise.resolve()),
+  getFilteredPhotos: jest
+    .fn()
+    .mockReturnValueOnce(Promise.resolve([photos[1]])),
+  getLocation: jest.fn().mockReturnValue(Promise.resolve()),
+  getLocations: jest.fn().mockReturnValue(
+    Promise.resolve([
+      { error: 'Oh no!' },
+      {
+        location: {
+          Existing: {
+            latitude: 5,
+            longitude: 30
+          }
+        }
+      }
+    ])
+  ),
+  getPhotos: jest.fn().mockReturnValue(Promise.resolve(photos)),
+  getNewRootPath: jest
+    .fn()
+    .mockReturnValue(Promise.resolve({ rootPath: 'foo' })),
+  getNewLocationHistory: jest
+    .fn()
+    .mockReturnValueOnce(Promise.resolve({ locationHistoryPath: 'bar' })),
+  putInterpolate: jest.fn().mockReturnValueOnce(Promise.resolve())
+};
+
+jest.mock('../../src/gui/js/requests', () => requests);
+
 import { Page } from '../../src/gui/js/page'; // eslint-disable-line import/first
 
 describe('Page', () => {
-  const photos = [
-    {
-      height: 5,
-      width: 10,
-      loaded: false,
-      path: 'path 1',
-      src: 'source 1'
-    },
-    {
-      height: 5,
-      width: 10,
-      loaded: true,
-      path: 'path 2',
-      src: 'source 2',
-      location: {
-        Suggested: [
-          {
-            latitude: 52.0,
-            longitude: 13.2
-          },
-          {
-            meters: 5,
-            seconds: 20
-          }
-        ]
-      }
-    }
-  ];
-  let page;
+  let page: renderer.ReactTestRenderer;
 
   beforeAll(() => {
-    requests.writeCoordinates = jest
-      .fn()
-      .mockReturnValueOnce(Promise.resolve());
-    requests.getFilteredPhotos = jest
-      .fn()
-      .mockReturnValueOnce(Promise.resolve([photos[1]]));
-    requests.getLocation = jest.fn().mockReturnValue(Promise.resolve());
-    requests.getLocations = jest.fn().mockReturnValue(
-      Promise.resolve([
-        { error: 'Oh no!' },
-        {
-          location: {
-            Existing: {
-              latitude: 5,
-              longitude: 30
-            }
-          }
-        }
-      ])
-    );
-    requests.getPhotos = jest.fn().mockReturnValue(Promise.resolve(photos));
-    requests.getNewRootPath = jest
-      .fn()
-      .mockReturnValue(Promise.resolve({ rootPath: 'foo' }));
-    requests.getNewLocationHistory = jest
-      .fn()
-      .mockReturnValueOnce(Promise.resolve({ locationHistoryPath: 'bar' }));
-    requests.putInterpolate = jest.fn().mockReturnValueOnce(Promise.resolve());
-
     page = renderer.create(
       <Page
         rootPath=""

@@ -46,7 +46,7 @@
     "react-test-renderer": "^16.2.0",
     "source-map-loader": "^0.2.3",
     "ts-jest": "^23.0.0",
-    "ts-loader": "^4.4.2",
+    "ts-loader": "^5.2.1",
     "typescript": "^3.0.1",
     "typescript-eslint-parser": "^19.0.1",
     "webpack": "^4.1.0",

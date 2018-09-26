@@ -3,8 +3,8 @@ import * as renderer from 'react-test-renderer';
 import { PhotoThumbnail } from '../../src/gui/js/photo-thumbnail';
 
 describe('PhotoThumbnail', () => {
-  let mockHandleSelect;
-  let thumbnail;
+  let mockHandleSelect: jest.Mock;
+  let thumbnail: renderer.ReactTestRendererJSON;
 
   beforeAll(() => {
     mockHandleSelect = jest.fn();

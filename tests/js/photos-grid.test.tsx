@@ -3,9 +3,9 @@ import * as renderer from 'react-test-renderer';
 import { PhotosGrid } from '../../src/gui/js/photos-grid';
 
 describe('PhotosGrid', () => {
-  let mockGetAndStoreLocations;
-  let mockHandlePhotoSelect;
-  let filteredPhotosGrid;
+  let mockGetAndStoreLocations: jest.Mock;
+  let mockHandlePhotoSelect: jest.Mock;
+  let filteredPhotosGrid: renderer.ReactTestRenderer;
 
   const photos = [
     {

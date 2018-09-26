@@ -3166,9 +3166,9 @@ globby@^7.1.1:
     slash "^1.0.0"
 
 google-map-react@^1.0.0:
-  version "1.0.6"
-  resolved "https://registry.yarnpkg.com/google-map-react/-/google-map-react-1.0.6.tgz#79e4ad0ef442cb8607f479e9cc504d08760287a2"
-  integrity sha512-QHl0LxL8UJE8mniPGM/SZyjoF43qGBUqRxiXtcvCUenM0oCZNOnDq/6M9DegzvPYoPtgWrcZVGT4l0F9hoDu5g==
+  version "1.0.8"
+  resolved "https://registry.yarnpkg.com/google-map-react/-/google-map-react-1.0.8.tgz#f9aeefb2eb3c878b33a5b79e5d2fb05c532a702e"
+  integrity sha512-M1UIXrxUhwMjNiUkw9DiVSO0fh7vZOxgGR02grzPOu4S47sYV25oeHcsK32rvGuNlBwpHHS+T9AV4aiRuKNXuw==
   dependencies:
     "@mapbox/point-geometry" "^0.1.0"
     eventemitter3 "^1.1.0"

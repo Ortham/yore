@@ -1,8 +1,13 @@
+use std::collections::BTreeMap;
 use std::fs::File;
 use std::io;
+use std::iter::FromIterator;
 
 use memmap::Mmap;
+use serde::{de, Deserialize, Deserializer};
 use serde_json;
+
+use coordinates;
 
 #[derive(Debug)]
 pub enum HistoryError {
@@ -22,10 +27,6 @@ pub unsafe fn load_location_history(file: &File) -> Result<GoogleLocationHistory
     serde_json::from_slice(&mmap).map_err(HistoryError::DeserializeError)
 }
 
-use std::collections::BTreeMap;
-
-use coordinates;
-
 enum LocationMatch<'a> {
     Exact(&'a Location),
     First(&'a Location),
@@ -35,7 +36,7 @@ enum LocationMatch<'a> {
 
 #[derive(Deserialize, PartialEq, Debug, Default)]
 pub struct GoogleLocationHistory {
-    #[serde(deserialize_with = "locations_sequence::deserialize")]
+    #[serde(deserialize_with = "deserialize_locations")]
     locations: BTreeMap<i64, Location>,
 }
 
@@ -150,7 +151,7 @@ fn interpolate_accuracy(timestamp_ms: i64, before: &Location, after: &Location) 
 #[derive(Clone, Deserialize, PartialEq, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Location {
-    #[serde(deserialize_with = "i64_string::deserialize")]
+    #[serde(deserialize_with = "deserialize_timestamp")]
     timestamp_ms: i64,
     latitude_e7: i64,
     longitude_e7: i64,
@@ -174,35 +175,24 @@ impl Location {
     }
 }
 
-mod locations_sequence {
-    use super::Location;
-    use serde::{Deserialize, Deserializer};
-    use std::collections::BTreeMap;
-    use std::iter::FromIterator;
+fn deserialize_locations<'de, D>(deserializer: D) -> Result<BTreeMap<i64, Location>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let locations: Vec<Location> = Vec::deserialize(deserializer)?;
 
-    pub fn deserialize<'de, D>(deserializer: D) -> Result<BTreeMap<i64, Location>, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let locations: Vec<Location> = Vec::deserialize(deserializer)?;
-
-        Ok(BTreeMap::from_iter(
-            locations.into_iter().map(|l| (l.timestamp_ms, l)),
-        ))
-    }
+    Ok(BTreeMap::from_iter(
+        locations.into_iter().map(|l| (l.timestamp_ms, l)),
+    ))
 }
 
-mod i64_string {
-    use serde::{de, Deserialize, Deserializer};
-
-    pub fn deserialize<'de, D>(deserializer: D) -> Result<i64, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        String::deserialize(deserializer)?
-            .parse::<i64>()
-            .map_err(de::Error::custom)
-    }
+fn deserialize_timestamp<'de, D>(deserializer: D) -> Result<i64, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    String::deserialize(deserializer)?
+        .parse::<i64>()
+        .map_err(de::Error::custom)
 }
 
 #[cfg(test)]

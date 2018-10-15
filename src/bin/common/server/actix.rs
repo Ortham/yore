@@ -2,12 +2,10 @@ use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, RwLock};
 
-use actix_web::http::Method;
+use actix_web::http::StatusCode;
 use actix_web::{
-    App, Body, FromRequest, HttpRequest, HttpResponse, Json, Path as PathExtractor, Query, Result,
+    App, Body, HttpRequest, HttpResponse, Json, Path as PathExtractor, Query, Result, State,
 };
-use futures::future::result;
-use futures::Future;
 use tinyfiledialogs::{open_file_dialog, select_folder_dialog};
 use yore::Coordinates;
 
@@ -57,91 +55,90 @@ struct InterpolateRequestBody {
 
 type SharedGuiState = Arc<RwLock<GuiState>>;
 type Request = HttpRequest<SharedGuiState>;
+type RequestState = State<SharedGuiState>;
 type JsonResult<T> = Result<Json<T>, ServiceError>;
 type HttpResult = Result<HttpResponse, ServiceError>;
 
 pub fn build_server_app(state: SharedGuiState) -> App<SharedGuiState> {
     App::with_state(state)
-        .resource("/rootPath", |r| r.get().f(get_root_path))
-        .resource("/rootPath/new", |r| r.get().f(get_new_root_path))
+        .resource("/rootPath", |r| r.get().with(get_root_path))
+        .resource("/rootPath/new", |r| r.get().with(get_new_root_path))
         .resource("/locationHistoryPath", |r| {
-            r.get().f(get_location_history_path)
+            r.get().with(get_location_history_path)
         }).resource("/locationHistory/new", |r| {
-            r.get().f(get_new_location_history)
-        }).resource("/interpolate", |r| r.get().f(get_interpolate))
-        .resource("/locations", |r| r.get().f(get_locations))
-        .resource("/location", |r| r.get().f(get_location))
-        .resource("/photos", |r| r.get().f(get_photos))
-        .resource("/photo", |r| r.get().f(get_photo))
-        .resource("/thumbnail", |r| r.get().f(get_thumbnail))
+            r.get().with(get_new_location_history)
+        }).resource("/interpolate", |r| {
+            r.get().with(get_interpolate);
+            r.put().with(put_interpolate);
+        }).resource("/locations", |r| r.get().with(get_locations))
+        .resource("/location", |r| {
+            r.get().with(get_location);
+            r.put().with(put_location);
+        }).resource("/photos", |r| r.get().with(get_photos))
+        .resource("/photo", |r| r.get().with(get_photo))
+        .resource("/thumbnail", |r| r.get().with(get_thumbnail))
         .resource("/{file}", |r| r.get().with(get_static_file))
         .resource("/", |r| r.get().f(get_index))
-        .route("/interpolate", Method::PUT, put_interpolate)
-        .route("/location", Method::PUT, put_location)
 }
 
 #[allow(unknown_lints, needless_pass_by_value)]
-fn get_root_path(req: &Request) -> JsonResult<RootPathResponse> {
-    let state = req.state().read()?;
+fn get_root_path(state: RequestState) -> JsonResult<RootPathResponse> {
+    let state = state.read()?;
     Ok(Json(RootPathResponse::new(&state)))
 }
 
 #[allow(unknown_lints, needless_pass_by_value)]
-fn get_new_root_path(req: &Request) -> JsonResult<RootPathResponse> {
+fn get_new_root_path(state: RequestState) -> JsonResult<RootPathResponse> {
     if let Some(path) = select_folder_dialog("", "") {
-        req.state()
-            .write()?
-            .search_new_root_path(PathBuf::from(path));
+        state.write()?.search_new_root_path(PathBuf::from(path));
     }
 
-    let state = req.state().read()?;
+    let state = state.read()?;
     Ok(Json(RootPathResponse::new(&state)))
 }
 
 #[allow(unknown_lints, needless_pass_by_value)]
-fn get_location_history_path(req: &Request) -> JsonResult<LocationHistoryPathResponse> {
-    let state = req.state().read()?;
+fn get_location_history_path(state: RequestState) -> JsonResult<LocationHistoryPathResponse> {
+    let state = state.read()?;
     Ok(Json(LocationHistoryPathResponse::new(&state)))
 }
 
 #[allow(unknown_lints, needless_pass_by_value)]
-fn get_new_location_history(req: &Request) -> JsonResult<LocationHistoryPathResponse> {
+fn get_new_location_history(state: RequestState) -> JsonResult<LocationHistoryPathResponse> {
     if let Some(path) = open_file_dialog("", "", None) {
-        req.state()
-            .write()?
-            .load_location_history(PathBuf::from(&path))?;
+        state.write()?.load_location_history(PathBuf::from(&path))?;
     }
-    let state = req.state().read()?;
+    let state = state.read()?;
     Ok(Json(LocationHistoryPathResponse::new(&state)))
 }
 
 #[allow(unknown_lints, needless_pass_by_value)]
-fn get_interpolate(req: &Request) -> JsonResult<InterpolateResponse> {
-    let state = req.state().read()?;
+fn get_interpolate(state: RequestState) -> JsonResult<InterpolateResponse> {
+    let state = state.read()?;
     Ok(Json(InterpolateResponse::new(&state)))
 }
 
 #[allow(unknown_lints, needless_pass_by_value)]
-fn get_locations(req: &Request) -> JsonResult<LocationsResponse> {
-    let indices = Query::<Indices>::extract(&req)?;
-
-    let state = req.state().read()?;
+fn get_locations(
+    (indices, state): (Query<Indices>, RequestState),
+) -> JsonResult<LocationsResponse> {
+    let state = state.read()?;
     LocationsResponse::new(&state, indices.start, indices.end).map(Json)
 }
 
 #[allow(unknown_lints, needless_pass_by_value)]
-fn get_location(req: &Request) -> JsonResult<LocationResponse> {
-    let query_params = Query::<QueriedPath>::extract(&req)?;
-
-    let state = req.state().read()?;
+fn get_location(
+    (query_params, state): (Query<QueriedPath>, RequestState),
+) -> JsonResult<LocationResponse> {
+    let state = state.read()?;
     LocationResponse::new(&query_params.path, &state).map(Json)
 }
 
 #[allow(unknown_lints, needless_pass_by_value)]
-fn get_photos(req: &Request) -> JsonResult<PhotosResponse> {
-    let query_params = Query::<GetPhotosQueryParams>::extract(&req)?;
-
-    let state = req.state().read()?;
+fn get_photos(
+    (query_params, state): (Query<GetPhotosQueryParams>, RequestState),
+) -> JsonResult<PhotosResponse> {
+    let state = state.read()?;
 
     if let Some(true) = query_params.filter {
         PhotosResponse::filtered(&state).map(Json)
@@ -151,18 +148,15 @@ fn get_photos(req: &Request) -> JsonResult<PhotosResponse> {
 }
 
 #[allow(unknown_lints, needless_pass_by_value)]
-fn get_photo(req: &Request) -> HttpResult {
-    let query_params = Query::<QueriedPath>::extract(&req)?;
-
+fn get_photo(query_params: Query<QueriedPath>) -> HttpResult {
     let body = oriented_image(&query_params.path).map(Body::from)?;
 
     Ok(HttpResponse::Ok().content_type(IMAGE_JPEG).body(body))
 }
 
 #[allow(unknown_lints, needless_pass_by_value)]
-fn get_thumbnail(req: &Request) -> HttpResult {
-    let query_params = Query::<ThumbnailQueryParams>::extract(&req)?;
-    let state = req.state().read()?;
+fn get_thumbnail((query_params, state): (Query<ThumbnailQueryParams>, RequestState)) -> HttpResult {
+    let state = state.read()?;
 
     let cached_path = state.cached_image_path(
         &query_params.path,
@@ -211,35 +205,16 @@ fn get_index(_req: &Request) -> HttpResult {
     Ok(HttpResponse::Ok().content_type(TEXT_HTML_UTF_8).body(body))
 }
 
-fn put_interpolate(req: Request) -> Box<Future<Item = &'static str, Error = ServiceError>> {
-    let request_body = Json::<InterpolateRequestBody>::extract(&req);
+fn put_interpolate((body, state): (Json<InterpolateRequestBody>, RequestState)) -> HttpResult {
+    state.write()?.set_interpolate(body.interpolate);
 
-    Box::new(request_body.map_err(ServiceError::from).and_then(move |b| {
-        let set_result = match req.state().write() {
-            Ok(ref mut s) => {
-                s.set_interpolate(b.interpolate);
-                Ok("")
-            }
-            Err(e) => Err(ServiceError::from(e)),
-        };
-        result(set_result)
-    }))
+    Ok(HttpResponse::new(StatusCode::OK))
 }
 
-fn put_location(req: Request) -> Box<Future<Item = &'static str, Error = ServiceError>> {
-    let coordinates = Json::<Coordinates>::extract(&req);
+fn put_location((body, query_params): (Json<Coordinates>, Query<QueriedPath>)) -> HttpResult {
+    exiv2_write_coordinates(&query_params.path, &body)?;
 
-    Box::new(coordinates.map_err(ServiceError::from).and_then(move |c| {
-        result(
-            Query::<QueriedPath>::extract(&req)
-                .map_err(ServiceError::from)
-                .and_then(|q| {
-                    exiv2_write_coordinates(&q.path, &c)
-                        .map(|_| "")
-                        .map_err(ServiceError::from)
-                }),
-        )
-    }))
+    Ok(HttpResponse::new(StatusCode::OK))
 }
 
 fn file_mime_type(path: &Path) -> &'static str {
@@ -259,11 +234,15 @@ mod tests {
 
     use std::fs::read;
     use std::process::Command;
-    use std::str::from_utf8;
 
     use self::tempfile::tempdir;
-    use actix_web::test::{self, TestServer};
-    use actix_web::{http::StatusCode, Binary, Body, Error, HttpMessage};
+    use actix_web::client::ClientResponse;
+    use actix_web::test::{self, TestServer, TestServerBuilder};
+    use actix_web::{
+        http::{Method, StatusCode},
+        HttpMessage,
+    };
+    use futures::Future;
 
     fn test_state(cache_path: &Path) -> SharedGuiState {
         let mut state = GuiState::new(cache_path);
@@ -275,45 +254,84 @@ mod tests {
         Arc::new(RwLock::new(state))
     }
 
-    fn response_body(response: &HttpResponse) -> &Binary {
-        if let Body::Binary(binary) = response.body() {
-            binary
-        } else {
-            panic!("Response body is not binary");
-        }
+    fn test_server(cache_path: &Path) -> TestServer {
+        test_server_and_state(cache_path).0
     }
 
-    fn response_json(response: &HttpResponse) -> String {
-        let body = response_body(&response);
-        from_utf8(body.as_ref()).unwrap().replace("\\\\", "/")
+    fn test_server_and_state(cache_path: &Path) -> (TestServer, SharedGuiState) {
+        let state = test_state(cache_path);
+
+        let server_state = state.clone();
+        let server = TestServerBuilder::new(move || server_state.clone()).start(|app| {
+            app.resource("/rootPath", |r| r.get().with(get_root_path))
+                .resource("/rootPath/new", |r| r.get().with(get_new_root_path))
+                .resource("/locationHistoryPath", |r| {
+                    r.get().with(get_location_history_path)
+                }).resource("/locationHistory/new", |r| {
+                    r.get().with(get_new_location_history)
+                }).resource("/interpolate", |r| {
+                    r.get().with(get_interpolate);
+                    r.put().with(put_interpolate);
+                }).resource("/locations", |r| r.get().with(get_locations))
+                .resource("/location", |r| {
+                    r.get().with(get_location);
+                    r.put().with(put_location);
+                }).resource("/photos", |r| r.get().with(get_photos))
+                .resource("/photo", |r| r.get().with(get_photo))
+                .resource("/thumbnail", |r| r.get().with(get_thumbnail))
+                .resource("/{file}", |r| r.get().with(get_static_file))
+                .resource("/", |r| r.get().f(get_index));
+        });
+
+        (server, state)
+    }
+
+    fn body(response: ClientResponse) -> impl AsRef<[u8]> {
+        response
+            .body()
+            .limit(u16::max_value() as usize)
+            .wait()
+            .unwrap()
+    }
+
+    fn json(response: ClientResponse) -> String {
+        let json = response
+            .body()
+            .limit(u16::max_value() as usize)
+            .wait()
+            .unwrap();
+        String::from_utf8_lossy(json.as_ref())
+            .into_owned()
+            .replace("\\\\", "/")
     }
 
     #[test]
     fn get_root_path_should_respond_with_the_current_photos_root_path() {
         let tmp_dir = tempdir().unwrap();
-        let state = test_state(tmp_dir.path());
+        let mut srv = test_server(tmp_dir.path());
 
-        let response = test::TestRequest::with_state(state.clone())
-            .uri("/rootPath")
-            .run(&get_root_path)
-            .unwrap();
+        let request = srv.client(Method::GET, "/rootPath").finish().unwrap();
+        let response = srv.execute(request.send()).unwrap();
+
         assert_eq!(response.status(), StatusCode::OK);
         assert_eq!(
             response.headers().get("Content-Type").unwrap(),
             "application/json"
         );
-        assert_eq!(&response_json(&response), "{\"rootPath\":\"tests/assets\"}");
+        assert_eq!(json(response), "{\"rootPath\":\"tests/assets\"}");
     }
 
     #[test]
     fn get_location_history_path_should_respond_with_the_current_location_history_path() {
         let tmp_dir = tempdir().unwrap();
-        let state = test_state(tmp_dir.path());
+        let mut srv = test_server(tmp_dir.path());
 
-        let response = test::TestRequest::with_state(state.clone())
-            .uri("/locationHistoryPath")
-            .run(&get_location_history_path)
+        let request = srv
+            .client(Method::GET, "/locationHistoryPath")
+            .finish()
             .unwrap();
+        let response = srv.execute(request.send()).unwrap();
+
         assert_eq!(response.status(), StatusCode::OK);
         assert_eq!(
             response.headers().get("Content-Type").unwrap(),
@@ -322,35 +340,36 @@ mod tests {
 
         let expected_json = "{\"locationHistoryPath\":\"tests/assets/location_history.json\"}";
 
-        assert_eq!(&response_json(&response), expected_json);
+        assert_eq!(json(response), expected_json);
     }
 
     #[test]
     fn get_interpolate_should_respond_with_the_current_interpolation_state() {
         let tmp_dir = tempdir().unwrap();
-        let state = test_state(tmp_dir.path());
+        let mut srv = test_server(tmp_dir.path());
 
-        let response = test::TestRequest::with_state(state.clone())
-            .uri("/interpolate")
-            .run(&get_interpolate)
-            .unwrap();
+        let request = srv.client(Method::GET, "/interpolate").finish().unwrap();
+        let response = srv.execute(request.send()).unwrap();
+
         assert_eq!(response.status(), StatusCode::OK);
         assert_eq!(
             response.headers().get("Content-Type").unwrap(),
             "application/json"
         );
-        assert_eq!(&response_json(&response), "{\"interpolate\":false}");
+        assert_eq!(json(response), "{\"interpolate\":false}");
     }
 
     #[test]
     fn get_locations_should_respond_with_the_locations_of_the_queried_range_of_photos() {
         let tmp_dir = tempdir().unwrap();
-        let state = test_state(tmp_dir.path());
+        let mut srv = test_server(tmp_dir.path());
 
-        let response = test::TestRequest::with_state(state.clone())
-            .uri("/locations?start=0&end=1")
-            .run(&get_locations)
+        let request = srv
+            .client(Method::GET, "/locations?start=0&end=1")
+            .finish()
             .unwrap();
+        let response = srv.execute(request.send()).unwrap();
+
         assert_eq!(response.status(), StatusCode::OK);
         assert_eq!(
             response.headers().get("Content-Type").unwrap(),
@@ -359,18 +378,20 @@ mod tests {
 
         let expected_json = "{\"locations\":[{\"path\":\"tests/assets/photo.jpg\",\"location\":{\"Existing\":{\"latitude\":38.76544,\"longitude\":-9.094802222222222}}}],\"start_index\":0,\"stop_index\":1}";
 
-        assert_eq!(&response_json(&response), expected_json);
+        assert_eq!(json(response), expected_json);
     }
 
     #[test]
     fn get_location_should_respond_with_the_location_for_the_queried_path() {
         let tmp_dir = tempdir().unwrap();
-        let state = test_state(tmp_dir.path());
+        let mut srv = test_server(tmp_dir.path());
 
-        let response = test::TestRequest::with_state(state.clone())
-            .uri("/location?path=tests/assets/photo.jpg")
-            .run(&get_location)
+        let request = srv
+            .client(Method::GET, "/location?path=tests/assets/photo.jpg")
+            .finish()
             .unwrap();
+        let response = srv.execute(request.send()).unwrap();
+
         assert_eq!(response.status(), StatusCode::OK);
         assert_eq!(
             response.headers().get("Content-Type").unwrap(),
@@ -379,18 +400,17 @@ mod tests {
 
         let expected_json = "{\"path\":\"tests/assets/photo.jpg\",\"location\":{\"Existing\":{\"latitude\":38.76544,\"longitude\":-9.094802222222222}}}";
 
-        assert_eq!(&response_json(&response), expected_json);
+        assert_eq!(json(response), expected_json);
     }
 
     #[test]
     fn get_photos_should_respond_with_all_photos_if_filter_is_not_set() {
         let tmp_dir = tempdir().unwrap();
-        let state = test_state(tmp_dir.path());
+        let mut srv = test_server(tmp_dir.path());
 
-        let response = test::TestRequest::with_state(state.clone())
-            .uri("/photos")
-            .run(&get_photos)
-            .unwrap();
+        let request = srv.client(Method::GET, "/photos").finish().unwrap();
+        let response = srv.execute(request.send()).unwrap();
+
         assert_eq!(response.status(), StatusCode::OK);
         assert_eq!(
             response.headers().get("Content-Type").unwrap(),
@@ -399,18 +419,20 @@ mod tests {
 
         let expected_json = "{\"photos\":[{\"path\":\"tests/assets/photo.jpg\",\"height\":37,\"width\":55},{\"path\":\"tests/assets/photo_rotated.jpg\",\"height\":50,\"width\":33},{\"path\":\"tests/assets/photo_without_exif.jpg\",\"height\":37,\"width\":55},{\"path\":\"tests/assets/photo_without_gps.jpg\",\"height\":37,\"width\":55},{\"path\":\"tests/assets/photo_without_orientation.jpg\",\"height\":33,\"width\":50},{\"path\":\"tests/assets/photo_without_timestamp.jpg\",\"height\":37,\"width\":55}]}";
 
-        assert_eq!(&response_json(&response), expected_json);
+        assert_eq!(json(response), expected_json);
     }
 
     #[test]
     fn get_photos_should_respond_with_all_photos_if_filter_is_false() {
         let tmp_dir = tempdir().unwrap();
-        let state = test_state(tmp_dir.path());
+        let mut srv = test_server(tmp_dir.path());
 
-        let response = test::TestRequest::with_state(state.clone())
-            .uri("/photos?filter=false")
-            .run(&get_photos)
+        let request = srv
+            .client(Method::GET, "/photos?filter=false")
+            .finish()
             .unwrap();
+        let response = srv.execute(request.send()).unwrap();
+
         assert_eq!(response.status(), StatusCode::OK);
         assert_eq!(
             response.headers().get("Content-Type").unwrap(),
@@ -419,18 +441,20 @@ mod tests {
 
         let expected_json = "{\"photos\":[{\"path\":\"tests/assets/photo.jpg\",\"height\":37,\"width\":55},{\"path\":\"tests/assets/photo_rotated.jpg\",\"height\":50,\"width\":33},{\"path\":\"tests/assets/photo_without_exif.jpg\",\"height\":37,\"width\":55},{\"path\":\"tests/assets/photo_without_gps.jpg\",\"height\":37,\"width\":55},{\"path\":\"tests/assets/photo_without_orientation.jpg\",\"height\":33,\"width\":50},{\"path\":\"tests/assets/photo_without_timestamp.jpg\",\"height\":37,\"width\":55}]}";
 
-        assert_eq!(&response_json(&response), expected_json);
+        assert_eq!(json(response), expected_json);
     }
 
     #[test]
     fn get_photos_should_respond_with_only_photos_with_suggested_locations_if_filter_is_true() {
         let tmp_dir = tempdir().unwrap();
-        let state = test_state(tmp_dir.path());
+        let mut srv = test_server(tmp_dir.path());
 
-        let response = test::TestRequest::with_state(state.clone())
-            .uri("/photos?filter=true")
-            .run(&get_photos)
+        let request = srv
+            .client(Method::GET, "/photos?filter=true")
+            .finish()
             .unwrap();
+        let response = srv.execute(request.send()).unwrap();
+
         assert_eq!(response.status(), StatusCode::OK);
         assert_eq!(
             response.headers().get("Content-Type").unwrap(),
@@ -439,18 +463,20 @@ mod tests {
 
         let expected_json = "{\"photos\":[{\"path\":\"tests/assets/photo_without_gps.jpg\",\"height\":37,\"width\":55}]}";
 
-        assert_eq!(&response_json(&response), expected_json);
+        assert_eq!(json(response), expected_json);
     }
 
     #[test]
     fn get_photo_should_respond_with_image_in_body_and_image_jpeg_mime_type() {
         let tmp_dir = tempdir().unwrap();
-        let state = test_state(tmp_dir.path());
+        let mut srv = test_server(tmp_dir.path());
 
-        let response = test::TestRequest::with_state(state.clone())
-            .uri("/photo?path=tests/assets/photo.jpg")
-            .run(&get_photo)
+        let request = srv
+            .client(Method::GET, "/photo?path=tests/assets/photo.jpg")
+            .finish()
             .unwrap();
+        let response = srv.execute(request.send()).unwrap();
+
         assert_eq!(response.status(), StatusCode::OK);
         assert_eq!(
             response.headers().get("Content-Type").unwrap(),
@@ -459,36 +485,35 @@ mod tests {
 
         let image = oriented_image(Path::new("tests/assets/photo.jpg")).unwrap();
 
-        let body = response_body(&response);
-        assert_eq!(body.as_ref(), image.as_slice());
+        assert_eq!(body(response).as_ref(), image.as_slice());
     }
 
     #[test]
     fn get_thumbnail_should_respond_with_a_binary_body_and_image_jpeg_mime_type() {
         let tmp_dir = tempdir().unwrap();
-        let state = test_state(tmp_dir.path());
+        let mut srv = test_server(tmp_dir.path());
 
-        let response = test::TestRequest::with_state(state.clone())
-            .uri("/thumbnail?path=tests/assets/photo_rotated.jpg&maxWidth=300&maxHeight=300")
-            .run(&get_thumbnail)
-            .unwrap();
+        let path = "/thumbnail?path=tests/assets/photo_rotated.jpg&maxWidth=300&maxHeight=300";
+        let request = srv.client(Method::GET, path).finish().unwrap();
+        let response = srv.execute(request.send()).unwrap();
+
         assert_eq!(response.status(), StatusCode::OK);
         assert_eq!(
             response.headers().get("Content-Type").unwrap(),
             "image/jpeg"
         );
-        assert!(response.body().is_binary());
+        assert!(!body(response).as_ref().is_empty());
     }
 
     #[test]
     fn get_thumbnail_should_not_respond_with_original_image() {
         let tmp_dir = tempdir().unwrap();
-        let state = test_state(tmp_dir.path());
+        let mut srv = test_server(tmp_dir.path());
 
-        let response = test::TestRequest::with_state(state.clone())
-            .uri("/thumbnail?path=tests/assets/photo_rotated.jpg&maxWidth=300&maxHeight=300")
-            .run(&get_thumbnail)
-            .unwrap();
+        let path = "/thumbnail?path=tests/assets/photo_rotated.jpg&maxWidth=300&maxHeight=300";
+        let request = srv.client(Method::GET, path).finish().unwrap();
+        let response = srv.execute(request.send()).unwrap();
+
         assert_eq!(response.status(), StatusCode::OK);
         assert_eq!(
             response.headers().get("Content-Type").unwrap(),
@@ -497,14 +522,13 @@ mod tests {
 
         let image = oriented_image(Path::new("tests/assets/photo_rotated.jpg")).unwrap();
 
-        let body = response_body(&response);
-        assert_ne!(body.as_ref(), image.as_slice());
+        assert_ne!(body(response).as_ref(), image.as_slice());
     }
 
     #[test]
     fn get_thumbnail_should_cache_generated_thumbnails() {
         let tmp_dir = tempdir().unwrap();
-        let state = test_state(tmp_dir.path());
+        let (mut srv, state) = test_server_and_state(tmp_dir.path());
 
         let cached_path = state.read().unwrap().cached_image_path(
             Path::new("tests/assets/photo_rotated.jpg"),
@@ -513,26 +537,21 @@ mod tests {
         );
         assert!(!cached_path.exists());
 
-        let response = test::TestRequest::with_state(state.clone())
-            .uri("/thumbnail?path=tests/assets/photo_rotated.jpg&maxWidth=300&maxHeight=300")
-            .run(&get_thumbnail)
-            .unwrap();
-        assert_eq!(response.status(), StatusCode::OK);
+        let path = "/thumbnail?path=tests/assets/photo_rotated.jpg&maxWidth=300&maxHeight=300";
+        let request = srv.client(Method::GET, path).finish().unwrap();
+        let response = srv.execute(request.send()).unwrap();
 
         assert!(cached_path.exists());
         let file_content = read(cached_path).unwrap();
 
-        let body = response_body(&response);
-        assert_eq!(body.as_ref(), file_content.as_slice());
-
-        let response = test::TestRequest::with_state(state.clone())
-            .uri("/thumbnail?path=tests/assets/photo_rotated.jpg&maxWidth=300&maxHeight=300")
-            .run(&get_thumbnail)
-            .unwrap();
         assert_eq!(response.status(), StatusCode::OK);
+        assert_eq!(body(response).as_ref(), file_content.as_slice());
 
-        let body = response_body(&response);
-        assert_eq!(body.as_ref(), file_content.as_slice());
+        let request = srv.client(Method::GET, path).finish().unwrap();
+        let response = srv.execute(request.send()).unwrap();
+
+        assert_eq!(response.status(), StatusCode::OK);
+        assert_eq!(body(response).as_ref(), file_content.as_slice());
     }
 
     #[test]
@@ -565,13 +584,14 @@ mod tests {
     #[test]
     fn put_interpolate_should_set_interpolate_state_to_the_given_value() {
         let tmp_dir = tempdir().unwrap();
-        let state = test_state(tmp_dir.path());
+        let (mut srv, state) = test_server_and_state(tmp_dir.path());
 
-        let response = test::TestRequest::with_state(state.clone())
-            .set_payload("{\"interpolate\":true}")
+        let request = srv
+            .client(Method::PUT, "/interpolate")
             .header("Content-Type", "application/json")
-            .run_async(|r| put_interpolate(r).map_err(Error::from))
+            .body("{\"interpolate\":true}")
             .unwrap();
+        let response = srv.execute(request.send()).unwrap();
 
         assert_eq!(response.status(), StatusCode::OK);
         assert!(state.read().unwrap().interpolate());
@@ -580,17 +600,20 @@ mod tests {
     #[test]
     fn put_location_should_fail_if_exiv2_is_not_available_and_succeed_otherwise() {
         let tmp_dir = tempdir().unwrap();
-        let state = test_state(tmp_dir.path());
+        let mut srv = test_server(tmp_dir.path());
 
-        let response = test::TestRequest::with_state(state.clone())
-            .set_payload("{\"latitude\":0,\"longitude\":0}")
+        let path = "/location?path=tests/assets/photo_without_gps.jpg";
+        let request = srv
+            .client(Method::PUT, path)
             .header("Content-Type", "application/json")
-            .run_async(|r| put_location(r).map_err(Error::from));
+            .body("{\"latitude\":0,\"longitude\":0}")
+            .unwrap();
+        let response = srv.execute(request.send()).unwrap();
 
         if Command::new("exiv2").status().is_err() {
-            assert!(response.is_err());
+            assert_eq!(response.status(), StatusCode::NOT_FOUND);
         } else {
-            assert!(response.is_ok());
+            assert_eq!(response.status(), StatusCode::OK);
         }
     }
 

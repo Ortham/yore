@@ -1,6 +1,10 @@
 Yore
 ====
 
+**Note: I've abandoned development on Yore.** Using a webview for the GUI has made development too complicated, especially when it breaks in the webview but not in a browser and I can't debug why. I may decide to try a different approach, but I'll keep this around in case it has anything I'll want to reuse.
+
+Its development has involved a series of compromises that I'm no longer interested in building on. In particular, the 
+
 [![Travis Build Status](https://www.travis-ci.org/WrinklyNinja/yore.svg?branch=master)](https://www.travis-ci.org/WrinklyNinja/yore)
 [![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/WrinklyNinja/yore?branch=master&svg=true)](https://ci.appveyor.com/project/WrinklyNinja/yore)
 [![dependency status](https://deps.rs/repo/github/WrinklyNinja/yore/status.svg)](https://deps.rs/repo/github/WrinklyNinja/yore)

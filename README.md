@@ -6,7 +6,6 @@ Yore
 [![Travis Build Status](https://www.travis-ci.org/Ortham/yore.svg?branch=master)](https://www.travis-ci.org/Ortham/yore)
 [![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/971yqnxsugeyy6ea/branch/master?svg=true)](https://ci.appveyor.com/project/Ortham/yore/branch/master)
 [![dependency status](https://deps.rs/repo/github/Ortham/yore/status.svg)](https://deps.rs/repo/github/Ortham/yore)
-[![Greenkeeper badge](https://badges.greenkeeper.io/Ortham/yore.svg)](https://greenkeeper.io/)
 
 A cross-platform utility to help geotag JPEG photos using your Google
 Location History data.

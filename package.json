@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "A utility to help geotag photos from Google Location History data",
   "main": "src/gui/index.js",
-  "repository": "https://github.com/WrinklyNinja/yore.git",
+  "repository": "https://github.com/Ortham/yore.git",
   "author": "Oliver Hamlet <oliver.hamlet@gmail.com>",
   "license": "MIT",
   "private": true,
